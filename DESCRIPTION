@@ -1,0 +1,21 @@
+Package: STOCfree
+Type: Package
+Title: STOC free model: prediction of probability of freedom from longitudinal data
+Version: 0.1.0
+Authors@R: person("Aurélien", "Madouasse", email = "aurelien.madouasse@oniris-nantes.fr",
+                  role = c("aut", "cre"))
+Maintainer: Aurélien Madouasse <aurelien.madouasse@oniris-nantes.fr>
+Description: More about what it does (maybe more than one line)
+    Use four spaces when indenting paragraphs within the Description.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+Depends:
+    R (>= 3.6)
+Imports:
+    dplyr,
+    magrittr,
+    rjags,
+    tidybayes,
+    tidyselect
+RoxygenNote: 7.0.2
