@@ -11,13 +11,10 @@ herd_renumber(data, herd_colname)
 
 \item{herd_colname}{name of the column containing the herd identifier}
 }
-\value{
-
-}
 \description{
 Numbering of herds from 1 to number of herds
 }
 \examples{
-herd_renumber(data = herdBTM, herd_colname = Farm)
+herd_renumber(data = herdBTM, herd_colname = "Farm")
 
 }

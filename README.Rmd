@@ -1,5 +1,5 @@
 ---
-title: "STOCfree: prediction of probabilities of freedom from infectin from longitudinal data"
+title: "STOCfree: prediction of probabilities of freedom from infection from longitudinal data"
 output: github_document
 ---
 
@@ -13,27 +13,133 @@ Below, the use of the package is presented through the analysis of a small datas
 
 # Package installation
 
-The easiest way to install the package is from Github. This requires installing the `devtool` package first.
+The easiest way to install the `STOCfree` package is from Github. This requires installing the `devtool` package first.
 
 ```{r, eval = FALSE, message=FALSE}
 install.packages("devtools")
 ```
 
-Then load the package
+Then load the `devtool` package:
 
-```{r}
+```{r, eval = FALSE}
 library(devtools)
 ```
 
 and install the STOCfree package
 
-```{r}
+```{r, eval = FALSE}
 install_github("AurMad/STOCfree")
+```
+
+# Loading the STOCfree package
+
+```{r}
+library(STOCfree)
 ```
 
 # Data
 
+The `STOCfree` package contains a dataset called `herdBTM` which contains the results of antibody ELISA tests performed on bulk tank milk. Each row is a testing date in a herd. There are 100 herds with 11 tests for each herd.
+
 ```{r}
+head(herdBTM)
+```
+
+# Formatting the data for analysis
+
+Herds in the `herdBTM` are tested approximately every 6 months. The STOCfree model models infection with a montlhy time step. The data used by the model need to have one row per month. The herdBTM data is expanded to have one row per month with the `expand_month()` function.
+
+```{r, message=FALSE}
+herdBTM_month <- expand_month(data = herdBTM,
+                              herd_colname = Farm,
+                              date_colname = DateOfTest,
+                              test_res_colname = TestResult)
+
+herdBTM_month
+```
+
+# Priors
+
+## Test
+
+Prior for tests are stored in a variable called `test_priors`.
+
+```{r}
+test_priors <- list(
+  Se_beta_a = 12,
+  Se_beta_b = 2,
+  Sp_beta_a = 200,
+  Sp_beta_b = 4
+)
 
 ```
 
+## Infection dynamics
+
+Probability of being infected on the first testing time for a herd and probability of not eiliminating the infection between 2 consecutive tests.
+
+```{r}
+infection_priors <- list(
+  pi1_beta_a = 1,
+  pi1_beta_b = 2,
+  tau2_beta_a = 30,
+  tau2_beta_b = 2
+ )
+```
+
+and priors for risk factors
+
+```{r}
+risk_factor_priors <- list(
+  theta_norm_mean = 0,
+  theta_norm_sd = .01
+)
+```
+
+
+
+# STOC free model
+
+## Compiling
+
+The JAGS model is compiled using the `compile_JAGS()` function.
+
+```{r}
+test <- expand_month(data = herdBTM[herdBTM$Farm %in% c("FR001", "FR002"),],
+                     herd_colname = Farm,
+                     date_colname = DateOfTest,
+                     test_res_colname = TestResult)
+
+compiled_model <- compile_JAGS(test_data = test, 
+             herd_id = herd_id, 
+             row_id = row_id,
+             month = month_id,
+             risk_factors = c("ln_nOrig6_12", "LocalSeroPrev"),
+             test_result = TestResult,
+             test_priors = test_priors, 
+             infection_priors = infection_priors, 
+             risk_factor_priors = risk_factor_priors,
+             n_chains = 2)
+```
+
+## Burnin
+
+
+```{r}
+update(compiled_model, n.iter = 100)
+```
+
+
+## Sampling
+
+```{r}
+savedParam <- c("Se", "Sp", "theta", "tau2", "piPred", "StatusPred")
+
+model_samples <- coda.samples(compiled_model,
+                            variable.names = savedParam,
+                            n.iter = 1000,
+                            thin = 5)
+```
+
+
+## Results

@@ -21,4 +21,5 @@ Expansion of longitudinal datasets to obtain 1 row per month
 \examples{
 expand_month(data = herdBTM, herd_colname = Farm, date_colname = DateOfTest, test_res_colname = TestResult)
 
+
 }
