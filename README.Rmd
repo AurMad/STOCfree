@@ -78,6 +78,38 @@ test_priors <- list(
 
 Probability of being infected on the first testing time for a herd and probability of not eiliminating the infection between 2 consecutive tests.
 
+<<<<<<< HEAD
+```{r}
+infection_priors <- list(
+  pi1_beta_a = 1,
+  pi1_beta_b = 2,
+  tau2_beta_a = 30,
+  tau2_beta_b = 2
+ )
+```
+
+and priors for risk factors
+
+```{r}
+risk_factor_priors <- list(
+  theta_norm_mean = 0,
+  theta_norm_sd = .01
+)
+```
+
+
+
+# STOC free model
+
+```{r}
+library(rjags)
+```
+
+
+## Compiling
+
+The JAGS model is compiled using the `compile_JAGS()` function.
+
 ```{r}
 infection_priors <- list(
   pi1_beta_a = 1,
@@ -140,7 +172,7 @@ update(compiled_model, n.iter = 100)
 ```{r}
 savedParam <- c("Se", "Sp", "theta", "tau2", "piPred", "StatusPred")
 
-model_samples <- rjags::coda.samples(compiled_model,
+model_samples <- coda.samples(compiled_model,
                             variable.names = savedParam,
                             n.iter = 1000,
                             thin = 5)
