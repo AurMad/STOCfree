@@ -3,24 +3,21 @@
 #' @param data a dataset in the data.frame or tibble formats
 #' @param herd_colname name of the column containing the herd identifier
 #'
-#' @return
-#'
 #' @examples
-#' herd_renumber(data = herdBTM, herd_colname = Farm)
-#'
-#' @importFrom magrittr %>%
+#' herd_renumber(data = herdBTM, herd_colname = "Farm")
 #'
 #' @export
+#'
 herd_renumber <- function(data, herd_colname){
 
   herd <- dplyr::enquo(herd_colname)
 
-  data <- data %>%
-    dplyr::mutate(herd_id = match(!! herd, unique(!! herd)))%>%
-    dplyr::select(herd_id, tidyselect::everything())
-
-  data <- dplyr::as_tibble(data)
+  ## Creation of a new herd id
+  data <- dplyr::mutate(data, herd_id = match(!! herd, unique(!! herd)))
+  ## re ordering columns
+  data <- dplyr::select(data, herd_id, tidyselect::everything())
 
   data
 
 }
+

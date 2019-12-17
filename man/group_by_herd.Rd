@@ -5,7 +5,7 @@
 \title{Generates a dataset with herd level indices to be used by JAGS}
 \usage{
 group_by_herd(
-  test_data,
+  data,
   herd_colname,
   month_colname,
   row_id_colname,
@@ -13,7 +13,7 @@ group_by_herd(
 )
 }
 \arguments{
-\item{test_data}{a dataset with each row representing a test result in a herd on a given month}
+\item{data}{a dataset with each row representing a test result in a herd on a given month}
 
 \item{herd_colname}{name of the column with herd identifier}
 
