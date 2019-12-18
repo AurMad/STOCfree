@@ -11,7 +11,7 @@ The aim of the STOCfree package is to predict herd level probabilities of freedo
 
 Below, the use of the package is presented through the analysis of a small dataset collected for the surveillance of infection by the BVDV virus in cattle.
 
-# Package installation
+# Package installation and update
 
 Before installing the package, you need to make sure that JAGS is installed. This programme can be installed from the following website: https://sourceforge.net/projects/mcmc-jags/files/.
 
@@ -27,19 +27,32 @@ Then load the `devtool` package:
 library(devtools)
 ```
 
-and install the STOCfree package:
+In order to install (or update) the STOCfree package, run the following line:
 
 ```{r, eval = FALSE}
 install_github("AurMad/STOCfree")
 ```
 
-# Attaching the STOC free package
+# Attaching packages
 
 The `STOCfree` package needs to be attached.
 
 ```{r}
 library(STOCfree)
 ```
+
+The list of available functions and datasets can be accessed by typing
+
+```{r, eval = FALSE}
+help(package="STOCfree")
+```
+
+We also attach the following packages that will be used later:
+
+```{r}
+library(ggplot2)
+```
+
 
 # Data
 
@@ -104,9 +117,9 @@ risk_factor_priors <- list(
 
 ## Compiling
 
-The JAGS model is compiled using the `compile_JAGS` function. We just use 3 herds to test the code.
+The JAGS model is compiled using the `compile_JAGS` function. We just use 3 herds to test the code. We declare two risk factors of new infection: `ln_nOrig6_12` and `LocalSeroPrev`. This will result in 3 coefficient associated with the log-odds probability of new infection: intercept, coefficient for `ln_nOrig6_12` and coefficient for `LocalSeroPrev`.
 
-```{r}
+```{r, message = FALSE}
 test <- expand_month(data = herdBTM[herdBTM$Farm %in% c("FR001", "FR002", "FR003"),],
                      herd_colname = Farm,
                      date_colname = DateOfTest,
@@ -121,47 +134,99 @@ compiled_model <- compile_JAGS(test_data = test,
              test_priors = test_priors, 
              infection_priors = infection_priors, 
              risk_factor_priors = risk_factor_priors,
-             n_chains = 2)
+             n_chains = 4)
 ```
 
 ## Samples from the parameter posterior distributions
 
 Samples from the posterior distributions of model parameters, predicted probabilities of infection and predicted statuses are drawn using the `sample_model` function. 
 
-```{r}
+```{r, message=FALSE}
 samples <- sample_model(compiled_model, n_burnin = 100, n_iter = 100, n_thin = 5)
 ```
 
 # Results
 
-The model retruns a list with 3 components:
+The model retruns a list with 2 components:
 
 - samples from the model parameters posterior distributions
 - samples from the predicted probability of infection posterior distributions
-- predicted model performance
 
 ## Model parameters
 
-The samples from the model parameter posterior distributions are stored in the `parameters` component of the variable in which we have stored the model results
+The samples from the model parameter posterior distributions are stored in the `parameters` component of the variable in which we have stored the model results. We store them in a variable called param to explore these distributions.
 
 ```{r}
 param <- samples$parameters
+
+param
+```
+
+
+The columns of this dataset are:
+
+ - `.chain`: chain number. Between 1 and 4 in the example because we ran 4 MCMC chains in JAGS. This number is the value we selected for `n_chains` in the call to `compile_JAGS`.
+ - `.iteration`: iteration number. Defined by the n_iter value in the call to sample_model
+ - `.draw`: number of iterations from the first iteration in chain 1, pooling all the chains
+ - `Se`: sample for sensitivity for this draw
+ - `Sp`:  sample for pecificity for this draw
+ - `tau2`:  sample for tau2 for this draw
+ - `theta.1`: sample for the logistic model intercept for this draw
+ - `theta.2`: sample for the coefficient associated with the first risk factor for this draw
+ - `theta.3`: sample for  the coefficient associated with the second risk factor for this draw
+
+```{r}
+par(mfrow = c(2, 3),
+    mar = c(3, 4, 3, 1))
+plot(density(param$Se),
+     xlim = c(0, 1), xlab = "",
+     main = "Sensitivity")
+plot(density(param$Sp),
+     xlim = c(0, 1), xlab = "",
+     main = "Specificity")
+plot(density(param$tau2),
+     xlim = c(0, 1), xlab = "",
+     main = "tau2")
+
+plot(density(param$theta.1),
+     xlab = "",
+     main = "Model intercept")
+
+plot(density(param$theta.2),
+     xlab = "",
+     main = "theta.2")
+
+plot(density(param$theta.3),
+     xlab = "",
+     main = "theta.3")
 ```
 
 ## Probability of infection
 
-The samples from the model predicted probability of infection posterior distributions are stored in the `proba_inf` component of the variable in which we have stored the model results
+The samples from the model predicted probability of infection posterior distributions are stored in the `proba_inf` component of the variable in which we have stored the model results. We store them in a variable called `proba_inf` to explore these distributions.
 
 ```{r}
 proba_inf <- samples$proba_inf
+
+proba_inf
 ```
 
+The first columns of this dataset are the same as above. The following columns differ:
 
-## Model performance
+- `herd_id`: herd identifier
+- `predicted_proba`: predicted probability of infection on this draw
+- `predicted_status`: predicted status regarding infection on this draw. This status was simulated by using `predicted_proba` for this draw as the proportion parameter in a Bernoulli distribution.
 
-Needs a better description
+Below we represent the densities for the predicted probabilities of infection for both the draws predicted as infected and the draws predicted as uninfected. From this, a rule to categorise herds as free from infection or not needs to be created.
 
 ```{r}
-cutoff <- samples$choice_cutoff
+cols <- hcl(h = c(120, 0), c = 100, l = 85)
+
+ggplot(proba_inf, aes(x = predicted_proba, colour = factor(predicted_status))) +
+  geom_density() +
+  xlab("Predicted probability of infection") +
+  scale_color_manual(labels = c("Uninfected", "Infected"), values = cols) +
+  guides(colour = guide_legend(title="Predicted status"))
 ```
+
 

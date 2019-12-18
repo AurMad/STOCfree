@@ -1,4 +1,4 @@
-#' Generates a dataset with herd level indices to be used by JAGS
+#' Generates a dataset with herd level indices to be used by JAGS. Internal function.
 #'
 #' @param data a dataset with each row representing a test result in a herd on a given month
 #' @param herd_colname name of the column with herd identifier

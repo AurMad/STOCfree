@@ -2,7 +2,7 @@
 % Please edit documentation in R/write_JAGS_model.R
 \name{write_JAGS_model}
 \alias{write_JAGS_model}
-\title{Writes a text file with the JAGS model}
+\title{Writes a text file with the JAGS model. For internal use.}
 \usage{
 write_JAGS_model()
 }

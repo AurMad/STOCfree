@@ -60,6 +60,9 @@ sample_model <- function(compiled_model, n_burnin, n_iter, n_thin){
 
   }
 
+  choice_cutoff$pred_ppv[is.nan(choice_cutoff$pred_npv)] <- choice_cutoff$pred_Se[is.nan(choice_cutoff$pred_ppv)]
+  choice_cutoff$pred_ppv[is.nan(choice_cutoff$pred_ppv)] <- choice_cutoff$pred_Sp[is.nan(choice_cutoff$pred_ppv)]
+
   list(
     parameters = parameters,
     proba_inf = predictions,

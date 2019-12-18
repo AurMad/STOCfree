@@ -10,7 +10,7 @@ Below, the use of the package is presented through the analysis of a
 small dataset collected for the surveillance of infection by the BVDV
 virus in cattle.
 
-# Package installation
+# Package installation and update
 
 Before installing the package, you need to make sure that JAGS is
 installed. This programme can be installed from the following website:
@@ -29,7 +29,8 @@ Then load the `devtool` package:
 library(devtools)
 ```
 
-and install the STOCfree package:
+In order to install (or update) the STOCfree package, run the following
+line:
 
 ``` r
 install_github("AurMad/STOCfree")
@@ -41,6 +42,12 @@ The `STOCfree` package needs to be attached.
 
 ``` r
 library(STOCfree)
+```
+
+The list of available functions and datasets can be accessed by typing
+
+``` r
+help(package="STOCfree")
 ```
 
 # Data
@@ -145,12 +152,7 @@ test <- expand_month(data = herdBTM[herdBTM$Farm %in% c("FR001", "FR002", "FR003
                      herd_colname = Farm,
                      date_colname = DateOfTest,
                      test_res_colname = TestResult)
-```
 
-    ## Joining, by = "date__1"Joining, by = "month_id"Joining, by = c("herd_id",
-    ## "date__1")
-
-``` r
 compiled_model <- compile_JAGS(test_data = test, 
              herd_id = herd_id, 
              row_id = row_id,
@@ -160,7 +162,7 @@ compiled_model <- compile_JAGS(test_data = test,
              test_priors = test_priors, 
              infection_priors = infection_priors, 
              risk_factor_priors = risk_factor_priors,
-             n_chains = 2)
+             n_chains = 4)
 ```
 
     ## Compiling model graph
@@ -183,14 +185,17 @@ probabilities of infection and predicted statuses are drawn using the
 samples <- sample_model(compiled_model, n_burnin = 100, n_iter = 100, n_thin = 5)
 ```
 
+    ## Warning in choice_cutoff$pred_ppv[is.nan(choice_cutoff$pred_npv)] <-
+    ## choice_cutoff$pred_Se[is.nan(choice_cutoff$pred_ppv)]: le nombre d'objets à
+    ## remplacer n'est pas multiple de la taille du remplacement
+
 # Results
 
-The model retruns a list with 3 components:
+The model retruns a list with 2 components:
 
   - samples from the model parameters posterior distributions
   - samples from the predicted probability of infection posterior
     distributions
-  - predicted model performance
 
 ## Model parameters
 
@@ -202,6 +207,25 @@ the model results
 param <- samples$parameters
 ```
 
+``` r
+param
+```
+
+    ## # A tibble: 80 x 9
+    ##    .chain .iteration .draw    Se    Sp  tau2  theta.1  theta.2   theta.3
+    ##     <int>      <int> <int> <dbl> <dbl> <dbl>    <dbl>    <dbl>     <dbl>
+    ##  1      1          1     1 0.380 0.987 0.784 -0.0274  -0.0164   0.00796 
+    ##  2      1          2     2 0.778 0.985 0.778  0.00290  0.00524  0.00526 
+    ##  3      1          3     3 0.488 0.995 0.785  0.00520  0.00186 -0.00826 
+    ##  4      1          4     4 0.453 0.957 0.878 -0.0143  -0.00432  0.00842 
+    ##  5      1          5     5 0.496 0.969 0.865  0.0102  -0.00856  0.00497 
+    ##  6      1          6     6 0.398 0.991 0.910  0.0113  -0.00616  0.00645 
+    ##  7      1          7     7 0.440 0.983 0.799 -0.00398 -0.0138   0.00688 
+    ##  8      1          8     8 0.412 0.983 0.899 -0.00572 -0.00107 -0.0157  
+    ##  9      1          9     9 0.477 0.973 0.910  0.00724 -0.0160  -0.00982 
+    ## 10      1         10    10 0.326 0.978 0.942  0.0103  -0.00733  0.000385
+    ## # … with 70 more rows
+
 ## Probability of infection
 
 The samples from the model predicted probability of infection posterior
@@ -210,12 +234,4 @@ which we have stored the model results
 
 ``` r
 proba_inf <- samples$proba_inf
-```
-
-## Model performance
-
-Needs a better description
-
-``` r
-cutoff <- samples$choice_cutoff
 ```

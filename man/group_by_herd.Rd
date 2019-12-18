@@ -2,7 +2,7 @@
 % Please edit documentation in R/group_by_herd.R
 \name{group_by_herd}
 \alias{group_by_herd}
-\title{Generates a dataset with herd level indices to be used by JAGS}
+\title{Generates a dataset with herd level indices to be used by JAGS. Internal function.}
 \usage{
 group_by_herd(
   data,
@@ -27,5 +27,5 @@ group_by_herd(
 
 }
 \description{
-Generates a dataset with herd level indices to be used by JAGS
+Generates a dataset with herd level indices to be used by JAGS. Internal function.
 }

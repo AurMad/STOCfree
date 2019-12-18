@@ -1,4 +1,4 @@
-#' Writes a text file with the JAGS model
+#' Writes a text file with the JAGS model. For internal use.
 #'
 #' This function is for internal use.
 #'
