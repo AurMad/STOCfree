@@ -7,11 +7,13 @@ output: github_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-The aim of the STOCfree package is predict herd level probabilities of freedom from infection from longitudinal data collected as part of surveillance programmes.
+The aim of the STOCfree package is to predict herd level probabilities of freedom from infection from longitudinal data collected as part of surveillance programmes.
 
 Below, the use of the package is presented through the analysis of a small dataset collected for the surveillance of infection by the BVDV virus in cattle.
 
 # Package installation
+
+Before installing the package, you need to make sure that JAGS is installed. This programme can be installed from the following website: https://sourceforge.net/projects/mcmc-jags/files/.
 
 The easiest way to install the `STOCfree` package is from Github. This requires installing the `devtool` package first.
 
@@ -25,13 +27,15 @@ Then load the `devtool` package:
 library(devtools)
 ```
 
-and install the STOCfree package
+and install the STOCfree package:
 
 ```{r, eval = FALSE}
 install_github("AurMad/STOCfree")
 ```
 
-# Loading the STOCfree package
+# Attaching the STOC free package
+
+The `STOCfree` package needs to be attached.
 
 ```{r}
 library(STOCfree)
@@ -76,39 +80,7 @@ test_priors <- list(
 
 ## Infection dynamics
 
-Probability of being infected on the first testing time for a herd and probability of not eiliminating the infection between 2 consecutive tests.
-
-<<<<<<< HEAD
-```{r}
-infection_priors <- list(
-  pi1_beta_a = 1,
-  pi1_beta_b = 2,
-  tau2_beta_a = 30,
-  tau2_beta_b = 2
- )
-```
-
-and priors for risk factors
-
-```{r}
-risk_factor_priors <- list(
-  theta_norm_mean = 0,
-  theta_norm_sd = .01
-)
-```
-
-
-
-# STOC free model
-
-```{r}
-library(rjags)
-```
-
-
-## Compiling
-
-The JAGS model is compiled using the `compile_JAGS()` function.
+Probability of being infected on the first testing time for a herd and probability of not eliminating the infection between 2 consecutive tests.
 
 ```{r}
 infection_priors <- list(
@@ -128,21 +100,14 @@ risk_factor_priors <- list(
 )
 ```
 
-
-
 # STOC free model
-
-```{r}
-library(rjags)
-```
-
 
 ## Compiling
 
-The JAGS model is compiled using the `compile_JAGS()` function.
+The JAGS model is compiled using the `compile_JAGS` function. We just use 3 herds to test the code.
 
 ```{r}
-test <- expand_month(data = herdBTM[herdBTM$Farm %in% c("FR001", "FR002"),],
+test <- expand_month(data = herdBTM[herdBTM$Farm %in% c("FR001", "FR002", "FR003"),],
                      herd_colname = Farm,
                      date_colname = DateOfTest,
                      test_res_colname = TestResult)
@@ -159,24 +124,44 @@ compiled_model <- compile_JAGS(test_data = test,
              n_chains = 2)
 ```
 
-## Burnin
+## Samples from the parameter posterior distributions
 
+Samples from the posterior distributions of model parameters, predicted probabilities of infection and predicted statuses are drawn using the `sample_model` function. 
 
 ```{r}
-update(compiled_model, n.iter = 100)
+samples <- sample_model(compiled_model, n_burnin = 100, n_iter = 100, n_thin = 5)
+```
+
+# Results
+
+The model retruns a list with 3 components:
+
+- samples from the model parameters posterior distributions
+- samples from the predicted probability of infection posterior distributions
+- predicted model performance
+
+## Model parameters
+
+The samples from the model parameter posterior distributions are stored in the `parameters` component of the variable in which we have stored the model results
+
+```{r}
+param <- samples$parameters
+```
+
+## Probability of infection
+
+The samples from the model predicted probability of infection posterior distributions are stored in the `proba_inf` component of the variable in which we have stored the model results
+
+```{r}
+proba_inf <- samples$proba_inf
 ```
 
 
-## Sampling
+## Model performance
+
+Needs a better description
 
 ```{r}
-savedParam <- c("Se", "Sp", "theta", "tau2", "piPred", "StatusPred")
-
-model_samples <- coda.samples(compiled_model,
-                            variable.names = savedParam,
-                            n.iter = 1000,
-                            thin = 5)
+cutoff <- samples$choice_cutoff
 ```
 
-
-## Results
