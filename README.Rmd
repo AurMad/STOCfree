@@ -117,7 +117,7 @@ risk_factor_priors <- list(
 
 ## Compiling
 
-The JAGS model is compiled using the `compile_JAGS` function. We just use 3 herds to test the code. We declare two risk factors of new infection: `ln_nOrig6_12` and `LocalSeroPrev`. This will result in 3 coefficient associated with the log-odds probability of new infection: intercept, coefficient for `ln_nOrig6_12` and coefficient for `LocalSeroPrev`.
+The JAGS model is compiled using the `compile_JAGS` function. We just use 3 herds to test the code. We declare two risk factors of new infection: `ln_nOrig6_12` and `LocalSeroPrev`. This will result in 3 coefficients associated with the log-odds probability of new infection: intercept, coefficient for `ln_nOrig6_12` and coefficient for `LocalSeroPrev`.
 
 ```{r, message = FALSE}
 test <- expand_month(data = herdBTM[herdBTM$Farm %in% c("FR001", "FR002", "FR003"),],
@@ -154,7 +154,7 @@ The model retruns a list with 2 components:
 
 ## Model parameters
 
-The samples from the model parameter posterior distributions are stored in the `parameters` component of the variable in which we have stored the model results. We store them in a variable called param to explore these distributions.
+The samples from the model parameter posterior distributions are in the `parameters` component of the variable in which we have stored the model results. We put them in a new variable called `param` to explore these distributions.
 
 ```{r}
 param <- samples$parameters
@@ -175,7 +175,7 @@ The columns of this dataset are:
  - `theta.2`: sample for the coefficient associated with the first risk factor for this draw
  - `theta.3`: sample for  the coefficient associated with the second risk factor for this draw
 
-```{r}
+```{r, echo = FALSE}
 par(mfrow = c(2, 3),
     mar = c(3, 4, 3, 1))
 plot(density(param$Se),
@@ -203,7 +203,7 @@ plot(density(param$theta.3),
 
 ## Probability of infection
 
-The samples from the model predicted probability of infection posterior distributions are stored in the `proba_inf` component of the variable in which we have stored the model results. We store them in a variable called `proba_inf` to explore these distributions.
+The samples from posterior distributions of the predicted probabilities of infection  are in the `proba_inf` component of the variable in which we have stored the model results. We put them in a new variable called `proba_inf` to explore these distributions.
 
 ```{r}
 proba_inf <- samples$proba_inf
@@ -224,9 +224,24 @@ cols <- hcl(h = c(120, 0), c = 100, l = 85)
 
 ggplot(proba_inf, aes(x = predicted_proba, colour = factor(predicted_status))) +
   geom_density() +
+  xlim(0, 1) +
   xlab("Predicted probability of infection") +
   scale_color_manual(labels = c("Uninfected", "Infected"), values = cols) +
   guides(colour = guide_legend(title="Predicted status"))
 ```
 
+Below are the probability densities for each of the herds modelled. Each color represents a herd. 
+
+```{r}
+ggplot(proba_inf, aes(x = predicted_proba, colour = factor(herd_id))) +
+  geom_density() +
+  xlim(0, 1) +
+  xlab("Predicted probability of infection") +
+  theme(legend.position="none")
+```
+
+The steps envisonned to categorise herds as free from infection are:
+
+- define a summary for each density, e.g. 5th percentile of the predicted probabilit of infection
+- choose a cut-off to define freedom from infection, e.g. categorise herds with the 5th percentile below 0.1 as free from infection
 

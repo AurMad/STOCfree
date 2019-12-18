@@ -36,7 +36,7 @@ line:
 install_github("AurMad/STOCfree")
 ```
 
-# Attaching the STOC free package
+# Attaching packages
 
 The `STOCfree` package needs to be attached.
 
@@ -50,6 +50,12 @@ The list of available functions and datasets can be accessed by typing
 help(package="STOCfree")
 ```
 
+We also attach the following packages that will be used later:
+
+``` r
+library(ggplot2)
+```
+
 # Data
 
 The `STOCfree` package contains a dataset called `herdBTM` which
@@ -61,13 +67,15 @@ tests for each herd.
 head(herdBTM)
 ```
 
-    ##    Farm DateOfTest    ODR TestResult ln_nOrig6_12 LocalSeroPrev
-    ## 1 FR001 2011-09-20 79.211          1            0          0.20
-    ## 2 FR001 2012-01-12 70.547          1            0          0.10
-    ## 3 FR001 2012-09-25 63.907          1            0          0.20
-    ## 4 FR001 2013-02-05 54.219          0            0          0.18
-    ## 5 FR001 2013-08-29 75.793          1            0          0.18
-    ## 6 FR001 2014-02-04 67.068          1            0          0.12
+    ## # A tibble: 6 x 6
+    ##   Farm  DateOfTest   ODR TestResult ln_nOrig6_12 LocalSeroPrev
+    ##   <chr> <date>     <dbl>      <int>        <dbl>         <dbl>
+    ## 1 FR001 2011-09-20  79.2          1            0          0.2 
+    ## 2 FR001 2012-01-12  70.5          1            0          0.1 
+    ## 3 FR001 2012-09-25  63.9          1            0          0.2 
+    ## 4 FR001 2013-02-05  54.2          0            0          0.18
+    ## 5 FR001 2013-08-29  75.8          1            0          0.18
+    ## 6 FR001 2014-02-04  67.1          1            0          0.12
 
 # Formatting the data for analysis
 
@@ -145,7 +153,11 @@ risk_factor_priors <- list(
 ## Compiling
 
 The JAGS model is compiled using the `compile_JAGS` function. We just
-use 3 herds to test the code.
+use 3 herds to test the code. We declare two risk factors of new
+infection: `ln_nOrig6_12` and `LocalSeroPrev`. This will result in 3
+coefficients associated with the log-odds probability of new infection:
+intercept, coefficient for `ln_nOrig6_12` and coefficient for
+`LocalSeroPrev`.
 
 ``` r
 test <- expand_month(data = herdBTM[herdBTM$Farm %in% c("FR001", "FR002", "FR003"),],
@@ -185,10 +197,6 @@ probabilities of infection and predicted statuses are drawn using the
 samples <- sample_model(compiled_model, n_burnin = 100, n_iter = 100, n_thin = 5)
 ```
 
-    ## Warning in choice_cutoff$pred_ppv[is.nan(choice_cutoff$pred_npv)] <-
-    ## choice_cutoff$pred_Se[is.nan(choice_cutoff$pred_ppv)]: le nombre d'objets à
-    ## remplacer n'est pas multiple de la taille du remplacement
-
 # Results
 
 The model retruns a list with 2 components:
@@ -199,39 +207,124 @@ The model retruns a list with 2 components:
 
 ## Model parameters
 
-The samples from the model parameter posterior distributions are stored
-in the `parameters` component of the variable in which we have stored
-the model results
+The samples from the model parameter posterior distributions are in the
+`parameters` component of the variable in which we have stored the model
+results. We put them in a new variable called `param` to explore these
+distributions.
 
 ``` r
 param <- samples$parameters
-```
 
-``` r
 param
 ```
 
     ## # A tibble: 80 x 9
-    ##    .chain .iteration .draw    Se    Sp  tau2  theta.1  theta.2   theta.3
-    ##     <int>      <int> <int> <dbl> <dbl> <dbl>    <dbl>    <dbl>     <dbl>
-    ##  1      1          1     1 0.380 0.987 0.784 -0.0274  -0.0164   0.00796 
-    ##  2      1          2     2 0.778 0.985 0.778  0.00290  0.00524  0.00526 
-    ##  3      1          3     3 0.488 0.995 0.785  0.00520  0.00186 -0.00826 
-    ##  4      1          4     4 0.453 0.957 0.878 -0.0143  -0.00432  0.00842 
-    ##  5      1          5     5 0.496 0.969 0.865  0.0102  -0.00856  0.00497 
-    ##  6      1          6     6 0.398 0.991 0.910  0.0113  -0.00616  0.00645 
-    ##  7      1          7     7 0.440 0.983 0.799 -0.00398 -0.0138   0.00688 
-    ##  8      1          8     8 0.412 0.983 0.899 -0.00572 -0.00107 -0.0157  
-    ##  9      1          9     9 0.477 0.973 0.910  0.00724 -0.0160  -0.00982 
-    ## 10      1         10    10 0.326 0.978 0.942  0.0103  -0.00733  0.000385
+    ##    .chain .iteration .draw    Se    Sp  tau2   theta.1   theta.2   theta.3
+    ##     <int>      <int> <int> <dbl> <dbl> <dbl>     <dbl>     <dbl>     <dbl>
+    ##  1      1          1     1 0.547 0.983 0.772  0.0108   -0.00837   0.00993 
+    ##  2      1          2     2 0.482 0.989 0.786 -0.00876   0.00962  -0.00508 
+    ##  3      1          3     3 0.452 0.966 0.895 -0.0169    0.00243  -0.0106  
+    ##  4      1          4     4 0.507 0.991 0.882  0.00201   0.00367   0.00799 
+    ##  5      1          5     5 0.595 0.982 0.860 -0.00802  -0.00161  -0.00940 
+    ##  6      1          6     6 0.455 0.988 0.886 -0.00431   0.000746  0.00240 
+    ##  7      1          7     7 0.466 0.980 0.906 -0.00568   0.0140   -0.000590
+    ##  8      1          8     8 0.415 0.984 0.830 -0.00797   0.00152   0.00115 
+    ##  9      1          9     9 0.666 0.984 0.806  0.000628 -0.0121    0.00585 
+    ## 10      1         10    10 0.467 0.975 0.828  0.00398   0.00999  -0.00414 
     ## # … with 70 more rows
+
+The columns of this dataset are:
+
+  - `.chain`: chain number. Between 1 and 4 in the example because we
+    ran 4 MCMC chains in JAGS. This number is the value we selected for
+    `n_chains` in the call to `compile_JAGS`.
+  - `.iteration`: iteration number. Defined by the n\_iter value in the
+    call to sample\_model
+  - `.draw`: number of iterations from the first iteration in chain 1,
+    pooling all the chains
+  - `Se`: sample for sensitivity for this draw
+  - `Sp`: sample for pecificity for this draw
+  - `tau2`: sample for tau2 for this draw
+  - `theta.1`: sample for the logistic model intercept for this draw
+  - `theta.2`: sample for the coefficient associated with the first risk
+    factor for this draw
+  - `theta.3`: sample for the coefficient associated with the second
+    risk factor for this draw
+
+![](README_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
 
 ## Probability of infection
 
-The samples from the model predicted probability of infection posterior
-distributions are stored in the `proba_inf` component of the variable in
-which we have stored the model results
+The samples from posterior distributions of the predicted probabilities
+of infection are in the `proba_inf` component of the variable in which
+we have stored the model results. We put them in a new variable called
+`proba_inf` to explore these distributions.
 
 ``` r
 proba_inf <- samples$proba_inf
+
+proba_inf
 ```
+
+    ## # A tibble: 240 x 6
+    ## # Groups:   herd_id [3]
+    ##    .chain .iteration .draw herd_id predicted_proba predicted_status
+    ##     <int>      <int> <int>   <int>           <dbl>            <dbl>
+    ##  1      1          1     1       1           0.772                0
+    ##  2      1          1     1       2           0.609                0
+    ##  3      1          1     1       3           0.503                0
+    ##  4      1          2     2       1           0.786                1
+    ##  5      1          2     2       2           0.341                0
+    ##  6      1          2     2       3           0.786                1
+    ##  7      1          3     3       1           0.496                1
+    ##  8      1          3     3       2           0.829                1
+    ##  9      1          3     3       3           0.496                0
+    ## 10      1          4     4       1           0.882                1
+    ## # … with 230 more rows
+
+The first columns of this dataset are the same as above. The following
+columns differ:
+
+  - `herd_id`: herd identifier
+  - `predicted_proba`: predicted probability of infection on this draw
+  - `predicted_status`: predicted status regarding infection on this
+    draw. This status was simulated by using `predicted_proba` for this
+    draw as the proportion parameter in a Bernoulli distribution.
+
+Below we represent the densities for the predicted probabilities of
+infection for both the draws predicted as infected and the draws
+predicted as uninfected. From this, a rule to categorise herds as free
+from infection or not needs to be created.
+
+``` r
+cols <- hcl(h = c(120, 0), c = 100, l = 85)
+
+ggplot(proba_inf, aes(x = predicted_proba, colour = factor(predicted_status))) +
+  geom_density() +
+  xlim(0, 1) +
+  xlab("Predicted probability of infection") +
+  scale_color_manual(labels = c("Uninfected", "Infected"), values = cols) +
+  guides(colour = guide_legend(title="Predicted status"))
+```
+
+![](README_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
+
+Below are the probability densities for each of the herds modelled. Each
+color represents a herd.
+
+``` r
+ggplot(proba_inf, aes(x = predicted_proba, colour = factor(herd_id))) +
+  geom_density() +
+  xlim(0, 1) +
+  xlab("Predicted probability of infection") +
+  theme(legend.position="none")
+```
+
+![](README_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
+
+The steps envisonned to categorise herds as free from infection are:
+
+  - define a summary for each density, e.g. 5th percentile of the
+    predicted probabilit of infection
+  - choose a cut-off to define freedom from infection, e.g. categorise
+    herds with the 5th percentile below 0.1 as free from infection
