@@ -62,29 +62,6 @@ compile_JAGS <- function(test_data, herd_id, row_id, month,
   ind_test <- dplyr::filter(test_data, !is.na(!! test) & !! mnthid < max(!! mnthid))
   ind_test <- unlist(dplyr::select(ind_test, !! rowid))
 
-  pi1_beta_a <- 1
-  pi1_beta_b <- 2
-
-  tau2_beta_a <- 30
-  tau2_beta_b <- 2
-
-  Se_beta_a <- 12
-  Se_beta_b <- 2
-
-  Sp_beta_a <- 200
-  Sp_beta_b <- 4
-
-  theta1_norm_mean <- -3.8
-  theta1_norm_sd <- .15
-
-  theta2_norm_mean <- -.6
-  theta2_norm_sd <- 1.2
-
-  risk_factors <- matrix(
-    rep(0, nrow(test_data) * 2),
-    ncol = 2
-  )
-
   ## Data used by JAGS
   JAGS_data <- list(
     n_herds = nrow(herd),

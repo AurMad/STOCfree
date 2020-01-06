@@ -15,3 +15,7 @@ the logit of a proportion
 \description{
 logit function
 }
+\examples{
+logit(.5)
+
+}

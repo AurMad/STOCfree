@@ -139,14 +139,30 @@ infection_priors <- list(
  )
 ```
 
-and priors for risk factors
+The probability of new infection is modelled as a function of risk
+factors using logistic regression. In this example, we use 2 risk
+factors. We need priors for both the model intercept and the
+coefficients associated with the presence of the risk factors. These
+priors are defined with normal distributions on the logit scale. For
+each coefficient, we need the mean (`theta_norm_mean` in the code below)
+and standard deviation (`theta_norm_sd` in the code below) of these
+dsitributions.
 
 ``` r
 risk_factor_priors <- list(
-  theta_norm_mean = 0,
-  theta_norm_sd = .01
+  theta_norm_mean = c(-2, 0, 0),
+  theta_norm_sd = c(1, 2, 2)
 )
 ```
+
+The `plot_priors_rf()` is used to plot the probability distributions
+associated with these priors.
+
+``` r
+plot_priors_rf(risk_factor_priors)
+```
+
+![](README_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
 
 # STOC free model
 
@@ -183,7 +199,7 @@ compiled_model <- compile_JAGS(test_data = test,
     ## Graph information:
     ##    Observed stochastic nodes: 32
     ##    Unobserved stochastic nodes: 196
-    ##    Total graph size: 1907
+    ##    Total graph size: 1911
     ## 
     ## Initializing model
 
@@ -196,6 +212,13 @@ probabilities of infection and predicted statuses are drawn using the
 ``` r
 samples <- sample_model(compiled_model, n_burnin = 100, n_iter = 100, n_thin = 5)
 ```
+
+    ## Warning: Expected 1 pieces. Additional pieces discarded in 240 rows [1, 2, 3, 4,
+    ## 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, ...].
+
+    ## Warning in choice_cutoff$pred_ppv[is.nan(choice_cutoff$pred_npv)] <-
+    ## choice_cutoff$pred_Se[is.nan(choice_cutoff$pred_ppv)]: le nombre d'objets à
+    ## remplacer n'est pas multiple de la taille du remplacement
 
 # Results
 
@@ -219,18 +242,18 @@ param
 ```
 
     ## # A tibble: 80 x 9
-    ##    .chain .iteration .draw    Se    Sp  tau2   theta.1   theta.2   theta.3
-    ##     <int>      <int> <int> <dbl> <dbl> <dbl>     <dbl>     <dbl>     <dbl>
-    ##  1      1          1     1 0.547 0.983 0.772  0.0108   -0.00837   0.00993 
-    ##  2      1          2     2 0.482 0.989 0.786 -0.00876   0.00962  -0.00508 
-    ##  3      1          3     3 0.452 0.966 0.895 -0.0169    0.00243  -0.0106  
-    ##  4      1          4     4 0.507 0.991 0.882  0.00201   0.00367   0.00799 
-    ##  5      1          5     5 0.595 0.982 0.860 -0.00802  -0.00161  -0.00940 
-    ##  6      1          6     6 0.455 0.988 0.886 -0.00431   0.000746  0.00240 
-    ##  7      1          7     7 0.466 0.980 0.906 -0.00568   0.0140   -0.000590
-    ##  8      1          8     8 0.415 0.984 0.830 -0.00797   0.00152   0.00115 
-    ##  9      1          9     9 0.666 0.984 0.806  0.000628 -0.0121    0.00585 
-    ## 10      1         10    10 0.467 0.975 0.828  0.00398   0.00999  -0.00414 
+    ##    .chain .iteration .draw    Se    Sp  tau2 theta.1 theta.2 theta.3
+    ##     <int>      <int> <int> <dbl> <dbl> <dbl>   <dbl>   <dbl>   <dbl>
+    ##  1      1          1     1 0.887 0.991 0.975   -3.65  -5.77   -1.19 
+    ##  2      1          2     2 0.934 0.981 0.957   -4.92  -0.430   1.58 
+    ##  3      1          3     3 0.832 0.986 0.934   -5.07  -0.908   2.71 
+    ##  4      1          4     4 0.942 0.987 0.873   -6.25  -0.666  -5.66 
+    ##  5      1          5     5 0.761 0.996 0.992   -5.20  -0.915  -0.385
+    ##  6      1          6     6 0.949 0.983 0.941   -4.19  -2.95   -3.23 
+    ##  7      1          7     7 0.855 0.985 0.967   -4.46  -2.63    1.96 
+    ##  8      1          8     8 0.732 0.975 0.984   -3.85   1.39    0.516
+    ##  9      1          9     9 0.787 0.969 0.954   -4.21  -1.04    0.942
+    ## 10      1         10    10 0.945 0.990 0.927   -3.78   0.172  -2.34 
     ## # … with 70 more rows
 
 The columns of this dataset are:
@@ -251,7 +274,7 @@ The columns of this dataset are:
   - `theta.3`: sample for the coefficient associated with the second
     risk factor for this draw
 
-![](README_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
 
 ## Probability of infection
 
@@ -270,16 +293,16 @@ proba_inf
     ## # Groups:   herd_id [3]
     ##    .chain .iteration .draw herd_id predicted_proba predicted_status
     ##     <int>      <int> <int>   <int>           <dbl>            <dbl>
-    ##  1      1          1     1       1           0.772                0
-    ##  2      1          1     1       2           0.609                0
-    ##  3      1          1     1       3           0.503                0
-    ##  4      1          2     2       1           0.786                1
-    ##  5      1          2     2       2           0.341                0
-    ##  6      1          2     2       3           0.786                1
-    ##  7      1          3     3       1           0.496                1
-    ##  8      1          3     3       2           0.829                1
-    ##  9      1          3     3       3           0.496                0
-    ## 10      1          4     4       1           0.882                1
+    ##  1      1          1     1       1        0.0253                  0
+    ##  2      1          1     1       2        0.00249                 0
+    ##  3      1          1     1       3        0.0253                  0
+    ##  4      1          2     2       1        0.00727                 0
+    ##  5      1          2     2       2        0.000617                0
+    ##  6      1          2     2       3        0.00727                 0
+    ##  7      1          3     3       1        0.00622                 0
+    ##  8      1          3     3       2        0.00155                 0
+    ##  9      1          3     3       3        0.00622                 0
+    ## 10      1          4     4       1        0.00192                 0
     ## # … with 230 more rows
 
 The first columns of this dataset are the same as above. The following
@@ -307,7 +330,7 @@ ggplot(proba_inf, aes(x = predicted_proba, colour = factor(predicted_status))) +
   guides(colour = guide_legend(title="Predicted status"))
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
 
 Below are the probability densities for each of the herds modelled. Each
 color represents a herd.
@@ -320,11 +343,11 @@ ggplot(proba_inf, aes(x = predicted_proba, colour = factor(herd_id))) +
   theme(legend.position="none")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
 
 The steps envisonned to categorise herds as free from infection are:
 
   - define a summary for each density, e.g. 5th percentile of the
-    predicted probabilit of infection
+    predicted probability of infection
   - choose a cut-off to define freedom from infection, e.g. categorise
     herds with the 5th percentile below 0.1 as free from infection

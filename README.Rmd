@@ -104,14 +104,21 @@ infection_priors <- list(
  )
 ```
 
-and priors for risk factors
+The probability of new infection is modelled as a function of risk factors using logistic regression. In this example, we use 2 risk factors. We need priors for both the model intercept and the coefficients associated with the presence of the risk factors. These priors are defined with normal distributions on the logit scale. For each coefficient, we need the mean (`theta_norm_mean` in the code below) and standard deviation (`theta_norm_sd` in the code below) of these dsitributions.
 
 ```{r}
 risk_factor_priors <- list(
-  theta_norm_mean = 0,
-  theta_norm_sd = .01
+  theta_norm_mean = c(-2, 0, 0),
+  theta_norm_sd = c(1, 2, 2)
 )
 ```
+
+The `plot_priors_rf()` is used to plot the probability distributions associated with these priors.
+
+```{r}
+plot_priors_rf(risk_factor_priors)
+```
+
 
 # STOC free model
 

@@ -15,3 +15,6 @@ a proportion
 \description{
 Inverse logit function
 }
+\examples{
+invlogit(logit(.5))
+}

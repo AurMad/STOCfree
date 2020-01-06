@@ -5,7 +5,8 @@
 #' @return the logit of a proportion
 #' @export
 #'
-#' @examples
+#' @examples logit(.5)
+#'
 logit <- function(p){
 
   if(p < 0 | p > 1) stop("p should be between 0 and 1")
@@ -21,7 +22,7 @@ logit <- function(p){
 #' @return a proportion
 #' @export
 #'
-#' @examples
+#' @examples invlogit(logit(.5))
 invlogit <- function(x){
 
   exp(x) / (1 + exp(x))
