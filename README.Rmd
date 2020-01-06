@@ -242,6 +242,6 @@ ggplot(proba_inf, aes(x = predicted_proba, colour = factor(herd_id))) +
 
 The steps envisonned to categorise herds as free from infection are:
 
-- define a summary for each density, e.g. 5th percentile of the predicted probabilit of infection
+- define a summary for each density, e.g. 5th percentile of the predicted probability of infection
 - choose a cut-off to define freedom from infection, e.g. categorise herds with the 5th percentile below 0.1 as free from infection
 
