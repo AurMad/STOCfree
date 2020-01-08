@@ -29,7 +29,7 @@ sample_model <- function(compiled_model, n_burnin, n_iter, n_thin){
                               predicted_status[herd_id])
 
   ## tidying the results for model parameters
-  parameters <- tidybayes::spread_draws(samples, Se, Sp, tau2, theta[..])
+  parameters <- tidybayes::spread_draws(samples, Se, Sp, tau2, theta[..,])
 
   ## Percentiles of predicted probabilities of infection according to predicted status
   choice_cutoff <- tibble::tibble(
@@ -60,7 +60,7 @@ sample_model <- function(compiled_model, n_burnin, n_iter, n_thin){
 
   }
 
-  choice_cutoff$pred_ppv[is.nan(choice_cutoff$pred_npv)] <- choice_cutoff$pred_Se[is.nan(choice_cutoff$pred_ppv)]
+  choice_cutoff$pred_ppv[is.nan(choice_cutoff$pred_npv)] <- choice_cutoff$pred_Se[is.nan(choice_cutoff$pred_npv)]
   choice_cutoff$pred_ppv[is.nan(choice_cutoff$pred_ppv)] <- choice_cutoff$pred_Sp[is.nan(choice_cutoff$pred_ppv)]
 
   list(
