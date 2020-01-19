@@ -8,7 +8,7 @@
 #' @examples
 write_JAGS_model <- function(){
 
-cat('model{
+  cat('model{
 
   ## Loop for infection dynamics up to test before last
   for(h in 1:n_herds){
@@ -23,7 +23,7 @@ cat('model{
       logit(tau1[t]) <- inprod(risk_factors[t,], theta[, 1])
 
       pi[t] <- tau1[t] * (1 - Status[t-1]) +
-        tau2 * Status[t-1]
+               tau2 * Status[t-1]
 
       Status[t] ~ dbern(pi[t])
 
@@ -42,10 +42,10 @@ cat('model{
     pi[ind_p[ind_last_is_test[j]]] <- tau1[ind_p[ind_last_is_test[j]]] * (1 - Status[ind_f[ind_last_is_test[j]]]) +
       tau2 * Status[ind_f[ind_last_is_test[j]]]
 
-    predicted_proba[ind_last_is_test[j]] <- test_res[ind_p[ind_last_is_test[j]]] *
+    predicted_proba[ind_last_is_test[j]] <- test_for_pred[j] *
       (Se * pi[ind_p[ind_last_is_test[j]]]) /
       (Se * pi[ind_p[ind_last_is_test[j]]] + (1 - Sp) * (1 - pi[ind_p[ind_last_is_test[j]]])) +
-      (1 - test_res[ind_p[ind_last_is_test[j]]]) *
+      (1 - test_for_pred[j]) *
       (1 - Se) * pi[ind_p[ind_last_is_test[j]]] /
       ((1 - Se) * pi[ind_p[ind_last_is_test[j]]] + Sp * (1 - pi[ind_p[ind_last_is_test[j]]]))
 
@@ -70,10 +70,9 @@ cat('model{
     pTestPos[i] <-  Se * Status[ind_test[i]] +
       (1 - Sp) * (1 - Status[ind_test[i]])
 
-    test_res[ind_test[i]] ~ dbern(pTestPos[i])
+    test_res[i] ~ dbern(pTestPos[i])
 
   }
-
 
   # Priors
 
@@ -92,5 +91,5 @@ cat('model{
   }
 
 }',
-    file =  "JAGS_model.txt")
+      file =  "JAGS_model.txt")
 }
