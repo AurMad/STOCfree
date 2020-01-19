@@ -63,6 +63,15 @@ contains the results of antibody ELISA tests performed on bulk tank
 milk. Each row is a testing date in a herd. There are 100 herds with 11
 tests for each herd.
 
+There are also data for 2 risk factors of new infection.
+
+  - `ln_nOrig6_12` is the number of source herds for cattle purchased
+    between 6 and 12 months before the test
+  - `LocalSeroPrev` is the municipality level prevalence of seropositive
+    herds on the previous round of testing
+
+<!-- end list -->
+
 ``` r
 head(herdBTM)
 ```
@@ -77,120 +86,220 @@ head(herdBTM)
     ## 5 FR001 2013-08-29  75.8          1            0          0.18
     ## 6 FR001 2014-02-04  67.1          1            0          0.12
 
-# Formatting the data for analysis
+# The STOCfree\_data class
 
-Herds in the `herdBTM` are tested approximately every 6 months. The
-STOCfree model models infection with a montlhy time step. The data used
-by the model need to have one row per month. The herdBTM data is
-expanded to have one row per month with the `expand_month()` function.
+For running the model the data needs to be put in a special format: the
+STOCfree\_data class. The aim is to help setting the different
+parameters required and to help checking the different hypotheses that
+are made. The creation of a STOCfree\_data is realised using the
+`STOCfree_data()` function.
 
-``` r
-herdBTM_month <- expand_month(data = herdBTM,
-                              herd_colname = Farm,
-                              date_colname = DateOfTest,
-                              test_res_colname = TestResult)
+## Test and risk factor data
 
-herdBTM_month
-```
-
-    ## # A tibble: 6,224 x 10
-    ##    row_id herd_id date__1    month_id Farm  DateOfTest   ODR TestResult
-    ##     <int>   <int> <date>        <int> <chr> <date>     <dbl>      <int>
-    ##  1      1       1 2011-09-01        2 FR001 2011-09-20  79.2          1
-    ##  2      2       1 2011-10-01        3 <NA>  NA          NA           NA
-    ##  3      3       1 2011-11-01        4 <NA>  NA          NA           NA
-    ##  4      4       1 2011-12-01        5 <NA>  NA          NA           NA
-    ##  5      5       1 2012-01-01        6 FR001 2012-01-12  70.5          1
-    ##  6      6       1 2012-02-01        7 <NA>  NA          NA           NA
-    ##  7      7       1 2012-03-01        8 <NA>  NA          NA           NA
-    ##  8      8       1 2012-04-01        9 <NA>  NA          NA           NA
-    ##  9      9       1 2012-05-01       10 <NA>  NA          NA           NA
-    ## 10     10       1 2012-06-01       11 <NA>  NA          NA           NA
-    ## # … with 6,214 more rows, and 2 more variables: ln_nOrig6_12 <dbl>,
-    ## #   LocalSeroPrev <dbl>
-
-# Priors
-
-## Test
-
-Prior for tests are stored in a variable called `test_priors`.
+In order to demonstrate how to include categorical data in the model, we
+create a categorical variable called from `purch_yn` (for purchase
+yes/no) from the `ln_nOrig6_12` variable.
 
 ``` r
-test_priors <- list(
-  Se_beta_a = 12,
-  Se_beta_b = 2,
-  Sp_beta_a = 200,
-  Sp_beta_b = 4
-)
+data(herdBTM)
+herdBTM$purch_yn <- ifelse(herdBTM$ln_nOrig6_12 > 0, 1, 0)
+herdBTM
 ```
 
-## Infection dynamics
+    ## # A tibble: 1,100 x 7
+    ##    Farm  DateOfTest   ODR TestResult ln_nOrig6_12 LocalSeroPrev purch_yn
+    ##    <chr> <date>     <dbl>      <int>        <dbl>         <dbl>    <dbl>
+    ##  1 FR001 2011-09-20  79.2          1        0              0.2         0
+    ##  2 FR001 2012-01-12  70.5          1        0              0.1         0
+    ##  3 FR001 2012-09-25  63.9          1        0              0.2         0
+    ##  4 FR001 2013-02-05  54.2          0        0              0.18        0
+    ##  5 FR001 2013-08-29  75.8          1        0              0.18        0
+    ##  6 FR001 2014-02-04  67.1          1        0              0.12        0
+    ##  7 FR001 2014-09-10  54.4          0        0              0.1         0
+    ##  8 FR001 2015-02-01  47.1          0        0              0.08        0
+    ##  9 FR001 2015-09-03  39.8          0        0              0.1         0
+    ## 10 FR001 2016-02-18  40.5          0        0.693          0.22        1
+    ## # … with 1,090 more rows
 
-Probability of being infected on the first testing time for a herd and
-probability of not eliminating the infection between 2 consecutive
-tests.
+The `herdBTM` dataset is put in the `STOCfree_data` using the
+`STOCfree_data()`. The function takes the following arguments:
+
+  - `test_data`: a data.frame with test results
+  - `test_herd_col`: name of the column containing the herd identifier
+  - `test_date_col`: name of the column containing the date of test.
+    Should be a data formatted as YYYY-mm-dd.
+  - `test_res_col`: name of the column containing test results
+  - `test_level`: level of testing. Can be ‘herd’ or ‘animal’ (will be
+    implemented soon)
+  - `risk_factor_data`: a data.frame containing the risk factor for each
+    test. Can be the same dataset as above.
+  - `risk_herd_col`: name of the column containing the herd identifier
+  - `risk_date_col`: name of the date containing the dates on which risk
+    factors act on the probability of new infection
+  - `risk_factor_col`: name of the column(s) containing the risk factors
+  - `risk_factor_type`: can be ‘categorical’ or ‘continuous’. Should be
+    a vector of the same length as ‘risk\_factor\_col’
+
+Below, a dataset with the first 3 herds of the herdBTM dataset is put in
+the STOCfree data format.
 
 ``` r
-infection_priors <- list(
-  pi1_beta_a = 1,
-  pi1_beta_b = 2,
-  tau2_beta_a = 30,
-  tau2_beta_b = 2
- )
+sfd <- STOCfree_data(test_data = herdBTM[herdBTM$Farm %in% c("FR001", "FR002", "FR003"),],
+                          test_herd_col = "Farm",
+                          test_date_col = "DateOfTest",
+                          test_res_col = "TestResult",
+                          test_level = "herd",
+                          risk_factor_data = herdBTM[herdBTM$Farm %in% c("FR001", "FR002", "FR003"),],
+                          risk_herd_col = "Farm",
+                          risk_date_col = "DateOfTest",
+                          risk_factor_col = c("purch_yn", "LocalSeroPrev"),
+                          risk_factor_type = c("categorical", "continuous"))
 ```
 
-The probability of new infection is modelled as a function of risk
-factors using logistic regression. In this example, we use 2 risk
-factors. We need priors for both the model intercept and the
-coefficients associated with the presence of the risk factors. These
-priors are defined with normal distributions on the logit scale. For
-each coefficient, we need the mean (`theta_norm_mean` in the code below)
-and standard deviation (`theta_norm_sd` in the code below) of these
-dsitributions.
+## Priors for test characteristics
+
+The model accounts for imperfect tests i.e. with test sensitivity and
+specificity that are below one. Hypotheses about the test
+characteristics is incorporated in the form of priors with Beta
+distributions. The current value for the parameters of these Beta
+distributions can be checked with the `show_tests()` function.
 
 ``` r
-risk_factor_priors <- list(
-  theta_norm_mean = c(-2, 0, 0),
-  theta_norm_sd = c(1, 2, 2)
-)
+show_tests(sfd)
 ```
 
-The `plot_priors_rf()` is used to plot the probability distributions
-associated with these priors.
+    ##         test Se_a Se_b Sp_a Sp_b
+    ## 1 TestResult   NA   NA   NA   NA
+
+The values are currently NA and need to be set to reasonable values.
 
 ``` r
-plot_priors_rf(risk_factor_priors)
+sfd <- set_priors_tests(sfd,
+                 Se_a = 12,
+                 Se_b = 2,
+                 Sp_a = 200,
+                 Sp_b = 4)
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+We can check that the STOCfree\_data object has been updated.
+
+``` r
+show_tests(sfd)
+```
+
+    ##         test Se_a Se_b Sp_a Sp_b
+    ## 1 TestResult   12    2  200    4
+
+The `plot_priors_tests()` function is used to plot the priors.
+
+``` r
+plot_priors_tests(sfd)
+```
+
+![](README_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
+
+## Priors for infection dynamics
+
+Priors on 2 parameters related to infection dynamics need to be set in
+order for the model to work. These are the probability of infection on
+the first test and the probability of eliminating the infection for
+herds that were infected on the previous month. Both priors are
+represented with Beta distributions.
+
+Again, there is a `show_inf_dyn()` that allows displaying the current
+values for the prior distributions.
+
+``` r
+show_inf_dyn(sfd)
+```
+
+    ##  pi1_a  pi1_b tau2_a tau2_b 
+    ##     NA     NA     NA     NA
+
+The priors are set:
+
+``` r
+sfd <- set_priors_inf_dyn(sfd,
+                   pi1_a = 1,
+                   pi1_b = 2,
+                   tau2_a = 30, 
+                   tau2_b = 2)
+```
+
+The prior distributions are plotted.
+
+``` r
+plot_priors_inf_dyn(sfd)
+```
+
+![](README_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
+
+## Priors for risk factors of new infection
+
+From the information provided when constructin the STOCfree\_data
+object, the following risk factors have been listed:
+
+``` r
+show_rf(sfd)
+```
+
+    ##      risk_factor        type modality ref n_obs mean_prior sd_prior
+    ## 1      Intercept   intercept       NA   0    33         NA       NA
+    ## 3  LocalSeroPrev  continuous       NA   0    33         NA       NA
+    ## 11      purch_yn categorical        0   1    29         NA       NA
+    ## 2       purch_yn categorical        1   0     4         NA       NA
+
+The association between these risk factors and the probability of new
+infection between consecutive month is represented by normal
+distributions on a logit scale. The mean and standard deviation of these
+distributions need to be set using the `set_priors_rf()` function. The
+function needs to be used for each parameter in turn.
+
+``` r
+sfd <- set_priors_rf(sfd,
+                   risk_factor = "Intercept",
+                   mean = -2, sd = 1)
+
+sfd <- set_priors_rf(sfd,
+                   risk_factor = "LocalSeroPrev",
+                   mean = 0, sd = 2)
+
+sfd <- set_priors_rf(sfd,
+                   risk_factor = "purch_yn",
+                   modality = 1,
+                   mean = 0, sd = 2)
+
+show_rf(sfd)
+```
+
+    ##      risk_factor        type modality ref n_obs mean_prior sd_prior
+    ## 1      Intercept   intercept       NA   0    33         -2        1
+    ## 3  LocalSeroPrev  continuous       NA   0    33          0        2
+    ## 11      purch_yn categorical        0   1    29         NA       NA
+    ## 2       purch_yn categorical        1   0     4          0        2
+
+The distributions for these priors can then be plotted using the
+`plot_priors_rf()` function.
+
+``` r
+plot_priors_rf(sfd)
+```
+
+![](README_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
+
+The STOCfree\_data object is now ready to be modelled.
 
 # STOC free model
 
 ## Compiling
 
-The JAGS model is compiled using the `compile_JAGS` function. We just
-use 3 herds to test the code. We declare two risk factors of new
-infection: `ln_nOrig6_12` and `LocalSeroPrev`. This will result in 3
-coefficients associated with the log-odds probability of new infection:
-intercept, coefficient for `ln_nOrig6_12` and coefficient for
-`LocalSeroPrev`.
+The model is run in JAGS. Before extracting samples from the parameter
+posterior distributions, it is first compiled. The function takes a
+STOCfree\_data object as first argument as well as the number of chains
+wanted.
 
 ``` r
-test <- expand_month(data = herdBTM[herdBTM$Farm %in% c("FR001", "FR002", "FR003"),],
-                     herd_colname = Farm,
-                     date_colname = DateOfTest,
-                     test_res_colname = TestResult)
-
-compiled_model <- compile_JAGS(test_data = test, 
-             herd_id = herd_id, 
-             row_id = row_id,
-             month = month_id,
-             risk_factors = c("ln_nOrig6_12", "LocalSeroPrev"),
-             test_result = TestResult,
-             test_priors = test_priors, 
-             infection_priors = infection_priors, 
-             risk_factor_priors = risk_factor_priors,
-             n_chains = 4)
+compiled_model <- compile_JAGS(sfd, n_chains = 4)
 ```
 
     ## Compiling model graph
@@ -210,15 +319,11 @@ probabilities of infection and predicted statuses are drawn using the
 `sample_model` function.
 
 ``` r
-samples <- sample_model(compiled_model, n_burnin = 100, n_iter = 100, n_thin = 5)
+samples <- sample_model(compiled_model, 
+                        n_burnin = 100, 
+                        n_iter = 100, 
+                        n_thin = 5)
 ```
-
-    ## Warning: Expected 1 pieces. Additional pieces discarded in 240 rows [1, 2, 3, 4,
-    ## 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, ...].
-
-    ## Warning in choice_cutoff$pred_ppv[is.nan(choice_cutoff$pred_npv)] <-
-    ## choice_cutoff$pred_Se[is.nan(choice_cutoff$pred_ppv)]: le nombre d'objets à
-    ## remplacer n'est pas multiple de la taille du remplacement
 
 # Results
 
@@ -244,16 +349,16 @@ param
     ## # A tibble: 80 x 9
     ##    .chain .iteration .draw    Se    Sp  tau2 theta.1 theta.2 theta.3
     ##     <int>      <int> <int> <dbl> <dbl> <dbl>   <dbl>   <dbl>   <dbl>
-    ##  1      1          1     1 0.887 0.991 0.975   -3.65  -5.77   -1.19 
-    ##  2      1          2     2 0.934 0.981 0.957   -4.92  -0.430   1.58 
-    ##  3      1          3     3 0.832 0.986 0.934   -5.07  -0.908   2.71 
-    ##  4      1          4     4 0.942 0.987 0.873   -6.25  -0.666  -5.66 
-    ##  5      1          5     5 0.761 0.996 0.992   -5.20  -0.915  -0.385
-    ##  6      1          6     6 0.949 0.983 0.941   -4.19  -2.95   -3.23 
-    ##  7      1          7     7 0.855 0.985 0.967   -4.46  -2.63    1.96 
-    ##  8      1          8     8 0.732 0.975 0.984   -3.85   1.39    0.516
-    ##  9      1          9     9 0.787 0.969 0.954   -4.21  -1.04    0.942
-    ## 10      1         10    10 0.945 0.990 0.927   -3.78   0.172  -2.34 
+    ##  1      1          1     1 0.936 0.984 0.927   -3.31   1.71   -0.771
+    ##  2      1          2     2 0.851 0.983 0.936   -3.96  -2.52   -2.70 
+    ##  3      1          3     3 0.857 0.963 0.966   -3.74   1.42    1.76 
+    ##  4      1          4     4 0.821 0.979 0.924   -4.68   0.542  -2.24 
+    ##  5      1          5     5 0.845 0.976 0.915   -3.61  -0.224   1.60 
+    ##  6      1          6     6 0.756 0.978 0.853   -3.78   1.89    1.06 
+    ##  7      1          7     7 0.940 0.978 0.927   -4.26  -3.05   -0.293
+    ##  8      1          8     8 0.848 0.979 0.963   -4.31  -1.63    1.48 
+    ##  9      1          9     9 0.913 0.967 0.966   -5.40   1.72    0.408
+    ## 10      1         10    10 0.922 0.952 0.918   -5.08   0.167   0.921
     ## # … with 70 more rows
 
 The columns of this dataset are:
@@ -274,7 +379,7 @@ The columns of this dataset are:
   - `theta.3`: sample for the coefficient associated with the second
     risk factor for this draw
 
-![](README_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-23-1.png)<!-- -->
 
 ## Probability of infection
 
@@ -293,16 +398,16 @@ proba_inf
     ## # Groups:   herd_id [3]
     ##    .chain .iteration .draw herd_id predicted_proba predicted_status
     ##     <int>      <int> <int>   <int>           <dbl>            <dbl>
-    ##  1      1          1     1       1        0.0253                  0
-    ##  2      1          1     1       2        0.00249                 0
-    ##  3      1          1     1       3        0.0253                  0
-    ##  4      1          2     2       1        0.00727                 0
-    ##  5      1          2     2       2        0.000617                0
-    ##  6      1          2     2       3        0.00727                 0
-    ##  7      1          3     3       1        0.00622                 0
-    ##  8      1          3     3       2        0.00155                 0
-    ##  9      1          3     3       3        0.00622                 0
-    ## 10      1          4     4       1        0.00192                 0
+    ##  1      1          1     1       1         0.0352                 0
+    ##  2      1          1     1       2         0.00303                0
+    ##  3      1          1     1       3         0.0352                 0
+    ##  4      1          2     2       1         0.936                  1
+    ##  5      1          2     2       2         0.00202                0
+    ##  6      1          2     2       3         0.0187                 0
+    ##  7      1          3     3       1         0.966                  1
+    ##  8      1          3     3       2         0.00428                0
+    ##  9      1          3     3       3         0.0232                 0
+    ## 10      1          4     4       1         0.00921                0
     ## # … with 230 more rows
 
 The first columns of this dataset are the same as above. The following
@@ -330,7 +435,7 @@ ggplot(proba_inf, aes(x = predicted_proba, colour = factor(predicted_status))) +
   guides(colour = guide_legend(title="Predicted status"))
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-25-1.png)<!-- -->
 
 Below are the probability densities for each of the herds modelled. Each
 color represents a herd.
@@ -343,7 +448,7 @@ ggplot(proba_inf, aes(x = predicted_proba, colour = factor(herd_id))) +
   theme(legend.position="none")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-26-1.png)<!-- -->
 
 The steps envisonned to categorise herds as free from infection are:
 

@@ -4,37 +4,10 @@
 \alias{compile_JAGS}
 \title{Compilation of the JAGS model}
 \usage{
-compile_JAGS(
-  test_data,
-  herd_id,
-  row_id,
-  month,
-  risk_factors,
-  test_result,
-  test_priors,
-  infection_priors,
-  risk_factor_priors,
-  n_chains
-)
+compile_JAGS(data = STOCfree_data(), n_chains = 4)
 }
 \arguments{
-\item{test_data}{a tibble or a data.frame with one row per month}
-
-\item{herd_id}{name of the column with herd identifier}
-
-\item{row_id}{name of the column with the row IDs}
-
-\item{month}{name of the colummn with month number}
-
-\item{risk_factors}{character string for the risk factors to include}
-
-\item{test_result}{name of the colummn with test results}
-
-\item{test_priors}{list of parameters for the priors for test characteristics}
-
-\item{infection_priors}{list of parameters for the infection priors}
-
-\item{risk_factor_priors}{list of parameters for the prior for the risk factor associations}
+\item{data}{an object of class STOCfree_data}
 
 \item{n_chains}{number of MCMC chains}
 }

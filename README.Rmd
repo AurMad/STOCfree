@@ -58,98 +58,176 @@ library(ggplot2)
 
 The `STOCfree` package contains a dataset called `herdBTM` which contains the results of antibody ELISA tests performed on bulk tank milk. Each row is a testing date in a herd. There are 100 herds with 11 tests for each herd.
 
+There are also data for 2 risk factors of new infection. 
+
+- `ln_nOrig6_12` is the number of source herds for cattle purchased between 6 and 12 months before the test
+- `LocalSeroPrev` is the municipality level prevalence of seropositive herds on the previous round of testing
+
 ```{r}
 head(herdBTM)
 ```
 
-# Formatting the data for analysis
+# The STOCfree_data class
 
-Herds in the `herdBTM` are tested approximately every 6 months. The STOCfree model models infection with a montlhy time step. The data used by the model need to have one row per month. The herdBTM data is expanded to have one row per month with the `expand_month()` function.
+For running the model the data needs to be put in a special format: the STOCfree_data class. The aim is to help setting the different parameters required and to help checking the different hypotheses that are made. The creation of a STOCfree_data is realised using the `STOCfree_data()` function.
 
-```{r, message=FALSE}
-herdBTM_month <- expand_month(data = herdBTM,
-                              herd_colname = Farm,
-                              date_colname = DateOfTest,
-                              test_res_colname = TestResult)
+## Test and risk factor data
 
-herdBTM_month
-```
+In order to demonstrate how to include categorical data in the model, we create a categorical variable called from `purch_yn` (for purchase yes/no) from the `ln_nOrig6_12` variable.
 
-# Priors
-
-## Test
-
-Prior for tests are stored in a variable called `test_priors`.
 
 ```{r}
-test_priors <- list(
-  Se_beta_a = 12,
-  Se_beta_b = 2,
-  Sp_beta_a = 200,
-  Sp_beta_b = 4
-)
-
+data(herdBTM)
+herdBTM$purch_yn <- ifelse(herdBTM$ln_nOrig6_12 > 0, 1, 0)
+herdBTM
 ```
 
-## Infection dynamics
+The `herdBTM` dataset is put in the `STOCfree_data` using the `STOCfree_data()`. The function takes the following arguments:
 
-Probability of being infected on the first testing time for a herd and probability of not eliminating the infection between 2 consecutive tests.
+- `test_data`: a data.frame with test results
+- `test_herd_col`: name of the column containing the herd identifier
+- `test_date_col`: name of the column containing the date of test. Should be a data formatted as YYYY-mm-dd.
+- `test_res_col`: name of the column containing test results
+- `test_level`: level of testing. Can be 'herd' or 'animal' (will be implemented soon)
+- `risk_factor_data`: a data.frame containing the risk factor for each test. Can be the same dataset as above.
+- `risk_herd_col`: name of the column containing the herd identifier
+- `risk_date_col`: name of the date containing the dates on which risk factors act on the probability of new infection
+- `risk_factor_col`: name of the column(s) containing the risk factors
+- `risk_factor_type`:  can be 'categorical' or 'continuous'. Should be a vector of the same length as 'risk_factor_col'
+
+
+Below, a dataset with the first 3 herds of the herdBTM dataset is put in the STOCfree data format.
 
 ```{r}
-infection_priors <- list(
-  pi1_beta_a = 1,
-  pi1_beta_b = 2,
-  tau2_beta_a = 30,
-  tau2_beta_b = 2
- )
+sfd <- STOCfree_data(test_data = herdBTM[herdBTM$Farm %in% c("FR001", "FR002", "FR003"),],
+                          test_herd_col = "Farm",
+                          test_date_col = "DateOfTest",
+                          test_res_col = "TestResult",
+                          test_level = "herd",
+                          risk_factor_data = herdBTM[herdBTM$Farm %in% c("FR001", "FR002", "FR003"),],
+                          risk_herd_col = "Farm",
+                          risk_date_col = "DateOfTest",
+                          risk_factor_col = c("purch_yn", "LocalSeroPrev"),
+                          risk_factor_type = c("categorical", "continuous"))
 ```
 
-The probability of new infection is modelled as a function of risk factors using logistic regression. In this example, we use 2 risk factors. We need priors for both the model intercept and the coefficients associated with the presence of the risk factors. These priors are defined with normal distributions on the logit scale. For each coefficient, we need the mean (`theta_norm_mean` in the code below) and standard deviation (`theta_norm_sd` in the code below) of these dsitributions.
+
+## Priors for test characteristics
+
+The model accounts for imperfect tests i.e. with test sensitivity and specificity that are below one. Hypotheses about the test characteristics is incorporated in the form of priors with Beta distributions. The current value for the parameters of these Beta distributions can be checked with the `show_tests()` function.
 
 ```{r}
-risk_factor_priors <- list(
-  theta_norm_mean = c(-2, 0, 0),
-  theta_norm_sd = c(1, 2, 2)
-)
+show_tests(sfd)
 ```
 
-The `plot_priors_rf()` is used to plot the probability distributions associated with these priors.
+The values are currently NA and need to be set to reasonable values.
 
 ```{r}
-plot_priors_rf(risk_factor_priors)
+sfd <- set_priors_tests(sfd,
+                 Se_a = 12,
+                 Se_b = 2,
+                 Sp_a = 200,
+                 Sp_b = 4)
 ```
+
+We can check that the STOCfree_data object has been updated.
+
+```{r}
+show_tests(sfd)
+```
+
+The `plot_priors_tests()` function is used to plot the priors.
+
+```{r}
+plot_priors_tests(sfd)
+```
+
+
+## Priors for infection dynamics
+
+Priors on 2 parameters related to infection dynamics need to be set in order for the model to work. These are the probability of infection on the first test and the probability of eliminating the infection for herds that were infected on the previous month. Both priors are represented with Beta distributions.
+
+Again, there is a `show_inf_dyn()` that allows displaying the current values for the prior distributions.
+
+```{r}
+show_inf_dyn(sfd)
+```
+
+The priors are set:
+
+```{r}
+sfd <- set_priors_inf_dyn(sfd,
+                   pi1_a = 1,
+                   pi1_b = 2,
+                   tau2_a = 30, 
+                   tau2_b = 2)
+```
+
+The prior distributions are plotted.
+
+```{r}
+plot_priors_inf_dyn(sfd)
+```
+
+## Priors for risk factors of new infection
+
+From the information provided when constructin the STOCfree_data object, the following risk factors have been listed:
+
+```{r}
+show_rf(sfd)
+```
+
+
+The association between these risk factors and the probability of new infection between consecutive month is represented by normal distributions on a logit scale. The mean and standard deviation of these distributions need to be set using the `set_priors_rf()` function. The function needs to be used for each parameter in turn.
+
+```{r}
+sfd <- set_priors_rf(sfd,
+                   risk_factor = "Intercept",
+                   mean = -2, sd = 1)
+
+sfd <- set_priors_rf(sfd,
+                   risk_factor = "LocalSeroPrev",
+                   mean = 0, sd = 2)
+
+sfd <- set_priors_rf(sfd,
+                   risk_factor = "purch_yn",
+                   modality = 1,
+                   mean = 0, sd = 2)
+
+show_rf(sfd)
+```
+
+The distributions for these priors can then be plotted using the `plot_priors_rf()` function.
+
+```{r}
+plot_priors_rf(sfd)
+```
+
+The STOCfree_data object is now ready to be modelled.
+
 
 
 # STOC free model
 
 ## Compiling
 
-The JAGS model is compiled using the `compile_JAGS` function. We just use 3 herds to test the code. We declare two risk factors of new infection: `ln_nOrig6_12` and `LocalSeroPrev`. This will result in 3 coefficients associated with the log-odds probability of new infection: intercept, coefficient for `ln_nOrig6_12` and coefficient for `LocalSeroPrev`.
+The model is run in JAGS. Before extracting samples from the parameter posterior distributions, it is first compiled. The function takes a STOCfree_data object as first argument as well as the number of chains wanted.
 
-```{r, message = FALSE}
-test <- expand_month(data = herdBTM[herdBTM$Farm %in% c("FR001", "FR002", "FR003"),],
-                     herd_colname = Farm,
-                     date_colname = DateOfTest,
-                     test_res_colname = TestResult)
 
-compiled_model <- compile_JAGS(test_data = test, 
-             herd_id = herd_id, 
-             row_id = row_id,
-             month = month_id,
-             risk_factors = c("ln_nOrig6_12", "LocalSeroPrev"),
-             test_result = TestResult,
-             test_priors = test_priors, 
-             infection_priors = infection_priors, 
-             risk_factor_priors = risk_factor_priors,
-             n_chains = 4)
+```{r}
+compiled_model <- compile_JAGS(sfd, n_chains = 4)
 ```
+
 
 ## Samples from the parameter posterior distributions
 
 Samples from the posterior distributions of model parameters, predicted probabilities of infection and predicted statuses are drawn using the `sample_model` function. 
 
 ```{r, message=FALSE}
-samples <- sample_model(compiled_model, n_burnin = 100, n_iter = 100, n_thin = 5)
+samples <- sample_model(compiled_model, 
+                        n_burnin = 100, 
+                        n_iter = 100, 
+                        n_thin = 5)
 ```
 
 # Results
@@ -168,7 +246,6 @@ param <- samples$parameters
 
 param
 ```
-
 
 The columns of this dataset are:
 
