@@ -7,7 +7,7 @@
 plot_priors_tests(data = STOCfree_data())
 }
 \arguments{
-\item{x}{a STOCfree_data object}
+\item{data}{an object of class STOCfree_data}
 }
 \value{
 

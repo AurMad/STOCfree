@@ -74,6 +74,7 @@ write_JAGS_model <- function(){
 
   }
 
+
   # Priors
 
   ## Priors for sensitivities and specificities

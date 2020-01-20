@@ -40,7 +40,7 @@ set_priors_tests <- function(x = STOCfree_data(),
 
 #' Plot the distribution for the prior distributions on test characteristics
 #'
-#' @param x a STOCfree_data object
+#' @param data an object of class STOCfree_data
 #'
 #' @return
 #' @export

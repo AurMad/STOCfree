@@ -84,21 +84,21 @@ set_priors_rf <- function(x = STOCfree_data(),
 #'
 #' @param x a dataset in the STOCfree_data format
 #' @param n number of samples to draw from the prior distribution
-#' @param ...
 #'
 #' @return
 #' @export
 #'
 #' @examples
-plot_priors_rf <- function(x = STOCfree_data(), n = 100000, ...){
+plot_priors_rf <- function(x = STOCfree_data(), n = 100000){
 
   if(attr(x, "number of risk factors") == 0) stop("No risk factor defined")
 
   ## Risk factor data
   risk_factors <- x$risk_factors
   ## Discard rows associated with reference modalities of categorical variables
-  risk_factors <- risk_factors[-which(risk_factors$type == "categorical" &
-                               risk_factors$ref == 1),]
+  ind_cat_ref <- which(risk_factors$type == "categorical" &
+                         risk_factors$ref == 1)
+  if(length(ind_cat_ref) > 0) risk_factors <- risk_factors[-ind_cat_ref,]
   ## Number of variables (including intercept)
   lg_x <- length(unique(risk_factors$risk_factor))
   ## Number of rows of the plotting window (assuming 2 columns)
@@ -125,48 +125,48 @@ plot_priors_rf <- function(x = STOCfree_data(), n = 100000, ...){
 
   for(j in 2:lg_x){
 
-  rf_j <- risk_factors$risk_factor[j]
+    rf_j <- risk_factors$risk_factor[j]
 
-  if(risk_factors$type[j] == "continuous"){
+    if(risk_factors$type[j] == "continuous"){
 
-  range_x <- range(x$risk_factor_data[, rf_j])
-  seq_x   <- matrix(
-               seq(range_x[1], range_x[2], length.out = 100),
-               nrow = 1)
+      range_x <- range(x$risk_factor_data[, rf_j])
+      seq_x   <- matrix(
+        seq(range_x[1], range_x[2], length.out = 100),
+        nrow = 1)
 
-  y_val <- dist_samples[, j] %*% seq_x
+      y_val <- dist_samples[, j] %*% seq_x
 
-  for(k in 1:ncol(y_val)){
+      for(k in 1:ncol(y_val)){
 
-    y_val[, k] <- invlogit(dist_samples[, 1] + y_val[, k])
+        y_val[, k] <- invlogit(dist_samples[, 1] + y_val[, k])
+
+      }
+
+      to_plot <- data.frame(
+        x = as.double(seq_x),
+        lb  = unlist(apply(y_val, 2, quantile, .025)),
+        mid = unlist(apply(y_val, 2, quantile, .5)),
+        ub  = unlist(apply(y_val, 2, quantile, .975))
+      )
+
+      rm(y_val)
+
+      plot(mid ~ x, data = to_plot,
+           type = "l", lwd = 2,
+           ylim = c(0, 1), ylab = "Probability",
+           xlab = rf_j, main = rf_j)
+      lines(lb ~ x, data = to_plot, lty = 2)
+      lines(ub ~ x, data = to_plot, lty = 2)
+
+    } else {
+
+      dist_samples[, j] <- invlogit(dist_samples[, 1] + dist_samples[, j])
+
+      plot(density(dist_samples[, j]),
+           main = paste("Risk factor", rf_j, "- modality ", risk_factors$modality[j]),
+           xlab = "Probability")
 
     }
-
-  to_plot <- data.frame(
-    x = as.double(seq_x),
-    lb  = unlist(apply(y_val, 2, quantile, .025)),
-    mid = unlist(apply(y_val, 2, quantile, .5)),
-    ub  = unlist(apply(y_val, 2, quantile, .975))
-  )
-
-  rm(y_val)
-
-  plot(mid ~ x, data = to_plot,
-       type = "l", lwd = 2,
-       ylim = c(0, 1), ylab = "Probability",
-       xlab = rf_j, main = rf_j)
-  lines(lb ~ x, data = to_plot, lty = 2)
-  lines(ub ~ x, data = to_plot, lty = 2)
-
-  } else {
-
-  dist_samples[, j] <- invlogit(dist_samples[, 1] + dist_samples[, j])
-
-  plot(density(dist_samples[, j]),
-         main = paste("Risk factor", rf_j, "- modality ", risk_factors$modality[j]),
-         xlab = "Probability")
-
-  }
   }
 }
 

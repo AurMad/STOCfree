@@ -5,13 +5,14 @@ Version: 0.2.0
 Authors@R: person("Aurélien", "Madouasse", email = "aurelien.madouasse@oniris-nantes.fr",
                   role = c("aut", "cre"))
 Maintainer: Aurélien Madouasse <aurelien.madouasse@oniris-nantes.fr>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Description: The aim of the functions gathered in this package are to allow the prediction of herd level probabilities of infection from longitudinal surveillance data. Infection is represented as a Markovian process with a monthly time step. The predictions are performed based on test results and risk factor occurrence. Probability of infection is predicted for the last month of testing in the dataset. Previous data is used as historical information for inference on model parameters. Modelling is done using MCMC in JAGS.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
 Depends:
     R (>= 3.6)
 Imports:
-    rjags
+    rjags,
+    tibble,
+    tidybayes
 RoxygenNote: 7.0.2
