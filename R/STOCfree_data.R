@@ -49,7 +49,6 @@ STOCfree_data <- function(test_data = data.frame(),
   colnames(herd_id_corresp)[1] <- test_herd_col
 
   ## renumbering herds
-  # test_data$herd_id <- herd_id_corresp$herd_id[match(test_data[, test_herd_col], herd_id_corresp[, test_herd_col])]
   test_data <- merge(herd_id_corresp, test_data,
                      by = test_herd_col)
   ## Adding month of test to the test_data
