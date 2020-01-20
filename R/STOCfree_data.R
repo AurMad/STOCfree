@@ -52,7 +52,7 @@ STOCfree_data <- function(test_data = data.frame(),
   test_data <- merge(herd_id_corresp, test_data,
                      by = test_herd_col)
   ## Adding month of test to the test_data
-  test_data$date__1 <- format(test_data[[test_date_col]], "%Y-%m")
+  test_data$date__1 <- format(as.Date(test_data[[test_date_col]]), "%Y-%m")
 
   ## List of all months in the dataset numbered
   all_months_list <- data.frame(
@@ -249,7 +249,7 @@ STOCfree_data <- function(test_data = data.frame(),
                              by.x = test_herd_col,
                              by.y = risk_herd_col)
    ## Adding month_id
-   risk_factor_data$date__1 <- format(risk_factor_data[, risk_date_col], "%Y-%m")
+   risk_factor_data$date__1 <- format(as.Date(risk_factor_data[[risk_date_col]]), "%Y-%m")
    risk_factor_data <- merge(risk_factor_data, all_months_list, by = "date__1")
 
    ## merge with all tests

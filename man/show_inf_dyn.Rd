@@ -2,16 +2,16 @@
 % Please edit documentation in R/priors_inf_dyn.R
 \name{show_inf_dyn}
 \alias{show_inf_dyn}
-\title{Title}
+\title{Shows the parameters asssociated with priors related to infection dynamics}
 \usage{
 show_inf_dyn(x = STOCfree_data())
 }
 \arguments{
-\item{x}{}
+\item{x}{a STOC_free data object}
 }
 \value{
-
+a table with the alpha and beta parameters of the Beta distributions associated with the prior probabilities of infection on the first test and the probability of remaining infected between consecutive tests
 }
 \description{
-Title
+Shows the parameters asssociated with priors related to infection dynamics
 }

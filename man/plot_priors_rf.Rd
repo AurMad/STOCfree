@@ -4,14 +4,12 @@
 \alias{plot_priors_rf}
 \title{Plotting prior distributions for the risk factors of new infection}
 \usage{
-plot_priors_rf(x = STOCfree_data(), n = 1e+05, ...)
+plot_priors_rf(x = STOCfree_data(), n = 1e+05)
 }
 \arguments{
 \item{x}{a dataset in the STOCfree_data format}
 
 \item{n}{number of samples to draw from the prior distribution}
-
-\item{...}{}
 }
 \value{
 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/priors_inf_dyn.R
 \name{set_priors_inf_dyn}
 \alias{set_priors_inf_dyn}
-\title{Title}
+\title{Sets the parameters asssociated with priors related to infection dynamics}
 \usage{
 set_priors_inf_dyn(
   data = STOCfree_data(),
@@ -13,11 +13,19 @@ set_priors_inf_dyn(
 )
 }
 \arguments{
-\item{tau2_b}{}
+\item{data}{a STOCfree_data object}
+
+\item{pi1_a}{alpha parameter for the prior distribution of the probability of being infected on the first test}
+
+\item{pi1_b}{beta parameter for the prior distribution of the probability of being infected on the first test}
+
+\item{tau2_a}{alpha parameter for the prior distribution of the probability of remaining infected between consecutive months}
+
+\item{tau2_b}{beta parameter for the prior distribution of the probability of remaining infected between consecutive months}
 }
 \value{
 
 }
 \description{
-Title
+Sets the parameters asssociated with priors related to infection dynamics
 }

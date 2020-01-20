@@ -2,16 +2,16 @@
 % Please edit documentation in R/priors_inf_dyn.R
 \name{plot_priors_inf_dyn}
 \alias{plot_priors_inf_dyn}
-\title{Title}
+\title{Plots the prior distributions for the parameters related to infection dynamics}
 \usage{
 plot_priors_inf_dyn(data = STOCfree_data())
 }
 \arguments{
-\item{data}{}
+\item{data}{a STOCfree_data object}
 }
 \value{
 
 }
 \description{
-Title
+Plots the prior distributions for the parameters related to infection dynamics
 }
