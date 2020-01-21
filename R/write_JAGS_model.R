@@ -20,17 +20,12 @@ write_JAGS_model <- function(){
     # Months 2 to 1 minus final
     for(t in ind_j[h]:ind_f[h]){
 
-#      logit(tau1[t]) <- inprod(risk_factors[t,], theta[, 1])
-
       pi[t] <- ilogit(l_tau1[t]) * (1 - Status[t-1]) +
                tau2 * Status[t-1]
 
       Status[t] ~ dbern(pi[t])
 
     } #t
-
-    ## tau1 for test to predict
-#    logit(tau1[ind_p[h]]) <- inprod(risk_factors[ind_p[h],], theta[, 1])
 
   }
 
