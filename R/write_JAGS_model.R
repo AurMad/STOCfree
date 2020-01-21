@@ -20,9 +20,9 @@ write_JAGS_model <- function(){
     # Months 2 to 1 minus final
     for(t in ind_j[h]:ind_f[h]){
 
-      logit(tau1[t]) <- inprod(risk_factors[t,], theta[, 1])
+#      logit(tau1[t]) <- inprod(risk_factors[t,], theta[, 1])
 
-      pi[t] <- tau1[t] * (1 - Status[t-1]) +
+      pi[t] <- ilogit(l_tau1[t]) * (1 - Status[t-1]) +
                tau2 * Status[t-1]
 
       Status[t] ~ dbern(pi[t])
@@ -30,7 +30,7 @@ write_JAGS_model <- function(){
     } #t
 
     ## tau1 for test to predict
-    logit(tau1[ind_p[h]]) <- inprod(risk_factors[ind_p[h],], theta[, 1])
+#    logit(tau1[ind_p[h]]) <- inprod(risk_factors[ind_p[h],], theta[, 1])
 
   }
 
@@ -39,7 +39,7 @@ write_JAGS_model <- function(){
   for(j in 1:n_pred_test){
 
     # After having observed the risk factors and the test result
-    pi[ind_p[ind_last_is_test[j]]] <- tau1[ind_p[ind_last_is_test[j]]] * (1 - Status[ind_f[ind_last_is_test[j]]]) +
+    pi[ind_p[ind_last_is_test[j]]] <- ilogit(l_tau1[ind_p[ind_last_is_test[j]]]) * (1 - Status[ind_f[ind_last_is_test[j]]]) +
       tau2 * Status[ind_f[ind_last_is_test[j]]]
 
     predicted_proba[ind_last_is_test[j]] <- test_for_pred[j] *
@@ -57,7 +57,7 @@ write_JAGS_model <- function(){
   ## Loop for statuses to predict when test result is not available
   for(k in 1:n_pred_no_test){
 
-    predicted_proba[ind_last_is_not_test[k]] <- tau1[ind_p[ind_last_is_not_test[k]]] * (1 - Status[ind_f[ind_last_is_not_test[k]]]) +
+    predicted_proba[ind_last_is_not_test[k]] <- ilogit(l_tau1[ind_p[ind_last_is_not_test[k]]]) * (1 - Status[ind_f[ind_last_is_not_test[k]]]) +
       tau2 * Status[ind_f[ind_last_is_not_test[k]]]
 
     predicted_status[ind_last_is_not_test[k]] ~ dbern(predicted_proba[ind_last_is_not_test[k]])
@@ -74,6 +74,8 @@ write_JAGS_model <- function(){
 
   }
 
+  ## Estimation of coefficients associated with tau1 on the logit scale
+  l_tau1 <- risk_factors %*% theta
 
   # Priors
 
@@ -87,9 +89,10 @@ write_JAGS_model <- function(){
   ## Logistic regression coefficients
   for(i_rf in 1:n_risk_factors){
 
-    theta[i_rf, 1] ~ dnorm(theta_norm_mean[i_rf], theta_norm_prec[i_rf])
+    theta[i_rf] ~ dnorm(theta_norm_mean[i_rf], theta_norm_prec[i_rf])
 
   }
+
 
 }',
       file =  "JAGS_model.txt")

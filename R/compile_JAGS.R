@@ -66,7 +66,7 @@ compile_JAGS <- function(data = STOCfree_data(),
     theta_norm_mean = theta_norm_mean,
     theta_norm_prec = theta_norm_prec,
     n_risk_factors = length(theta_norm_mean),
-    risk_factors = data$risk_factor_data[, -(1:3)]
+    risk_factors = as.matrix(data$risk_factor_data[, -(1:3)])
   )
 
   write_JAGS_model()
