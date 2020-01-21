@@ -20,7 +20,7 @@ write_JAGS_model <- function(){
     # Months 2 to 1 minus final
     for(t in ind_j[h]:ind_f[h]){
 
-      logit(tau1[t]) <- inprod(risk_factors[t,], theta[, 1])
+      logit(tau1[t]) <- inprod(risk_factors[t,], theta)
 
       pi[t] <- tau1[t] * (1 - Status[t-1]) +
                tau2 * Status[t-1]
@@ -30,7 +30,7 @@ write_JAGS_model <- function(){
     } #t
 
     ## tau1 for test to predict
-    logit(tau1[ind_p[h]]) <- inprod(risk_factors[ind_p[h],], theta[, 1])
+    logit(tau1[ind_p[h]]) <- inprod(risk_factors[ind_p[h],], theta)
 
   }
 
@@ -87,7 +87,7 @@ write_JAGS_model <- function(){
   ## Logistic regression coefficients
   for(i_rf in 1:n_risk_factors){
 
-    theta[i_rf, 1] ~ dnorm(theta_norm_mean[i_rf], theta_norm_prec[i_rf])
+    theta[i_rf] ~ dnorm(theta_norm_mean[i_rf], theta_norm_prec[i_rf])
 
   }
 
