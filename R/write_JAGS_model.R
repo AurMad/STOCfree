@@ -10,6 +10,10 @@ write_JAGS_model <- function(){
 
   cat('model{
 
+##############################################################################
+###  Inference from historical data
+##############################################################################
+
   ## Loop for infection dynamics up to test before last
   for(h in 1:n_herds){
 
@@ -35,19 +39,40 @@ write_JAGS_model <- function(){
   }
 
 
+  ## Loop for test results - historical data
+  for(i in 1:n_tests){
+
+    pTestPos[i] <-  Se * Status[ind_test[i]] +
+                    (1 - Sp) * (1 - Status[ind_test[i]])
+
+    test_res[i] ~ dbern(pTestPos[i])
+
+  }
+
+
+##############################################################################
+###  Prediction of probability of infection
+##############################################################################
+
   ## Loop for statuses to predict when test result is available
   for(j in 1:n_pred_test){
 
-    # After having observed the risk factors and the test result
-    pi[ind_p[ind_last_is_test[j]]] <- tau1[ind_p[ind_last_is_test[j]]] * (1 - Status[ind_f[ind_last_is_test[j]]]) +
-      tau2 * Status[ind_f[ind_last_is_test[j]]]
+    ## Indices in loops:
+    # ind_p_test: relates to status index
+    # ind_last_is_test relates to herd_id -> 1 to number of herds between this loop and the next
+    # test_for_pred relates to the cases when test is available for prediction -> 1 to number of such cases
 
-    predicted_proba[ind_last_is_test[j]] <- test_for_pred[j] *
-      (Se * pi[ind_p[ind_last_is_test[j]]]) /
-      (Se * pi[ind_p[ind_last_is_test[j]]] + (1 - Sp) * (1 - pi[ind_p[ind_last_is_test[j]]])) +
+    # After having observed the risk factors and the test result
+    pi[ind_p_test[j]] <- tau1[ind_p_test[j]] * (1 - Status[ind_p_test[j] - 1]) +
+                               tau2 * Status[ind_p_test[j] - 1]
+
+    predicted_proba[ind_last_is_test[j]] <-
+    test_for_pred[j] *
+      (Se * pi[ind_p_test[j]]) /
+      (Se * pi[ind_p_test[j]] + (1 - Sp) * (1 - pi[ind_p_test[j]])) +
       (1 - test_for_pred[j]) *
-      (1 - Se) * pi[ind_p[ind_last_is_test[j]]] /
-      ((1 - Se) * pi[ind_p[ind_last_is_test[j]]] + Sp * (1 - pi[ind_p[ind_last_is_test[j]]]))
+      (1 - Se) * pi[ind_p_test[j]] /
+      ((1 - Se) * pi[ind_p_test[j]] + Sp * (1 - pi[ind_p_test[j]]))
 
     predicted_status[ind_last_is_test[j]] ~ dbern(predicted_proba[ind_last_is_test[j]])
 
@@ -57,25 +82,17 @@ write_JAGS_model <- function(){
   ## Loop for statuses to predict when test result is not available
   for(k in 1:n_pred_no_test){
 
-    predicted_proba[ind_last_is_not_test[k]] <- tau1[ind_p[ind_last_is_not_test[k]]] * (1 - Status[ind_f[ind_last_is_not_test[k]]]) +
-      tau2 * Status[ind_f[ind_last_is_not_test[k]]]
+    predicted_proba[ind_last_is_not_test[k]] <- tau1[ind_p_no_test[k]] * (1 - Status[ind_p_no_test[k] - 1]) +
+                                                tau2 * Status[ind_f[ind_last_is_not_test[k]]]
 
     predicted_status[ind_last_is_not_test[k]] ~ dbern(predicted_proba[ind_last_is_not_test[k]])
 
   }
 
-  ## Loop for test results
-  for(i in 1:n_tests){
 
-    pTestPos[i] <-  Se * Status[ind_test[i]] +
-      (1 - Sp) * (1 - Status[ind_test[i]])
-
-    test_res[i] ~ dbern(pTestPos[i])
-
-  }
-
-
-  # Priors
+##############################################################################
+###  Priors
+##############################################################################
 
   ## Priors for sensitivities and specificities
   Se ~ dbeta(Se_beta_a, Se_beta_b)

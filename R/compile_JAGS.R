@@ -23,10 +23,12 @@ compile_JAGS <- function(data = STOCfree_data(),
 
   ## Herds for which a test was performed on the month to predict
   ind_last_is_test <- which(data$herd_test_data$last_is_test == 1)
+  ind_p_test <- data$herd_test_data$ind_p[ind_last_is_test]
   n_pred_test <- length(ind_last_is_test)
 
   ## Herds for which a test was NOT performed on the month to predict
   ind_last_is_not_test <- which(data$herd_test_data$last_is_test == 0)
+  ind_p_no_test <- data$herd_test_data$ind_p[ind_last_is_not_test]
   n_pred_no_test <- length(ind_last_is_not_test)
 
   ## test results used for prediction
@@ -54,7 +56,9 @@ compile_JAGS <- function(data = STOCfree_data(),
     n_pred_test = n_pred_test,
     ind_last_is_test = ind_last_is_test,
     n_pred_no_test = n_pred_no_test,
+    ind_p_test = ind_p_test,
     ind_last_is_not_test = ind_last_is_not_test,
+    ind_p_no_test = ind_p_no_test,
     pi1_beta_a = data$inf_dyn_priors["pi1_a"],
     pi1_beta_b = data$inf_dyn_priors["pi1_b"],
     tau2_beta_a = data$inf_dyn_priors["tau2_a"],
