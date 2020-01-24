@@ -6,9 +6,24 @@
 #' @export
 #'
 #' @examples
-write_JAGS_model <- function(){
+write_JAGS_model <- function(data){
 
-  cat('model{
+  UseMethod("write_JAGS_model")
+
+  }
+
+
+#' @export
+write_JAGS_model.default <- function(data){
+
+  print("default")
+
+}
+
+#' @export
+write_JAGS_model.herd_ntests_rf <- function(data){
+
+cat('model{
 
 ##############################################################################
 ###  Inference from historical data

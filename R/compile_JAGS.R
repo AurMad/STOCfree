@@ -26,7 +26,7 @@ compile_JAGS.default = function(data, n_chains){
   }
 
 #' @export
-compile_JAGS.herd_ntests_rf = function(data,  n_chains){
+compile_JAGS.herd_ntests_rf = function(data, n_chains){
 
   n_herds <- attr(data, "number of herds")
   month_max <- max(data$test_data$month_id)
@@ -94,7 +94,7 @@ compile_JAGS.herd_ntests_rf = function(data,  n_chains){
     risk_factors = as.matrix(data$risk_factor_data[, -(1:3)])
   )
 
-  write_JAGS_model()
+  write_JAGS_model(data)
 
   JAGS_model_compiled <- rjags::jags.model(
     file = "JAGS_model.txt",
@@ -109,3 +109,6 @@ compile_JAGS.herd_ntests_rf = function(data,  n_chains){
   JAGS_model_compiled
 
 }
+
+
+
