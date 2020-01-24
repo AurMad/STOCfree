@@ -6,9 +6,10 @@
 \usage{
 STOCfree_data(
   test_data = data.frame(),
-  test_herd_col,
-  test_date_col,
-  test_res_col,
+  test_herd_col = NULL,
+  test_date_col = NULL,
+  test_res_col = NULL,
+  test_name_col = NULL,
   test_level = c("herd", "animal"),
   risk_factor_data = NULL,
   risk_herd_col = NULL,
@@ -25,6 +26,8 @@ STOCfree_data(
 \item{test_date_col}{name of the column with date of test}
 
 \item{test_res_col}{name of the column with test results}
+
+\item{test_name_col}{when several tests are used, name of the column containing the test names}
 
 \item{test_level}{level at which the tests are performed. Must be either herd of animal}
 

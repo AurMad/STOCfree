@@ -4,10 +4,12 @@
 \alias{plot_priors_tests}
 \title{Plot the distribution for the prior distributions on test characteristics}
 \usage{
-plot_priors_tests(data = STOCfree_data())
+plot_priors_tests(data = STOCfree_data(), test = character())
 }
 \arguments{
 \item{data}{an object of class STOCfree_data}
+
+\item{test}{name of at least one of the tests used. Use show_tests() to see the different tests. If omitted, the function will lot the prior distributions of all tests.}
 }
 \value{
 

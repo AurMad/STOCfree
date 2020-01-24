@@ -40,10 +40,10 @@ write_JAGS_model <- function(){
 
 
   ## Loop for test results - historical data
-  for(i in 1:n_tests){
+  for(i in 1:n_tests_perf){
 
-    pTestPos[i] <-  Se * Status[ind_test[i]] +
-                    (1 - Sp) * (1 - Status[ind_test[i]])
+    pTestPos[i] <-  Se[test_id[i]] * Status[ind_test[i]] +
+                    (1 - Sp[test_id[i]]) * (1 - Status[ind_test[i]])
 
     test_res[i] ~ dbern(pTestPos[i])
 
@@ -68,11 +68,11 @@ write_JAGS_model <- function(){
 
     predicted_proba[ind_last_is_test[j]] <-
     test_for_pred[j] *
-      (Se * pi[ind_p_test[j]]) /
-      (Se * pi[ind_p_test[j]] + (1 - Sp) * (1 - pi[ind_p_test[j]])) +
+      (Se[test_id_for_pred[j]] * pi[ind_p_test[j]]) /
+      (Se[test_id_for_pred[j]] * pi[ind_p_test[j]] + (1 - Sp[test_id_for_pred[j]]) * (1 - pi[ind_p_test[j]])) +
       (1 - test_for_pred[j]) *
-      (1 - Se) * pi[ind_p_test[j]] /
-      ((1 - Se) * pi[ind_p_test[j]] + Sp * (1 - pi[ind_p_test[j]]))
+      (1 - Se[test_id_for_pred[j]]) * pi[ind_p_test[j]] /
+      ((1 - Se[test_id_for_pred[j]]) * pi[ind_p_test[j]] + Sp[test_id_for_pred[j]] * (1 - pi[ind_p_test[j]]))
 
     predicted_status[ind_last_is_test[j]] ~ dbern(predicted_proba[ind_last_is_test[j]])
 
@@ -95,8 +95,12 @@ write_JAGS_model <- function(){
 ##############################################################################
 
   ## Priors for sensitivities and specificities
-  Se ~ dbeta(Se_beta_a, Se_beta_b)
-  Sp ~ dbeta(Sp_beta_a, Sp_beta_b)
+  for(i_test in 1:n_tests){
+
+  Se[i_test] ~ dbeta(Se_beta_a[i_test], Se_beta_b[i_test])
+  Sp[i_test] ~ dbeta(Sp_beta_a[i_test], Sp_beta_b[i_test])
+
+  }
 
   ## Probability of not eliminating the infection
   tau2 ~ dbeta(tau2_beta_a, tau2_beta_b)

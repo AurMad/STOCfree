@@ -18,6 +18,7 @@ compile_JAGS <- function(data = STOCfree_data(),
   ## test results
   test_res_col <- data$var_names["test_res_col"]
   test_res <- data$test_data[data$test_data$month_id < month_max, test_res_col]
+  test_id  <- data$test_data$test_id[data$test_data$month_id < month_max]
   ## Indices when test performed in the expanded dataset
   ind_test <- data$test_data$status_id[data$test_data$month_id < month_max]
 
@@ -33,6 +34,7 @@ compile_JAGS <- function(data = STOCfree_data(),
 
   ## test results used for prediction
   test_for_pred <- data$test_data[data$test_data$month_id == month_max & !is.na(data$test_data[,test_res_col]), test_res_col]
+  test_id_for_pred <- data$test_data[data$test_data$month_id == month_max & !is.na(data$test_data[,test_res_col]), "test_id"]
 
   ## Priors for risk factors
   risk_factors <- data$risk_factors[data$risk_factors$ref == 0,]
@@ -49,10 +51,12 @@ compile_JAGS <- function(data = STOCfree_data(),
     ind_j = data$herd_test_data$ind_j,
     ind_f = data$herd_test_data$ind_f,
     ind_p = data$herd_test_data$ind_p,
-    n_tests = length(ind_test),
+    n_tests_perf = length(ind_test),
     ind_test = as.integer(ind_test),
     test_res = as.integer(test_res),
+    test_id = as.integer(test_id),
     test_for_pred = test_for_pred,
+    test_id_for_pred = test_id_for_pred,
     n_pred_test = n_pred_test,
     ind_last_is_test = ind_last_is_test,
     n_pred_no_test = n_pred_no_test,
@@ -63,6 +67,7 @@ compile_JAGS <- function(data = STOCfree_data(),
     pi1_beta_b = data$inf_dyn_priors["pi1_b"],
     tau2_beta_a = data$inf_dyn_priors["tau2_a"],
     tau2_beta_b = data$inf_dyn_priors["tau2_b"],
+    n_tests = nrow(test_char),
     Se_beta_a = test_char$Se_a,
     Se_beta_b = test_char$Se_b,
     Sp_beta_a = test_char$Sp_a,
