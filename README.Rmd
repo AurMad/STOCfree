@@ -53,12 +53,24 @@ We also attach the following packages that will be used later:
 library(ggplot2)
 ```
 
+# Prediction of probabilities of infection from test results and risk factor data
 
-# Data
+In order to show how to perform the prediction we use the `herdBTM` dataset which is embedded in the package. In the first example, we consider the case where we have herd level test results, a single type of test is performed and 2 risk factors are included.
 
-The `STOCfree` package contains a dataset called `herdBTM` which contains the results of antibody ELISA tests performed on bulk tank milk. Each row is a testing date in a herd. There are 100 herds with 11 tests for each herd.
+Currently, the following types of configurations can be modelled:
 
-There are also data for 2 risk factors of new infection. 
+- Herd level test results, 1 test, several risk factors
+- Herd level test results, 1 test, no risk factors
+- Herd level test results, several tests, no risk factors
+- Herd level test results, several tests, several risk factors
+
+In this section, the first configuration is modelled. The 3 last ones are covered in less detail in the last sections.
+
+## Data
+
+The `herdBTM` dataset contains the results of antibody ELISA tests performed on bulk tank milk. Each row is a testing date in a herd. There are 100 herds with 11 tests for each herd.
+
+There are also data for 2 risk factors of new infection:
 
 - `ln_nOrig6_12` is the number of source herds for cattle purchased between 6 and 12 months before the test
 - `LocalSeroPrev` is the municipality level prevalence of seropositive herds on the previous round of testing
@@ -67,14 +79,11 @@ There are also data for 2 risk factors of new infection.
 head(herdBTM)
 ```
 
-# The STOCfree_data class
+## The STOCfree_data class
 
-For running the model the data needs to be put in a special format: the STOCfree_data class. The aim is to help setting the different parameters required and to help checking the different hypotheses that are made. The creation of a STOCfree_data is realised using the `STOCfree_data()` function.
+For running the model the data needs to be put in a special format: the `STOCfree_data class`. The aim is to help setting the different parameters required and to help checking the different hypotheses that are made. 
 
-## Test and risk factor data
-
-In order to demonstrate how to include categorical data in the model, we create a categorical variable called from `purch_yn` (for purchase yes/no) from the `ln_nOrig6_12` variable.
-
+In order to show how to include a categorical risk factor in the model, we first create a categorical variable called `purch_yn` (for purchase yes/no) from the `ln_nOrig6_12` variable.
 
 ```{r}
 data(herdBTM)
@@ -94,7 +103,6 @@ The `herdBTM` dataset is put in the `STOCfree_data` using the `STOCfree_data()`.
 - `risk_date_col`: name of the date containing the dates on which risk factors act on the probability of new infection
 - `risk_factor_col`: name of the column(s) containing the risk factors
 - `risk_factor_type`:  can be 'categorical' or 'continuous'. Should be a vector of the same length as 'risk_factor_col'
-
 
 Below, a dataset with the first 3 herds of the herdBTM dataset is put in the STOCfree data format.
 
@@ -177,7 +185,6 @@ From the information provided when constructin the STOCfree_data object, the fol
 show_rf(sfd)
 ```
 
-
 The association between these risk factors and the probability of new infection between consecutive month is represented by normal distributions on a logit scale. The mean and standard deviation of these distributions need to be set using the `set_priors_rf()` function. The function needs to be used for each parameter in turn.
 
 ```{r}
@@ -207,9 +214,7 @@ The STOCfree_data object is now ready to be modelled.
 
 
 
-# STOC free model
-
-## Compiling
+## Model call 
 
 The model is run in JAGS. Before extracting samples from the parameter posterior distributions, it is first compiled. The function takes a STOCfree_data object as first argument as well as the number of chains wanted.
 
@@ -219,9 +224,7 @@ compiled_model <- compile_JAGS(sfd, n_chains = 4)
 ```
 
 
-## Samples from the parameter posterior distributions
-
-Samples from the posterior distributions of model parameters, predicted probabilities of infection and predicted statuses are drawn using the `sample_model` function. 
+Samples from the posterior distributions of model parameters, predicted probabilities of infection and predicted statuses are drawn using the `sample_model()` function. 
 
 ```{r, message=FALSE}
 samples <- sample_model(compiled_model, 
@@ -230,14 +233,14 @@ samples <- sample_model(compiled_model,
                         n_thin = 5)
 ```
 
-# Results
+## Results
 
 The model retruns a list with 2 components:
 
 - samples from the model parameters posterior distributions
 - samples from the predicted probability of infection posterior distributions
 
-## Model parameters
+### Model parameters
 
 The samples from the model parameter posterior distributions are in the `parameters` component of the variable in which we have stored the model results. We put them in a new variable called `param` to explore these distributions.
 
@@ -285,7 +288,7 @@ plot(density(param$theta.3),
      main = "theta.3")
 ```
 
-## Probability of infection
+### Probability of infection
 
 The samples from posterior distributions of the predicted probabilities of infection  are in the `proba_inf` component of the variable in which we have stored the model results. We put them in a new variable called `proba_inf` to explore these distributions.
 
@@ -329,3 +332,142 @@ The steps envisonned to categorise herds as free from infection are:
 - define a summary for each density, e.g. 5th percentile of the predicted probability of infection
 - choose a cut-off to define freedom from infection, e.g. categorise herds with the 5th percentile below 0.1 as free from infection
 
+
+## Herd level test results, 1 test, no risk factors
+
+When there are no useful risk factor information, the STOCfree_data function can be called with test results only.
+
+```{r}
+sfd1 <- STOCfree_data(test_data = herdBTM[herdBTM$Farm %in% c("FR001", "FR002", "FR003"),],
+                          test_herd_col = "Farm",
+                          test_date_col = "DateOfTest",
+                          test_res_col = "TestResult",
+                          test_level = "herd")
+```
+
+As before, the priors for test charcateristics need to be set.
+
+```{r}
+sfd1 <- set_priors_tests(
+  x = sfd1,
+  Se_a = 12,
+  Se_b = 2,
+  Sp_a = 200,
+  Sp_b = 4)
+```
+
+The priors for infection dynamics are also set. In this case, because there is no risk factor, a prior distribution has to be defined for the probability of new infection.
+
+```{r}
+sfd1 <- set_priors_inf_dyn(sfd,
+                   pi1_a = 1,
+                   pi1_b = 2,
+                   tau1_a = 10,
+                   tau1_b = 1,
+                   tau2_a = 30, 
+                   tau2_b = 2)
+
+show_inf_dyn(sfd1)
+```
+
+The model is compiled and run as above.
+
+```{r}
+compiled_model <- compile_JAGS(sfd1, n_chains = 4)
+
+samples <- sample_model(compiled_model, 
+                        n_burnin = 100, 
+                        n_iter = 100, 
+                        n_thin = 5)
+```
+
+## Herd level test results, several tests, several risk factors
+
+The model also works if different tests with different sensitivities and specificities are used. To demonstrate how this works, we add a second test: 
+
+```{r}
+set.seed(123)
+herdBTM$TestUsed <- c("ELISA1", "ELISA2")[rbinom(nrow(herdBTM), 1, .7) + 1]
+```
+
+In this case, the `test_name_col` argument is used to specify in which column the test used is stored.
+
+```{r}
+sfd2 <- STOCfree_data(test_data = herdBTM[herdBTM$Farm %in% c("FR001", "FR002", "FR003"),],
+                          test_herd_col = "Farm",
+                          test_date_col = "DateOfTest",
+                          test_res_col = "TestResult",
+                          test_level = "herd",
+                          test_name_col = "TestUsed", 
+                          risk_factor_data = herdBTM[herdBTM$Farm %in% c("FR001", "FR002", "FR003"),],
+                          risk_herd_col = "Farm",
+                          risk_date_col = "DateOfTest",
+                          risk_factor_col = c("purch_yn", "LocalSeroPrev"),
+                          risk_factor_type = c("categorical", "continuous"))
+```
+
+A list of test with parameters for their prior distributions is created automatically.
+
+```{r}
+show_tests(sfd2)
+```
+
+
+```{r}
+sfd2 <- set_priors_tests(
+  x = sfd2,
+  test = "ELISA1",
+  Se_a = 12,
+  Se_b = 2,
+  Sp_a = 200,
+  Sp_b = 4)
+
+sfd2 <- set_priors_tests(
+  x = sfd2,
+  test = "ELISA2",
+  Se_a = 20,
+  Se_b = 1,
+  Sp_a = 100,
+  Sp_b = 2)
+
+plot_priors_tests(sfd2)
+```
+
+Priors for infection dynamics.
+
+```{r}
+sfd2 <- set_priors_inf_dyn(sfd2,
+                   pi1_a = 1,
+                   pi1_b = 2,
+                   tau2_a = 30, 
+                   tau2_b = 2)
+```
+
+Priors for associations between risk factors and probability of new infection.
+
+```{r}
+sfd2 <- set_priors_rf(sfd2,
+                   risk_factor = "Intercept",
+                   mean = -2, sd = 1)
+
+sfd2 <- set_priors_rf(sfd2,
+                   risk_factor = "LocalSeroPrev",
+                   mean = 0, sd = 2)
+
+sfd2 <- set_priors_rf(sfd2,
+                   risk_factor = "purch_yn",
+                   modality = 1,
+                   mean = 0, sd = 2)
+```
+
+
+The model is compiled and run as above.
+
+```{r}
+compiled_model <- compile_JAGS(sfd2, n_chains = 4)
+
+samples <- sample_model(compiled_model, 
+                        n_burnin = 100, 
+                        n_iter = 100, 
+                        n_thin = 5)
+```

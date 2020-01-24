@@ -4,7 +4,7 @@
 \alias{write_JAGS_model}
 \title{Writes a text file with the JAGS model. For internal use.}
 \usage{
-write_JAGS_model()
+write_JAGS_model(data)
 }
 \value{
 a text file with the JAGS model

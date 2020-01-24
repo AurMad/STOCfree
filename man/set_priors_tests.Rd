@@ -4,7 +4,14 @@
 \alias{set_priors_tests}
 \title{Set parameters for the Beta distributions used to represent priors on test charactersitics}
 \usage{
-set_priors_tests(x = STOCfree_data(), Se_a = 1, Se_b = 1, Sp_a = 1, Sp_b = 1)
+set_priors_tests(
+  x = STOCfree_data(),
+  test = character(),
+  Se_a = 1,
+  Se_b = 1,
+  Sp_a = 1,
+  Sp_b = 1
+)
 }
 \arguments{
 \item{x}{a STOCfree_data object}
