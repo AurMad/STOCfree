@@ -9,7 +9,10 @@
 #' @export
 #'
 #' @examples
-sample_model <- function(compiled_model, n_burnin, n_iter, n_thin){
+sample_model <- function(compiled_model,
+                         n_burnin,
+                         n_iter,
+                         n_thin){
 
   ## iterations for burnin
   update(compiled_model, n.iter = n_iter)

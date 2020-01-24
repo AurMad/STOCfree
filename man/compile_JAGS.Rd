@@ -4,12 +4,14 @@
 \alias{compile_JAGS}
 \title{Compilation of the JAGS model}
 \usage{
-compile_JAGS(data = STOCfree_data(), n_chains = 4)
+compile_JAGS(data, n_chains = 4, ...)
 }
 \arguments{
 \item{data}{an object of class STOCfree_data}
 
 \item{n_chains}{number of MCMC chains}
+
+\item{...}{}
 }
 \value{
 a compiled JAGS model

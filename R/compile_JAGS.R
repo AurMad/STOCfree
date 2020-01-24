@@ -2,6 +2,7 @@
 #'
 #' @param data an object of class STOCfree_data
 #' @param n_chains number of MCMC chains
+#' @param ...
 #'
 #' @return
 #' a compiled JAGS model
@@ -9,8 +10,23 @@
 #' @export
 #'
 #' @examples
-compile_JAGS <- function(data = STOCfree_data(),
-                          n_chains = 4){
+compile_JAGS <- function(data,
+                         n_chains = 4, ...){
+
+  UseMethod("compile_JAGS")
+
+  }
+
+
+#' @export
+compile_JAGS.default = function(data, n_chains){
+
+  print("default")
+
+  }
+
+#' @export
+compile_JAGS.herd_ntests_rf = function(data,  n_chains){
 
   n_herds <- attr(data, "number of herds")
   month_max <- max(data$test_data$month_id)
@@ -85,7 +101,10 @@ compile_JAGS <- function(data = STOCfree_data(),
     data = JAGS_data,
     n.chains = n_chains)
 
+
   if (file.exists("JAGS_model.txt")) file.remove("JAGS_model.txt")
+
+  attr(sfd, "JAGS_model_compiled")  <- "herd_ntests_rf"
 
   JAGS_model_compiled
 
