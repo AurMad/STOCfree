@@ -42,7 +42,7 @@ STOCfree_data(
 \item{risk_factor_type}{risk factor type. Must be either continuous or categorical}
 }
 \value{
-A list of class STOCfree_data.
+A list of class STOCfree_data. A specific sub-class is defined based on the input.
 }
 \description{
 STOCfree_data class

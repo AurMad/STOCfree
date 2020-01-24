@@ -12,7 +12,7 @@
 #' @param risk_factor_type risk factor type. Must be either continuous or categorical
 #' @param test_name_col when several tests are used, name of the column containing the test names
 #'
-#' @return A list of class STOCfree_data.
+#' @return A list of class STOCfree_data. A specific sub-class is defined based on the input.
 #' @export
 #'
 #' @examples
@@ -538,8 +538,6 @@ new_STOCfree_data.herd_1test_rf <- function(test_data = test_data,
     risk_factor_data = rf_data,
     inf_dyn_priors = inf_dyn_priors
   )
-
-  n_risk_factors <- length(which(sfd$risk_factors$ref == 0)) - 1
 
 
   class(sfd) <- c("herd_1test_rf", "STOCfree_data")

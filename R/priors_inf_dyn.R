@@ -30,12 +30,17 @@ set_priors_inf_dyn <- function(data = STOCfree_data(),
                                tau1_a = 1, tau1_b = 1,
                                tau2_a = 1, tau2_b = 1){
 
-  data$inf_dyn_priors["pi1_a"] = pi1_a
-  data$inf_dyn_priors["pi1_b"] = pi1_b
-  data$inf_dyn_priors["tau1_a"] = tau1_a
-  data$inf_dyn_priors["tau1_b"] = tau1_b
-  data$inf_dyn_priors["tau2_a"] = tau2_a
-  data$inf_dyn_priors["tau2_b"] = tau2_b
+  data$inf_dyn_priors["pi1_a"] <- pi1_a
+  data$inf_dyn_priors["pi1_b"] <- pi1_b
+  data$inf_dyn_priors["tau2_a"] <- tau2_a
+  data$inf_dyn_priors["tau2_b"] <- tau2_b
+
+  if("tau1_a" %in% names(data$inf_dyn_priors)){
+
+    data$inf_dyn_priors["tau1_a"] <- tau1_a
+    data$inf_dyn_priors["tau1_b"] <- tau1_b
+
+  }
 
   data
 
@@ -52,7 +57,7 @@ set_priors_inf_dyn <- function(data = STOCfree_data(),
 plot_priors_inf_dyn <- function(data = STOCfree_data()){
 
   priors <- data$inf_dyn_priors
-  n_risk_factors <- attributes(data, "number of risk factors")
+  n_risk_factors <- attr(data, "number of risk factors")
   plot_n_rows <- ifelse(n_risk_factors == 0, 2, 1)
 
   par(mfrow = c(plot_n_rows, 2))

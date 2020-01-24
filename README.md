@@ -56,14 +56,30 @@ We also attach the following packages that will be used later:
 library(ggplot2)
 ```
 
-# Data
+# Prediction of probabilities of infection from test results and risk factor data
 
-The `STOCfree` package contains a dataset called `herdBTM` which
-contains the results of antibody ELISA tests performed on bulk tank
-milk. Each row is a testing date in a herd. There are 100 herds with 11
-tests for each herd.
+In order to show how to perform the prediction we use the `herdBTM`
+dataset which is embedded in the package. In the first example, we
+consider the case where we have herd level test results, a single type
+of test is performed and 2 risk factors are included.
 
-There are also data for 2 risk factors of new infection.
+Currently, the following types of configurations can be modelled:
+
+  - Herd level test results, 1 test, several risk factors
+  - Herd level test results, 1 test, no risk factors
+  - Herd level test results, several tests, no risk factors
+  - Herd level test results, several tests, several risk factors
+
+In this section, the first configuration is modelled. The 3 last ones
+are covered in less detail in the last sections.
+
+## Data
+
+The `herdBTM` dataset contains the results of antibody ELISA tests
+performed on bulk tank milk. Each row is a testing date in a herd. There
+are 100 herds with 11 tests for each herd.
+
+There are also data for 2 risk factors of new infection:
 
   - `ln_nOrig6_12` is the number of source herds for cattle purchased
     between 6 and 12 months before the test
@@ -86,18 +102,15 @@ head(herdBTM)
     ## 5 FR001 2013-08-29  75.8          1            0          0.18
     ## 6 FR001 2014-02-04  67.1          1            0          0.12
 
-# The STOCfree\_data class
+## The STOCfree\_data class
 
 For running the model the data needs to be put in a special format: the
-STOCfree\_data class. The aim is to help setting the different
+`STOCfree_data class`. The aim is to help setting the different
 parameters required and to help checking the different hypotheses that
-are made. The creation of a STOCfree\_data is realised using the
-`STOCfree_data()` function.
+are made.
 
-## Test and risk factor data
-
-In order to demonstrate how to include categorical data in the model, we
-create a categorical variable called from `purch_yn` (for purchase
+In order to show how to include a categorical risk factor in the model,
+we first create a categorical variable called `purch_yn` (for purchase
 yes/no) from the `ln_nOrig6_12` variable.
 
 ``` r
@@ -168,8 +181,8 @@ distributions can be checked with the `show_tests()` function.
 show_tests(sfd)
 ```
 
-    ##         test Se_a Se_b Sp_a Sp_b
-    ## 1 TestResult   NA   NA   NA   NA
+    ##         test test_id Se_a Se_b Sp_a Sp_b
+    ## 1 TestResult       1   NA   NA   NA   NA
 
 The values are currently NA and need to be set to reasonable values.
 
@@ -187,8 +200,8 @@ We can check that the STOCfree\_data object has been updated.
 show_tests(sfd)
 ```
 
-    ##         test Se_a Se_b Sp_a Sp_b
-    ## 1 TestResult   12    2  200    4
+    ##         test test_id Se_a Se_b Sp_a Sp_b
+    ## 1 TestResult       1   12    2  200    4
 
 The `plot_priors_tests()` function is used to plot the priors.
 
@@ -289,9 +302,7 @@ plot_priors_rf(sfd)
 
 The STOCfree\_data object is now ready to be modelled.
 
-# STOC free model
-
-## Compiling
+## Model call
 
 The model is run in JAGS. Before extracting samples from the parameter
 posterior distributions, it is first compiled. The function takes a
@@ -312,11 +323,9 @@ compiled_model <- compile_JAGS(sfd, n_chains = 4)
     ## 
     ## Initializing model
 
-## Samples from the parameter posterior distributions
-
 Samples from the posterior distributions of model parameters, predicted
 probabilities of infection and predicted statuses are drawn using the
-`sample_model` function.
+`sample_model()` function.
 
 ``` r
 samples <- sample_model(compiled_model, 
@@ -325,7 +334,7 @@ samples <- sample_model(compiled_model,
                         n_thin = 5)
 ```
 
-# Results
+## Results
 
 The model retruns a list with 2 components:
 
@@ -333,7 +342,7 @@ The model retruns a list with 2 components:
   - samples from the predicted probability of infection posterior
     distributions
 
-## Model parameters
+### Model parameters
 
 The samples from the model parameter posterior distributions are in the
 `parameters` component of the variable in which we have stored the model
@@ -349,16 +358,16 @@ param
     ## # A tibble: 80 x 9
     ##    .chain .iteration .draw    Se    Sp  tau2 theta.1 theta.2 theta.3
     ##     <int>      <int> <int> <dbl> <dbl> <dbl>   <dbl>   <dbl>   <dbl>
-    ##  1      1          1     1 0.854 0.984 0.861   -4.39   3.86   -2.82 
-    ##  2      1          2     2 0.854 0.988 0.908   -3.59   0.534   0.876
-    ##  3      1          3     3 0.805 0.982 0.934   -4.06  -0.320  -3.62 
-    ##  4      1          4     4 0.940 0.978 0.968   -4.50  -3.96   -0.239
-    ##  5      1          5     5 0.837 0.981 0.961   -4.61  -2.49   -2.12 
-    ##  6      1          6     6 0.882 0.976 0.932   -3.31   1.32   -1.17 
-    ##  7      1          7     7 0.849 0.988 0.949   -4.53   3.63   -2.11 
-    ##  8      1          8     8 0.780 0.957 0.942   -3.32  -1.13   -0.233
-    ##  9      1          9     9 0.956 0.972 0.963   -4.46  -1.62   -1.33 
-    ## 10      1         10    10 0.764 0.967 0.949   -4.57   2.18    0.274
+    ##  1      1          1     1 0.991 0.990 0.849   -3.02   1.54    0.414
+    ##  2      1          2     2 0.791 0.977 0.902   -3.56  -1.59   -2.72 
+    ##  3      1          3     3 0.719 0.989 0.949   -3.28  -3.86    0.462
+    ##  4      1          4     4 0.802 0.986 0.924   -3.08   1.02   -2.45 
+    ##  5      1          5     5 0.975 0.981 0.783   -2.55  -2.78    0.582
+    ##  6      1          6     6 0.968 0.990 0.960   -4.11   0.820  -0.693
+    ##  7      1          7     7 0.966 0.983 0.933   -3.91  -1.00   -1.16 
+    ##  8      1          8     8 0.999 0.989 0.912   -4.04   1.38   -0.213
+    ##  9      1          9     9 0.791 0.981 0.930   -3.30  -0.158   0.616
+    ## 10      1         10    10 0.822 0.980 0.922   -4.92   2.72    1.29 
     ## # … with 70 more rows
 
 The columns of this dataset are:
@@ -381,7 +390,7 @@ The columns of this dataset are:
 
 ![](README_files/figure-gfm/unnamed-chunk-23-1.png)<!-- -->
 
-## Probability of infection
+### Probability of infection
 
 The samples from posterior distributions of the predicted probabilities
 of infection are in the `proba_inf` component of the variable in which
@@ -398,16 +407,16 @@ proba_inf
     ## # Groups:   herd_id [3]
     ##    .chain .iteration .draw herd_id predicted_proba predicted_status
     ##     <int>      <int> <int>   <int>           <dbl>            <dbl>
-    ##  1      1          1     1       1         0.0122                 0
-    ##  2      1          1     1       2         0.00313                0
-    ##  3      1          1     1       3         0.0122                 0
-    ##  4      1          2     2       1         0.0268                 0
-    ##  5      1          2     2       2         0.00437                0
-    ##  6      1          2     2       3         0.0268                 0
-    ##  7      1          3     3       1         0.0169                 0
-    ##  8      1          3     3       2         0.00325                0
-    ##  9      1          3     3       3         0.0169                 0
-    ## 10      1          4     4       1         0.0110                 0
+    ##  1      1          1     1       1        0.0465                  0
+    ##  2      1          1     1       2        0.000566                0
+    ##  3      1          1     1       3        0.0465                  0
+    ##  4      1          2     2       1        0.0275                  0
+    ##  5      1          2     2       2        0.00483                 0
+    ##  6      1          2     2       3        0.0275                  0
+    ##  7      1          3     3       1        0.949                   1
+    ##  8      1          3     3       2        0.00618                 0
+    ##  9      1          3     3       3        0.0362                  0
+    ## 10      1          4     4       1        0.924                   1
     ## # … with 230 more rows
 
 The first columns of this dataset are the same as above. The following
@@ -456,3 +465,181 @@ The steps envisonned to categorise herds as free from infection are:
     predicted probability of infection
   - choose a cut-off to define freedom from infection, e.g. categorise
     herds with the 5th percentile below 0.1 as free from infection
+
+## Herd level test results, 1 test, no risk factors
+
+When there are no useful risk factor information, the STOCfree\_data
+function can be called with test results only.
+
+``` r
+sfd1 <- STOCfree_data(test_data = herdBTM[herdBTM$Farm %in% c("FR001", "FR002", "FR003"),],
+                          test_herd_col = "Farm",
+                          test_date_col = "DateOfTest",
+                          test_res_col = "TestResult",
+                          test_level = "herd")
+```
+
+As before, the priors for test charcateristics need to be set.
+
+``` r
+sfd1 <- set_priors_tests(
+  x = sfd1,
+  Se_a = 12,
+  Se_b = 2,
+  Sp_a = 200,
+  Sp_b = 4)
+```
+
+The priors for infection dynamics are also set. In this case, because
+there is no risk factor, a prior distribution has to be defined for the
+probability of new infection.
+
+``` r
+sfd1 <- set_priors_inf_dyn(sfd,
+                   pi1_a = 1,
+                   pi1_b = 2,
+                   tau1_a = 10,
+                   tau1_b = 1,
+                   tau2_a = 30, 
+                   tau2_b = 2)
+
+show_inf_dyn(sfd1)
+```
+
+    ##  pi1_a  pi1_b tau2_a tau2_b 
+    ##      1      2     30      2
+
+The model is compiled and run as above.
+
+``` r
+compiled_model <- compile_JAGS(sfd1, n_chains = 4)
+```
+
+    ## Compiling model graph
+    ##    Resolving undeclared variables
+    ##    Allocating nodes
+    ## Graph information:
+    ##    Observed stochastic nodes: 32
+    ##    Unobserved stochastic nodes: 196
+    ##    Total graph size: 1914
+    ## 
+    ## Initializing model
+
+``` r
+samples <- sample_model(compiled_model, 
+                        n_burnin = 100, 
+                        n_iter = 100, 
+                        n_thin = 5)
+```
+
+## Herd level test results, several tests, several risk factors
+
+The model also works if different tests with different sensitivities and
+specificities are used. To demonstrate how this works, we add a second
+test:
+
+``` r
+set.seed(123)
+herdBTM$TestUsed <- c("ELISA1", "ELISA2")[rbinom(nrow(herdBTM), 1, .7) + 1]
+```
+
+In this case, the `test_name_col` argument is used to specify in which
+column the test used is stored.
+
+``` r
+sfd2 <- STOCfree_data(test_data = herdBTM[herdBTM$Farm %in% c("FR001", "FR002", "FR003"),],
+                          test_herd_col = "Farm",
+                          test_date_col = "DateOfTest",
+                          test_res_col = "TestResult",
+                          test_level = "herd",
+                          test_name_col = "TestUsed", 
+                          risk_factor_data = herdBTM[herdBTM$Farm %in% c("FR001", "FR002", "FR003"),],
+                          risk_herd_col = "Farm",
+                          risk_date_col = "DateOfTest",
+                          risk_factor_col = c("purch_yn", "LocalSeroPrev"),
+                          risk_factor_type = c("categorical", "continuous"))
+```
+
+A list of test with parameters for their prior distributions is created
+automatically.
+
+``` r
+show_tests(sfd2)
+```
+
+    ##     test test_id Se_a Se_b Sp_a Sp_b
+    ## 1 ELISA1       1   NA   NA   NA   NA
+    ## 2 ELISA2       2   NA   NA   NA   NA
+
+``` r
+sfd2 <- set_priors_tests(
+  x = sfd2,
+  test = "ELISA1",
+  Se_a = 12,
+  Se_b = 2,
+  Sp_a = 200,
+  Sp_b = 4)
+
+sfd2 <- set_priors_tests(
+  x = sfd2,
+  test = "ELISA2",
+  Se_a = 20,
+  Se_b = 1,
+  Sp_a = 100,
+  Sp_b = 2)
+
+plot_priors_tests(sfd2)
+```
+
+![](README_files/figure-gfm/unnamed-chunk-34-1.png)<!-- -->
+
+Priors for infection dynamics.
+
+``` r
+sfd2 <- set_priors_inf_dyn(sfd2,
+                   pi1_a = 1,
+                   pi1_b = 2,
+                   tau2_a = 30, 
+                   tau2_b = 2)
+```
+
+Priors for associations between risk factors and probability of new
+infection.
+
+``` r
+sfd2 <- set_priors_rf(sfd2,
+                   risk_factor = "Intercept",
+                   mean = -2, sd = 1)
+
+sfd2 <- set_priors_rf(sfd2,
+                   risk_factor = "LocalSeroPrev",
+                   mean = 0, sd = 2)
+
+sfd2 <- set_priors_rf(sfd2,
+                   risk_factor = "purch_yn",
+                   modality = 1,
+                   mean = 0, sd = 2)
+```
+
+The model is compiled and run as above.
+
+``` r
+compiled_model <- compile_JAGS(sfd2, n_chains = 4)
+```
+
+    ## Compiling model graph
+    ##    Resolving undeclared variables
+    ##    Allocating nodes
+    ## Graph information:
+    ##    Observed stochastic nodes: 32
+    ##    Unobserved stochastic nodes: 198
+    ##    Total graph size: 1955
+    ## 
+    ## Initializing model
+
+``` r
+samples <- sample_model(compiled_model, 
+                        n_burnin = 100, 
+                        n_iter = 100, 
+                        n_thin = 5)
+```
