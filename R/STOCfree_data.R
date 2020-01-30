@@ -181,10 +181,16 @@ STOCfree_data <- function(test_data = data.frame(),
 
 
 
-  if(test_level == "animal" & n_risk_factors > 0){
+  if(test_level == "animal" & n_tests == 1 & n_risk_factors == 0){
 
-    sfd <- new_STOCfree_data.animal_rf()
-
+    sfd <- new_STOCfree_data.animal_1test(test_data = test_data,
+                                          test_herd_col = test_herd_col,
+                                          test_date_col = test_date_col,
+                                          test_res_col = test_res_col,
+                                          all_tests = all_tests,
+                                          month_last_id = month_last_id,
+                                          herd_id_corresp = herd_id_corresp,
+                                          all_months_list = all_months_list)
      }
 
 
@@ -622,7 +628,6 @@ new_STOCfree_data.herd_ntests <- function(test_data = test_data,
   test_data$test_id <- match(test_data[[test_name_col]], test_names)
 
   ## Priors for infection dynamics
-  ## Priors for infection dynamics
   inf_dyn_priors <- c(
     pi1_a = NA,
     pi1_b = NA,
@@ -924,9 +929,109 @@ new_STOCfree_data.herd_ntests_rf <- function(test_data = test_data,
 ##### 1 test
 ##### no risk factor
 #############################################################################
-new_STOCfree_data.animal <- function(){
+new_STOCfree_data.animal_1test <- function(test_data = test_data,
+                                           test_herd_col = test_herd_col,
+                                           test_date_col = test_date_col,
+                                           test_res_col = test_res_col,
+                                           all_tests = all_tests,
+                                           month_last_id = month_last_id,
+                                           herd_id_corresp = herd_id_corresp,
+                                           all_months_list = all_months_list){
 
-  stop("Function not defined when no risk factor provided")
+  ## Variable names - kept for later use by other functions
+  var_names <- c(test_herd_col = test_herd_col,
+                 test_date_col = test_date_col,
+                 test_res_col = test_res_col)
+
+    test_data <- by(test_data,
+                  list(test_data$herd_id, test_data$month_id),
+                  function(x){
+                    data.frame(
+                      herd_id = unique(x$herd_id),
+                      month_id = unique(x$month_id),
+                      n_tested = length(x[[test_res_col]]),
+                      n_pos = sum(x[[test_res_col]])
+                    )
+                  })
+
+  test_data <- do.call("rbind", test_data)
+  test_data <- test_data[order(test_data$herd_id, test_data$month_id),]
+  rownames(test_data) <- 1:nrow(test_data)
+
+  ## Dataset with all test months
+  test_data <- merge(test_data, all_tests,
+                     by = c("herd_id", "month_id"),
+                     all = TRUE)
+
+  ## Adding row status_id to test_data
+  ## these are the status ids that will be used by JAGS
+  test_data <- test_data[order(test_data$herd_id, test_data$month_id),]
+  test_data$status_id <- 1:nrow(test_data)
+
+  ## going back to the data where test results are available
+  cln <- c("status_id", "herd_id", "month_id", "n_tested", "n_pos")
+  test_data <- test_data[!is.na(test_data$n_tested) | (is.na(test_data$n_tested) & test_data$month_id == month_last_id),
+                         cln]
+  ## herd test data
+  herd_test_data <- by(test_data, list(test_data$herd_id), function(x){
+    data.frame(
+      herd_id = as.integer(unique(x$herd_id)),
+      ind_i = as.integer(min(x$status_id)),
+      ind_j = as.integer(min(x$status_id) + 1),
+      ind_f = as.integer(max(x$status_id) - 1),
+      ind_p = as.integer(max(x$status_id)),
+      last_is_test = ifelse(is.na(x[x$month_id == month_last_id, "n_tested"]), 0, 1)
+    )
+  })
+
+  herd_test_data <- do.call("rbind", herd_test_data)
+
+  ## test_data formatting
+  test_data <- test_data[order(test_data$status_id),
+                         c("status_id","herd_id", "month_id",
+                           "n_pos", "n_tested")]
+  rownames(test_data) <- 1:nrow(test_data)
+
+  ## Priors for test performance
+  test_names <- test_res_col
+
+  test_perf_prior <- data.frame(
+    test = test_names,
+    test_id = 1:length(test_names),
+    Se_a = NA,
+    Se_b = NA,
+    Sp_a = NA,
+    Sp_b = NA,
+    stringsAsFactors = FALSE
+  )
+
+  ## Priors for infection dynamics
+  inf_dyn_priors <- c(
+    pi1_a = NA,
+    pi1_b = NA,
+    pi_within_a = NA,
+    pi_within_b = NA,
+    tau1_a = NA,
+    tau1_b = NA,
+    tau2_a = NA,
+    tau2_b = NA
+  )
+
+  ## Subset of the risk factor data with herd id in test data
+  sfd <-  list(
+    var_names = var_names,
+    herd_id_corresp = herd_id_corresp,
+    test_data = test_data,
+    herd_test_data = herd_test_data,
+    test_perf_prior = test_perf_prior,
+    inf_dyn_priors = inf_dyn_priors
+  )
+
+  class(sfd) <- c("animal_1test", "STOCfree_data")
+
+  attr(sfd, "level")  <- "animal"
+
+  sfd
 
 
 }

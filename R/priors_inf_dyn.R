@@ -27,6 +27,7 @@ show_inf_dyn <- function(x = STOCfree_data()){
 #' @examples
 set_priors_inf_dyn <- function(data = STOCfree_data(),
                                pi1_a = 1, pi1_b = 1,
+                               pi_within_a = 1, pi_within_b = 1,
                                tau1_a = 1, tau1_b = 1,
                                tau2_a = 1, tau2_b = 1){
 
@@ -39,6 +40,13 @@ set_priors_inf_dyn <- function(data = STOCfree_data(),
 
     data$inf_dyn_priors["tau1_a"] <- tau1_a
     data$inf_dyn_priors["tau1_b"] <- tau1_b
+
+  }
+
+  if("pi_within_a" %in% names(data$inf_dyn_priors)){
+
+    data$inf_dyn_priors["pi_within_a"] <- pi_within_a
+    data$inf_dyn_priors["pi_within_b"] <- pi_within_b
 
   }
 

@@ -8,6 +8,8 @@ set_priors_inf_dyn(
   data = STOCfree_data(),
   pi1_a = 1,
   pi1_b = 1,
+  pi_within_a = 1,
+  pi_within_b = 1,
   tau1_a = 1,
   tau1_b = 1,
   tau2_a = 1,

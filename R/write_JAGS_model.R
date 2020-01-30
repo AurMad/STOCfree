@@ -442,3 +442,110 @@ write_JAGS_model.herd_ntests_rf <- function(data){
 }',
       file =  "JAGS_model.txt")
 }
+
+
+#' @export
+write_JAGS_model.animal_1test <- function(data){
+
+cat('model{
+
+##############################################################################
+###  Inference from historical data
+##############################################################################
+
+  ## Loop for infection dynamics up to test before last
+  for(h in 1:n_herds){
+
+    # First month
+    pi[ind_i[h]] ~ dbeta(pi1_beta_a, pi1_beta_b)
+    Status[ind_i[h]] ~ dbern(pi[ind_i[h]])
+
+    # Months 2 to 1 minus final
+    for(t in ind_j[h]:ind_f[h]){
+
+      pi[t] <- tau1 * (1 - Status[t-1]) +
+               tau2 * Status[t-1]
+
+      Status[t] ~ dbern(pi[t])
+
+    } #t
+
+
+  }
+
+  ## Loop for test results - historical data
+  for(i in 1:n_tests_perf){
+
+   p_infected[i] <- Status[ind_test[i]] * pi_within
+
+   p_test_pos[i] <- Se * p_infected[i] +
+                  (1 - Sp) * (1 - p_infected[i])
+
+   n_pos[i] ~ dbin(p_test_pos[i], n_tested[i])
+
+   }
+
+
+##############################################################################
+###  Prediction of probability of infection
+##############################################################################
+
+  ## Loop for statuses to predict when test result is available
+  for(j in 1:n_pred_test){
+
+    ## Indices in loops:
+    # ind_p_test: relates to status index
+    # ind_last_is_test relates to herd_id -> 1 to number of herds between this loop and the next
+    # test_for_pred relates to the cases when test is available for prediction -> 1 to number of such cases
+
+    ## Distribution of number of positive tests
+    n_pos_for_pred[j] ~ dbinom(p_pos[j], n_tested_for_pred[j])
+    p_pos[j] ~ dbeta(1, 1)
+
+    # After having observed the risk factors and the test result
+    pi[ind_p_test[j]] <- tau1 * (1 - Status[ind_p_test[j] - 1]) +
+                         tau2 * Status[ind_p_test[j] - 1]
+
+    predicted_proba[ind_last_is_test[j]] <-
+    p_pos[j] *
+      (Se * pi[ind_p_test[j]] * pi_within) /
+      (Se * pi[ind_p_test[j]] * pi_within + (1 - Sp) * (1 - pi[ind_p_test[j]])) +
+    (1 - p_pos[j]) *
+      (1 - Se) * pi[ind_p_test[j]]  * pi_within /
+      ((1 - Se) * pi[ind_p_test[j]] * pi_within + Sp * (1 - pi[ind_p_test[j]]))
+
+    predicted_status[ind_last_is_test[j]] ~ dbern(predicted_proba[ind_last_is_test[j]])
+
+  }
+
+
+  ## Loop for statuses to predict when test result is not available
+  for(k in 1:n_pred_no_test){
+
+    predicted_proba[ind_last_is_not_test[k]] <- tau1 * (1 - Status[ind_p_no_test[k] - 1]) +
+                                                tau2 * Status[ind_f[ind_last_is_not_test[k]]]
+
+    predicted_status[ind_last_is_not_test[k]] ~ dbern(predicted_proba[ind_last_is_not_test[k]])
+
+  }
+
+
+##############################################################################
+###  Priors
+##############################################################################
+
+  ## Priors for sensitivities and specificities
+  Se ~ dbeta(Se_beta_a, Se_beta_b)
+  Sp ~ dbeta(Sp_beta_a, Sp_beta_b)
+
+  ## Prior for within herd prevalence in infected herds
+  pi_within ~ dbeta(pi_within_a, pi_within_b)
+
+  ## Probability of not eliminating the infection
+  tau1 ~ dbeta(tau1_beta_a, tau1_beta_b)
+  tau2 ~ dbeta(tau2_beta_a, tau2_beta_b)
+
+
+}',
+      file =  "JAGS_model.txt")
+}

@@ -63,8 +63,9 @@ Currently, the following types of configurations can be modelled:
 - Herd level test results, 1 test, no risk factors
 - Herd level test results, several tests, no risk factors
 - Herd level test results, several tests, several risk factors
+- Animal level test results, one test, no risk factors
 
-In this section, the first configuration is modelled. The 3 last ones are covered in less detail in the last sections.
+In this section, the first configuration is modelled. The 3 following ones are covered in less detail in the last sections.
 
 ## Data
 
