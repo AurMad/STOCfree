@@ -76,9 +76,9 @@ STOCfree_data <- function(test_data = data.frame(),
 
   ## List of all months in the dataset numbered
   all_months_list <- data.frame(
-    date__1 = format(
       month_id = rep(NA),
-      seq(from = as.Date(paste0(month_first, "-01")),
+      date__1 = format(
+        seq(from = as.Date(paste0(month_first, "-01")),
           to = as.Date(paste0(month_last, "-01")),
           by = "1 month"), "%Y-%m"),
     stringsAsFactors = FALSE  )
