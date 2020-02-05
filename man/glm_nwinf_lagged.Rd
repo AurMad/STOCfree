@@ -2,7 +2,7 @@
 % Please edit documentation in R/glm_nwinf_lagged.R
 \name{glm_nwinf_lagged}
 \alias{glm_nwinf_lagged}
-\title{Modelling of lagged relationship between risk factor occurrence and new infection}
+\title{Modelling of all possible lagged relationships between risk factor occurrence and new infection}
 \usage{
 glm_nwinf_lagged(
   sf_data,
@@ -33,7 +33,7 @@ glm_nwinf_lagged(
 a data.frame with a model AIC for each combination of lag1 (start of interval) and lag2 (end of interval)
 }
 \description{
-Modelling of lagged relationship between risk factor occurrence and new infection
+Modelling of all possible lagged relationships between risk factor occurrence and new infection
 }
 \details{
 this function models a probability of new infection as a function of risk factor occurrence considered at various time intervals before a test is performed. New infection is defined, at the herd test level, as a positive test result recorded after a negative test result on the previous test. All herds with 2 test results of which the first one is negative are eligible for a new infection. The association with risk factors recorded between lag1 months and lag2 months before the second test result are modelled with logistic regression. For each combination of lag1 and lag2 the AIC of the logistic model is recorded. The best interval is the one with the lowest AIC.
