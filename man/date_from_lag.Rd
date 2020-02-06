@@ -18,5 +18,12 @@ a date which is time_lag months before or after date depending on the sign of ti
 Generates an initial date from a reference date and a time lag in months
 }
 \examples{
-date_from_lag(date = "2020-01-01", time_lag = -1)
+seq_dates <- seq(as.Date("2020-01-01"),
+ as.Date("2020-12-01"),
+ by = "1 month")
+
+data.frame(date = seq_dates,
+ lagged_date = date_from_lag(
+  date = sqt,
+  time_lag = -2))
 }

@@ -7,19 +7,17 @@
 glm_nwinf_lagged(
   sf_data,
   rf_data,
-  rf_herd_col = character(),
   rf_date_col = character(),
   rf_col = character(),
   lag1 = 0,
-  lag2 = 36
+  lag2 = 36,
+  time_of_inf = c("mid", "first", "last")
 )
 }
 \arguments{
 \item{sf_data}{a object of class STOCfree_data with test results}
 
 \item{rf_data}{risk factor data}
-
-\item{rf_herd_col}{name of the column containing the herd id. The ids should be the same as in the test data}
 
 \item{rf_date_col}{name of the column the date of risk factor occurrence. The dates should be formatted as yyyy-mm-dd}
 
@@ -28,6 +26,8 @@ glm_nwinf_lagged(
 \item{lag1}{an integer value representing the minimum number of months from which to consider for risk factor occurrence}
 
 \item{lag2}{an integer value representing the maximum number of months to consider for risk factor occurrence}
+
+\item{rf_herd_col}{name of the column containing the herd id. The ids should be the same as in the test data}
 }
 \value{
 a data.frame with a model AIC for each combination of lag1 (start of interval) and lag2 (end of interval)
