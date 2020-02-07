@@ -219,7 +219,7 @@ add_risk_factor <- function(nwinf = nwinf_data(),
 #' @export
 #'
 #' @examples
-glm_nwinf_lagged <- function(sf_data,
+logit_nwinf_lagged <- function(sf_data,
                              rf_data,
                              rf_date_col = character(),
                              rf_col = character(),
@@ -379,7 +379,7 @@ glm_nwinf_lagged <- function(sf_data,
 #' @export
 #'
 #' @examples
-logit_reg_nwinf <- function(nwinf = nwinf_data(),
+logit_nwinf <- function(nwinf = nwinf_data(),
                       risk_factors = character){
 
   data <- nwinf$nwinf_data
