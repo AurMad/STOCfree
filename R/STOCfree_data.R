@@ -196,7 +196,7 @@ STOCfree_data <- function(test_data = data.frame(),
 
   if(test_level == "animal" & n_risk_factors > 0){
 
-    sfd <- new_STOCfree_data.animal_rf()
+    sfd <- new_STOCfree_data.animal_1test_rf()
 
   }
 

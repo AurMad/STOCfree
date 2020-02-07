@@ -366,6 +366,7 @@ logit_nwinf_lagged <- function(sf_data,
 
   }
 
+  rownames(l1l2) <- 1:nrow(l1l2)
   l1l2
 
 }
