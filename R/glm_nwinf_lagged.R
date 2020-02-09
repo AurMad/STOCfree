@@ -1,34 +1,3 @@
-#' Generates an initial date from a reference date and a time lag in months
-#'
-#' @param date a date with format yyyy-mm-dd
-#' @param time_lag an integer representing a number of months
-#'
-#' @return a date which is time_lag months before or after date depending on the sign of time_lag
-#' @export
-#'
-#' @examples seq_dates <- seq(as.Date("2020-01-01"),
-#'  as.Date("2020-12-01"),
-#'  by = "1 month")
-#'
-#' data.frame(date = seq_dates,
-#'  lagged_date = date_from_lag(
-#'   date = sqt,
-#'   time_lag = -2))
-date_from_lag <- function(date = character(), time_lag = integer()){
-
-  year  <- as.integer(format(as.Date(date), "%Y"))
-  month <- as.integer(format(as.Date(date), "%m"))
-
-  n_years <- (month + time_lag - 1) %/% 12
-
-  date_month <- month + time_lag - n_years * 12
-
-  as.Date(
-    as.character(
-      paste0(year + n_years, "-", sprintf("%02d", date_month), "-01")))
-
-}
-
 #' Creates a dataset with new infection events from herd level test results
 #'
 #' @param sfd a STOCfree_data object
@@ -143,7 +112,7 @@ add_risk_factor <- function(nwinf = nwinf_data(),
   ## List of months used in the study
   ## month_id = 0 for the first month in the STOCfree dataset
   rf_first_month <- date_from_lag(
-    date = paste0(month_first, "-01"), time_lag = -lag2)
+    date = paste0(month_first, "-01"), time_lag = -max(lag2))
 
   all_months <- data.frame(
     date__1 = seq(as.Date(rf_first_month),
@@ -163,7 +132,7 @@ add_risk_factor <- function(nwinf = nwinf_data(),
 
   ## month of risk factor occurrence
   rf_data$date__1 <- as.Date(paste0(
-    format(rf_data[[rf_date_col]], "%Y-%m"), "-01"))
+    format(as.Date(rf_data[[rf_date_col]]), "%Y-%m"), "-01"))
 
   rf_data <- merge(rf_data, all_months)
 
