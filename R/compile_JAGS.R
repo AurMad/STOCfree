@@ -34,7 +34,7 @@ compile_JAGS.herd_1test = function(data, n_chains){
   month_max <- max(data$test_data$month_id)
 
   ## test results
-  test_res_col <- data$var_names["test_res_col"]
+  test_res_col <- "test_res"
   test_res <- data$test_data[data$test_data$month_id < month_max, test_res_col]
   ## Indices when test performed in the expanded dataset
   ind_test <- data$test_data$status_id[data$test_data$month_id < month_max]
@@ -107,7 +107,7 @@ compile_JAGS.herd_1test_rf = function(data, n_chains){
   month_max <- max(data$test_data$month_id)
 
   ## test results
-  test_res_col <- data$var_names["test_res_col"]
+  test_res_col <- "test_res"
   test_res <- data$test_data[data$test_data$month_id < month_max, test_res_col]
   ## Indices when test performed in the expanded dataset
   ind_test <- data$test_data$status_id[data$test_data$month_id < month_max]
@@ -187,7 +187,7 @@ compile_JAGS.herd_ntests = function(data, n_chains){
   month_max <- max(data$test_data$month_id)
 
   ## test results
-  test_res_col <- data$var_names["test_res_col"]
+  test_res_col <- "test_res"
   test_res <- data$test_data[data$test_data$month_id < month_max, test_res_col]
   test_id  <- data$test_data$test_id[data$test_data$month_id < month_max]
   ## Indices when test performed in the expanded dataset
@@ -264,7 +264,7 @@ compile_JAGS.herd_ntests_rf = function(data, n_chains){
   month_max <- max(data$test_data$month_id)
 
   ## test results
-  test_res_col <- data$var_names["test_res_col"]
+  test_res_col <- "test_res"
   test_res <- data$test_data[data$test_data$month_id < month_max, test_res_col]
   test_id  <- data$test_data$test_id[data$test_data$month_id < month_max]
   ## Indices when test performed in the expanded dataset

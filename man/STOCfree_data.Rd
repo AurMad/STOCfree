@@ -15,7 +15,10 @@ STOCfree_data(
   risk_herd_col = NULL,
   risk_date_col = NULL,
   risk_factor_col = NULL,
-  risk_factor_type = c("continuous", "categorical")
+  risk_factor_type = c("continuous", "categorical"),
+  lag1 = 0,
+  lag2 = 0,
+  FUN = sum
 )
 }
 \arguments{
