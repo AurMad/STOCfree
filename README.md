@@ -2,13 +2,39 @@ STOCfree: prediction of probabilities of freedom from infection from
 longitudinal data
 ================
 
+  - [Aims](#aims)
+  - [Package installation and update](#package-installation-and-update)
+  - [Attaching packages](#attaching-packages)
+  - [Herd level test results, 1 test, several risk
+    factors](#herd-level-test-results-1-test-several-risk-factors)
+      - [Example data](#example-data)
+      - [The STOCfree\_data class](#the-stocfree_data-class)
+      - [Priors for test
+        characteristics](#priors-for-test-characteristics)
+      - [Priors for infection dynamics](#priors-for-infection-dynamics)
+      - [Priors for risk factors of new
+        infection](#priors-for-risk-factors-of-new-infection)
+      - [Model call](#model-call)
+      - [Results](#results)
+  - [Other configurations](#other-configurations)
+      - [Herd level test results, 1 test, no risk
+        factors](#herd-level-test-results-1-test-no-risk-factors)
+      - [Herd level test results, several tests, several risk
+        factors](#herd-level-test-results-several-tests-several-risk-factors)
+
+# Aims
+
 The aim of the STOCfree package is to predict herd level probabilities
 of freedom from infection from longitudinal data collected as part of
 surveillance programmes.
 
-Below, the use of the package is presented through the analysis of a
-small dataset collected for the surveillance of infection by the BVDV
-virus in cattle.
+Currently, the following types of configurations can be modelled:
+
+  - Herd level test results, 1 test, several risk factors
+  - Herd level test results, 1 test, no risk factors
+  - Herd level test results, several tests, no risk factors
+  - Herd level test results, several tests, several risk factors
+  - Animal level test results, one test, no risk factors
 
 # Package installation and update
 
@@ -56,25 +82,14 @@ We also attach the following packages that will be used later:
 library(ggplot2)
 ```
 
-# Prediction of probabilities of infection from test results and risk factor data
+# Herd level test results, 1 test, several risk factors
 
 In order to show how to perform the prediction we use the `herdBTM`
 dataset which is embedded in the package. In the first example, we
 consider the case where we have herd level test results, a single type
 of test is performed and 2 risk factors are included.
 
-Currently, the following types of configurations can be modelled:
-
-  - Herd level test results, 1 test, several risk factors
-  - Herd level test results, 1 test, no risk factors
-  - Herd level test results, several tests, no risk factors
-  - Herd level test results, several tests, several risk factors
-  - Animal level test results, one test, no risk factors
-
-In this section, the first configuration is modelled. The 3 following
-ones are covered in less detail in the last sections.
-
-## Data
+## Example data
 
 The `herdBTM` dataset contains the results of antibody ELISA tests
 performed on bulk tank milk. Each row is a testing date in a herd. There
@@ -257,11 +272,10 @@ object, the following risk factors have been listed:
 show_rf(sfd)
 ```
 
-    ##      risk_factor        type modality ref n_obs mean_prior sd_prior
-    ## 1      Intercept   intercept       NA   0    33         NA       NA
-    ## 3  LocalSeroPrev  continuous       NA   0    33         NA       NA
-    ## 11      purch_yn categorical        0   1    29         NA       NA
-    ## 2       purch_yn categorical        1   0     4         NA       NA
+    ##     risk_factor        type modality ref
+    ## 1     Intercept   intercept       NA   0
+    ## 2      purch_yn categorical        1   0
+    ## 3 LocalSeroPrev  continuous       NA   0
 
 The association between these risk factors and the probability of new
 infection between consecutive month is represented by normal
@@ -286,11 +300,10 @@ sfd <- set_priors_rf(sfd,
 show_rf(sfd)
 ```
 
-    ##      risk_factor        type modality ref n_obs mean_prior sd_prior
-    ## 1      Intercept   intercept       NA   0    33         -2        1
-    ## 3  LocalSeroPrev  continuous       NA   0    33          0        2
-    ## 11      purch_yn categorical        0   1    29         NA       NA
-    ## 2       purch_yn categorical        1   0     4          0        2
+    ##     risk_factor        type modality ref mean_prior sd_prior
+    ## 1     Intercept   intercept       NA   0         -2        1
+    ## 2      purch_yn categorical        1   0          0        2
+    ## 3 LocalSeroPrev  continuous       NA   0          0        2
 
 The distributions for these priors can then be plotted using the
 `plot_priors_rf()` function.
@@ -359,16 +372,16 @@ param
     ## # A tibble: 80 x 9
     ##    .chain .iteration .draw    Se    Sp  tau2 theta.1 theta.2 theta.3
     ##     <int>      <int> <int> <dbl> <dbl> <dbl>   <dbl>   <dbl>   <dbl>
-    ##  1      1          1     1 0.821 0.990 0.921   -4.08  -1.84   -1.66 
-    ##  2      1          2     2 0.784 0.987 0.947   -3.39  -4.47    0.686
-    ##  3      1          3     3 0.759 0.967 0.896   -3.33   1.52   -1.51 
-    ##  4      1          4     4 0.792 0.970 0.971   -3.98  -1.59    0.671
-    ##  5      1          5     5 0.684 0.973 0.925   -3.71  -2.29   -1.12 
-    ##  6      1          6     6 0.893 0.990 0.902   -5.04   1.50    1.43 
-    ##  7      1          7     7 0.850 0.987 0.923   -4.01  -0.708  -1.29 
-    ##  8      1          8     8 0.549 0.951 0.933   -3.74  -0.737   0.731
-    ##  9      1          9     9 0.806 0.985 0.920   -3.66  -0.202   1.58 
-    ## 10      1         10    10 0.577 0.990 0.916   -3.44  -3.30    2.87 
+    ##  1      1          1     1 0.801 0.986 0.938   -4.05  -1.73  -1.04  
+    ##  2      1          2     2 0.877 0.993 0.951   -3.82   1.53  -1.97  
+    ##  3      1          3     3 0.952 0.975 0.972   -4.19  -2.58  -1.94  
+    ##  4      1          4     4 0.932 0.967 0.948   -4.27   0.686  0.0523
+    ##  5      1          5     5 0.877 0.979 0.953   -5.13  -2.74  -3.53  
+    ##  6      1          6     6 0.830 0.991 0.949   -4.67  -1.75   0.528 
+    ##  7      1          7     7 0.850 0.983 0.949   -3.63   0.887  0.636 
+    ##  8      1          8     8 0.709 0.982 0.936   -4.45  -0.622  1.04  
+    ##  9      1          9     9 0.838 0.987 0.853   -3.82   2.32  -1.19  
+    ## 10      1         10    10 0.822 0.984 0.956   -4.00  -3.08  -1.39  
     ## # … with 70 more rows
 
 The columns of this dataset are:
@@ -408,16 +421,16 @@ proba_inf
     ## # Groups:   herd_id [3]
     ##    .chain .iteration .draw herd_id predicted_proba predicted_status
     ##     <int>      <int> <int>   <int>           <dbl>            <dbl>
-    ##  1      1          1     1       1         0.0167                 0
-    ##  2      1          1     1       2         0.00236                0
-    ##  3      1          1     1       3         0.0167                 0
-    ##  4      1          2     2       1         0.0328                 0
-    ##  5      1          2     2       2         0.00395                0
-    ##  6      1          2     2       3         0.947                  1
-    ##  7      1          3     3       1         0.0346                 0
-    ##  8      1          3     3       2         0.0109                 0
-    ##  9      1          3     3       3         0.0346                 0
-    ## 10      1          4     4       1         0.0184                 0
+    ##  1      1          1     1       1        0.0171                  0
+    ##  2      1          1     1       2        0.00301                 0
+    ##  3      1          1     1       3        0.0171                  0
+    ##  4      1          2     2       1        0.0215                  0
+    ##  5      1          2     2       2        0.00207                 0
+    ##  6      1          2     2       3        0.0215                  0
+    ##  7      1          3     3       1        0.0148                  0
+    ##  8      1          3     3       2        0.000565                0
+    ##  9      1          3     3       3        0.0148                  0
+    ## 10      1          4     4       1        0.0138                  0
     ## # … with 230 more rows
 
 The first columns of this dataset are the same as above. The following
@@ -466,6 +479,8 @@ The steps envisonned to categorise herds as free from infection are:
     predicted probability of infection
   - choose a cut-off to define freedom from infection, e.g. categorise
     herds with the 5th percentile below 0.1 as free from infection
+
+# Other configurations
 
 ## Herd level test results, 1 test, no risk factors
 
