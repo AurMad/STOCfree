@@ -26,7 +26,7 @@ sample_model.default <- function(compiled_model,
                                  n_iter,
                                  n_thin){
 
-  print("No method defined for this type of data")
+  message("No method defined for this type of data")
 
 }
 
@@ -40,12 +40,14 @@ sample_model.herd_1test <- function(compiled_model,
   class(compiled_model) <- "jags"
 
   ## iterations for burnin
+  message(paste("Burnin (", n_burnin, "iterations"))
   update(compiled_model, n.iter = n_iter)
 
   ## samples from posterior distributions
   variables_to_save <- c("Se", "Sp", "tau1", "tau2",
                          "predicted_proba", "predicted_status")
 
+  message(paste("Sampling (", n_iter, "iterations"))
   samples <- rjags::coda.samples(compiled_model,
                                  variable.names = variables_to_save,
                                  n.iter = n_iter,
@@ -109,12 +111,14 @@ sample_model.herd_1test_rf <- function(compiled_model,
   class(compiled_model) <- "jags"
 
   ## iterations for burnin
+  message(paste("Burnin (", n_burnin, "iterations)"))
   update(compiled_model, n.iter = n_iter)
 
   ## samples from posterior distributions
   variables_to_save <- c("Se", "Sp", "theta", "tau2",
                          "predicted_proba", "predicted_status")
 
+  message(paste("Sampling (", n_iter, "iterations"))
   samples <- rjags::coda.samples(compiled_model,
                                  variable.names = variables_to_save,
                                  n.iter = n_iter,
@@ -178,12 +182,14 @@ sample_model.herd_ntests <- function(compiled_model,
   class(compiled_model) <- "jags"
 
   ## iterations for burnin
+  message(paste("Burnin (", n_burnin, "iterations"))
   update(compiled_model, n.iter = n_iter)
 
   ## samples from posterior distributions
   variables_to_save <- c("Se", "Sp", "tau1", "tau2",
                          "predicted_proba", "predicted_status")
 
+  message(paste("Sampling (", n_iter, "iterations"))
   samples <- rjags::coda.samples(compiled_model,
                                  variable.names = variables_to_save,
                                  n.iter = n_iter,
@@ -247,12 +253,14 @@ sample_model.herd_ntests_rf <- function(compiled_model,
   class(compiled_model) <- "jags"
 
   ## iterations for burnin
+  message(paste("Burnin (", n_burnin, "iterations"))
   update(compiled_model, n.iter = n_iter)
 
   ## samples from posterior distributions
   variables_to_save <- c("Se", "Sp", "theta", "tau2",
                          "predicted_proba", "predicted_status")
 
+  message(paste("Sampling (", n_iter, "iterations"))
   samples <- rjags::coda.samples(compiled_model,
                           variable.names = variables_to_save,
                           n.iter = n_iter,
@@ -317,12 +325,13 @@ sample_model.animal_1test <- function(compiled_model,
   class(compiled_model) <- "jags"
 
   ## iterations for burnin
+  message(paste("Burnin (", n_burnin, "iterations"))
   update(compiled_model, n.iter = n_iter)
 
   ## samples from posterior distributions
   variables_to_save <- c("Se", "Sp", "pi_within", "tau1", "tau2",
                          "predicted_proba", "predicted_status")
-
+  message(paste("Sampling (", n_iter, "iterations"))
   samples <- rjags::coda.samples(compiled_model,
                                  variable.names = variables_to_save,
                                  n.iter = n_iter,
@@ -387,12 +396,14 @@ sample_model.animal_1test_rf <- function(compiled_model,
   class(compiled_model) <- "jags"
 
   ## iterations for burnin
+  message(paste("Burnin (", n_burnin, "iterations"))
   update(compiled_model, n.iter = n_iter)
 
   ## samples from posterior distributions
   variables_to_save <- c("Se", "Sp", "pi_within", "theta", "tau2",
                          "predicted_proba", "predicted_status")
 
+  message(paste("Sampling (", n_iter, "iterations"))
   samples <- rjags::coda.samples(compiled_model,
                                  variable.names = variables_to_save,
                                  n.iter = n_iter,
