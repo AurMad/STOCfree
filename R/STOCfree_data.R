@@ -399,6 +399,17 @@ sf_add_risk_factor <- function(sfd,
 
   sfd$risk_factor_data <- rfd
 
+  ## If there are risk factors, there are no priors needed for tau1
+  if(length(grep("tau1", names(sfd$inf_dyn_priors))) > 0){
+
+    sfd$inf_dyn_priors <- sfd$inf_dyn_priors[-grep("tau1", names(sfd$inf_dyn_priors))]
+
+  }
+
+  ## Number of risk factors
+  n_risk_factors <- length(sfd$risk_factor_data) - 4
+  attr(sfd, "number of risk factors")  <- n_risk_factors
+
   test_level <- attr(sfd, "level")
   n_tests <- attr(sfd, "number of tests")
 

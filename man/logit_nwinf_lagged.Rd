@@ -11,7 +11,8 @@ logit_nwinf_lagged(
   rf_col = character(),
   lag1 = 0,
   lag2 = 36,
-  time_of_inf = c("mid", "first", "last")
+  time_of_inf = c("mid", "first", "last"),
+  FUN = sum
 )
 }
 \arguments{

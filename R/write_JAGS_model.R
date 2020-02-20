@@ -114,6 +114,8 @@ write_JAGS_model.herd_1test <- function(data){
   tau1 ~ dbeta(tau1_beta_a, tau1_beta_b)
   tau2 ~ dbeta(tau2_beta_a, tau2_beta_b)
 
+  ## pi1 <- tau1 / (1 + tau1 - tau2)
+
 
 }',
       file =  "JAGS_model.txt")

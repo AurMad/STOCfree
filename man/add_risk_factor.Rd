@@ -10,7 +10,8 @@ add_risk_factor(
   rf_col = character(),
   rf_date_col = character(),
   lag1 = 6,
-  lag2 = 12
+  lag2 = 12,
+  FUN = sum
 )
 }
 \arguments{
