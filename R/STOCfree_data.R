@@ -138,7 +138,7 @@ STOCfree_data <- function(test_data = data.frame(),
                      all = TRUE)
 
   ## If level of testing is animal, test results is number pos / number tested
-  if(test_level == "animal") test_data <- make_animal_test(test_data)
+  if(test_level == "animal") test_data <- make_animal_test(test_data, test_res_col)
 
   ## Adding row status_id to test_data
   ## these are the status ids that will be used by JAGS
@@ -158,12 +158,39 @@ STOCfree_data <- function(test_data = data.frame(),
   )
 
   ## going back to the data where test results are available
-  test_data <- test_data[!is.na(test_data[, test_res_col]) | (is.na(test_data[, test_res_col]) & test_data$month_id == month_last_id),]
+  if(test_level == "animal"){
 
+    test_data <- test_data[!is.na(test_data[, "n_pos"]) | (is.na(test_data[, "n_pos"]) & test_data$month_id == month_last_id),]
+
+  }
+
+  if(test_level == "herd"){
+
+    test_data <- test_data[!is.na(test_data[, test_res_col]) | (is.na(test_data[, test_res_col]) & test_data$month_id == month_last_id),]
+
+  }
+
+  ## Selecting the columns to keep from the test_data
   ## Selecting the columns to keep from the test_data
   if(test_level == "animal"){
 
     cln <- c("status_id", "herd_id", "month_id", "test_id", "n_tested", "n_pos")
+
+    test_data <- test_data[, cln]
+
+    ## herd test data
+    herd_test_data <- by(test_data, list(test_data$herd_id), function(x){
+      data.frame(
+        herd_id = as.integer(unique(x$herd_id)),
+        ind_i = as.integer(min(x$status_id)),
+        ind_j = as.integer(min(x$status_id) + 1),
+        ind_f = as.integer(max(x$status_id) - 1),
+        ind_p = as.integer(max(x$status_id)),
+        last_is_test = ifelse(is.na(x[x$month_id == month_last_id, "n_pos"]), 0, 1)
+      )
+    })
+    herd_test_data <- do.call("rbind", herd_test_data)
+
 
   }
 
@@ -172,22 +199,22 @@ STOCfree_data <- function(test_data = data.frame(),
     test_data$test_res <- test_data[[test_res_col]]
     cln   <- c("status_id", "herd_id", "month_id", "test_id", "test_res")
 
+    test_data <- test_data[, cln]
+
+    ## herd test data
+    herd_test_data <- by(test_data, list(test_data$herd_id), function(x){
+      data.frame(
+        herd_id = as.integer(unique(x$herd_id)),
+        ind_i = as.integer(min(x$status_id)),
+        ind_j = as.integer(min(x$status_id) + 1),
+        ind_f = as.integer(max(x$status_id) - 1),
+        ind_p = as.integer(max(x$status_id)),
+        last_is_test = ifelse(is.na(x[x$month_id == month_last_id, "test_res"]), 0, 1)
+      )
+    })
+    herd_test_data <- do.call("rbind", herd_test_data)
+
   }
-
-  test_data <- test_data[, cln]
-
-  ## herd test data
-  herd_test_data <- by(test_data, list(test_data$herd_id), function(x){
-    data.frame(
-      herd_id = as.integer(unique(x$herd_id)),
-      ind_i = as.integer(min(x$status_id)),
-      ind_j = as.integer(min(x$status_id) + 1),
-      ind_f = as.integer(max(x$status_id) - 1),
-      ind_p = as.integer(max(x$status_id)),
-      last_is_test = ifelse(is.na(x[x$month_id == month_last_id, "test_res"]), 0, 1)
-    )
-  })
-  herd_test_data <- do.call("rbind", herd_test_data)
 
   ## Priors for infection dynamics
   ## all possible possibilities are listed and the unecessary ones removed
@@ -451,7 +478,7 @@ sf_remove_risk_factor <- function(sfd,
 #' @export
 #'
 #' @examples
-make_animal_test <- function(test_data){
+make_animal_test <- function(test_data, test_res_col){
 
   test_data <- by(test_data,
                 list(test_data$herd_id, test_data$month_id),
@@ -459,7 +486,8 @@ make_animal_test <- function(test_data){
                   data.frame(
                     herd_id = unique(x$herd_id),
                     month_id = unique(x$month_id),
-                    n_tested = length(x[[test_res_col]]),
+                    test_id = unique(x$test_id),
+                    n_tested = length(na.omit(x[[test_res_col]])),
                     n_pos = sum(x[[test_res_col]])
                   )
                 })
