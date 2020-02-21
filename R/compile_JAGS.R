@@ -460,6 +460,7 @@ compile_JAGS.animal_1test_rf = function(data, n_chains){
     ind_i = data$herd_test_data$ind_i,
     ind_j = data$herd_test_data$ind_j,
     ind_f = data$herd_test_data$ind_f,
+    ind_p = data$herd_test_data$ind_p,
     n_tests_perf = length(ind_test),
     ind_test = as.integer(ind_test),
     n_pos = as.integer(n_pos),
