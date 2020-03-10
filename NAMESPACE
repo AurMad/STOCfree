@@ -2,6 +2,7 @@
 
 S3method(compile_JAGS,animal_1test)
 S3method(compile_JAGS,animal_1test_rf)
+S3method(compile_JAGS,animal_ntests_rf)
 S3method(compile_JAGS,default)
 S3method(compile_JAGS,herd_1test)
 S3method(compile_JAGS,herd_1test_rf)
