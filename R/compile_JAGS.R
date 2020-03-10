@@ -566,6 +566,7 @@ compile_JAGS.animal_ntests_rf = function(data, n_chains){
     pi_within_b = data$inf_dyn_priors["pi_within_b"],
     tau2_beta_a = data$inf_dyn_priors["tau2_a"],
     tau2_beta_b = data$inf_dyn_priors["tau2_b"],
+    n_tests = nrow(test_char),
     Se_beta_a = test_char$Se_a,
     Se_beta_b = test_char$Se_b,
     Sp_beta_a = test_char$Sp_a,
