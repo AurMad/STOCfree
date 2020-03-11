@@ -144,9 +144,9 @@ plot_priors_rf <- function(x = STOCfree_data(), n = 100000){
 
       to_plot <- data.frame(
         x = as.double(seq_x),
-        lb  = unlist(apply(y_val, 2, quantile, .025)),
-        mid = unlist(apply(y_val, 2, quantile, .5)),
-        ub  = unlist(apply(y_val, 2, quantile, .975))
+        lb  = unlist(apply(y_val, 2, quantile, .025, na.rm = TRUE)),
+        mid = unlist(apply(y_val, 2, quantile, .5, na.rm = TRUE)),
+        ub  = unlist(apply(y_val, 2, quantile, .975, na.rm = TRUE))
       )
 
       rm(y_val)

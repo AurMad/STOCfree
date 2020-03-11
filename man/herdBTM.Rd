@@ -9,8 +9,8 @@
   \item{Farm}{farm ID}
   \item{DateOfTest}{date of test}
   \item{ODR}{result of test as optical density ratio}
+  \item{Test}{type of test used. Either bulk tank milk ELISA or confirmatory test}
   \item{TestResult}{test result. 0 for negative, 1 for positive}
-  \item{ln_nOrig6_12}{risk factor 1, natural logarithm of the number of origins of the cattle purchased between 6 and 12 months before the date of test}
   \item{LocalSeroPrev}{risk factor 2, proportion of herds positive to the test in the municipality to which the herd belongs on the previous date of test}
 }}
 \usage{

@@ -71,21 +71,21 @@ plot_priors_inf_dyn <- function(data = STOCfree_data()){
   par(mfrow = c(plot_n_rows, 2))
   curve(dbeta(x, priors["pi1_a"], priors["pi1_b"]),
         from = 0, to = 1,
-        main = "Probability of infection\non the first test",
+        main = "Probability of status positive\non the first test",
         xlab = "Probability",
         ylab = "Density")
   if(n_risk_factors == 0){
 
     curve(dbeta(x, priors["tau1_a"], priors["tau1_b"]),
           from = 0, to = 1,
-          main = "Probability of new\ninfection between to 2 months",
+          main = "Probability of becoming\nstatus positive between to 2 months",
           xlab = "tau1",
           ylab = "Density")
 
   }
   curve(dbeta(x, priors["tau2_a"], priors["tau2_b"]),
         from = 0, to = 1,
-        main = "Probability of not eliminating the\ninfection between to 2 months",
+        main = "Probability of remaining\nstatus positive between to 2 months",
         xlab = "tau2",
         ylab = "Density")
 
