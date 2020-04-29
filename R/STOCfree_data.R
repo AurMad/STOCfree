@@ -65,6 +65,26 @@ STOCfree_data <- function(test_data = data.frame(),
   all_months_list <- make_month_id(start = paste0(month_first, "-01"),
                                    end = paste0(month_last, "-01"))
 
+  ## List of all months in the dataset numbered
+  date_min_herds <- all_months_list$date__1[which(all_months_list$month_id == (max(all_months_list$month_id) - 4))]
+  ## First date in the dataset for each herd
+  herd_first_date <- tapply(
+    as.Date(test_data[[test_date_col]]),
+    test_data[[test_herd_col]],
+    function(x) as.character(min(x)))
+
+  ## herds to discard because first date of recording is too close to the date to predict
+  herds_discarded <- names(herd_first_date[herd_first_date >= date_min_herds])
+
+  if(length(herds_discarded) > 0){
+
+    test_data <- test_data[!test_data[[test_herd_col]] %in% herds_discarded, ]
+
+    n_herds <- n_herds - length(herds_discarded)
+
+    cat("The following herds were discarded because their first test result is too close to the month to predict:", herds_discarded)
+  }
+
   ## old herd ids / new herd ids
   herd_id_corresp <- data.frame(
     old_herd_id = sort(unique(unlist(test_data[, test_herd_col]))),
