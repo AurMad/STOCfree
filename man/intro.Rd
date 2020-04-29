@@ -4,12 +4,14 @@
 \name{intro}
 \alias{intro}
 \title{Date and number of animals introduced in the tested farms}
-\format{A data frame with 1100 rows and 6 variables:
+\format{
+A data frame with 1100 rows and 6 variables:
 \describe{
   \item{Farm}{farm ID}
   \item{dateIntr}{date of introduction}
   \item{nAnim}{number of animals}
-}}
+}
+}
 \usage{
 data(herdBTM)
 }

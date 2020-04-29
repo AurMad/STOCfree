@@ -140,13 +140,19 @@ STOCfree_data <- function(test_data = data.frame(),
   ## If level of testing is animal, test results is number pos / number tested
   if(test_level == "animal") test_data <- make_animal_test(test_data, test_res_col)
 
+  ## dataset to be merged with risk factor data
+  ## numbers the status_id in the dataset
+  rfd <- test_data[, c("herd_id", "month_id")]
+  rfd <- unique(rfd)
+  rfd <- rfd[order(rfd$herd_id, rfd$month_id),]
+  rfd$status_id <- 1:nrow(rfd)
+  rfd <- rfd[, c("status_id", "herd_id", "month_id")]
+
   ## Adding row status_id to test_data
   ## these are the status ids that will be used by JAGS
-  test_data <- test_data[order(test_data$herd_id, test_data$month_id),]
-  test_data$status_id <- 1:nrow(test_data)
+  test_data <- merge(test_data, rfd)
 
   ## dataset to be merged with risk factor data
-  rfd <- test_data[, c("status_id", "herd_id", "month_id")]
   rfd$intercept <- rep(1)
   ## creation of risk factor list
   risk_factors <- data.frame(
