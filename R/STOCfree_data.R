@@ -254,7 +254,7 @@ STOCfree_data <- function(test_data = data.frame(),
   ## 1: first test in a herd
   ## 2: first test on a month which is not first test in herd
   ## 3: test > 1 on a month
-  ## 4: month of prediction without test result
+  ## 4: status to predict without test result
   ## 5: status to predict with a single test performed
   ## 6: status to predict with several tests on this month
   dplctd_month <- which(duplicated(test_data[, c("herd_id", "month_id"),]))

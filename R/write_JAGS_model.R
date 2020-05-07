@@ -332,92 +332,179 @@ write_JAGS_model.herd_ntests <- function(data){
 }
 
 
-
-
 #' @export
 write_JAGS_model.herd_ntests_rf <- function(data){
 
   cat('model{
-
 ##############################################################################
 ###  Inference from historical data
 ##############################################################################
 
-  ## Loop for infection dynamics up to test before last
-  for(h in 1:n_herds){
+  ## First test in a herd - status type = 1
+  for(i1 in 1:n_status_typ1){
 
-    # First month
-    pi[ind_i[h]] ~ dbeta(pi1_beta_a, pi1_beta_b)
-    Status[ind_i[h]] ~ dbern(pi[ind_i[h]])
+  ## prior probability of infection on first test
+  pi1_init[i1] ~ dbeta(pi1_beta_a, pi1_beta_b)
 
-    # Months 2 to 1 minus final
-    for(t in ind_j[h]:ind_f[h]){
+  ## prior probability updated with test result
+  pi[status_typ1[i1]] <- test_res_typ1[i1] * (
+     Se[test_id_typ1[i1]] * pi1_init[i1] /
+     (Se[test_id_typ1[i1]] * pi1_init[i1] +
+      (1 - Sp[test_id_typ1[i1]]) * (1 - pi1_init[i1]))
+    ) +
+     (1 - test_res_typ1[i1]) * (
+     (1 - Se[test_id_typ1[i1]]) * pi1_init[i1] /
+     ((1 - Se[test_id_typ1[i1]]) * pi1_init[i1] +
+       Sp[test_id_typ1[i1]] * (1 - pi1_init[i1])
+     )
+     )
 
-      logit(tau1[t]) <- inprod(risk_factors[t,], theta)
-
-      pi[t] <- tau1[t] * (1 - Status[t-1]) +
-               tau2 * Status[t-1]
-
-      Status[t] ~ dbern(pi[t])
-
-    } #t
-
-    ## tau1 for test to predict
-    logit(tau1[ind_p[h]]) <- inprod(risk_factors[ind_p[h],], theta)
-
-  }
-
-
-  ## Loop for test results - historical data
-  for(i in 1:n_tests_perf){
-
-    pTestPos[i] <-  Se[test_id[i]] * Status[ind_test[i]] +
-                    (1 - Sp[test_id[i]]) * (1 - Status[ind_test[i]])
-
-    test_res[i] ~ dbern(pTestPos[i])
+  # status sampled from probability
+  Status[status_typ1[i1]] ~ dbern(pi[status_typ1[i1]])
 
   }
 
+  ## 2: first test on a month which is not first test in herd
+  ## status type = 2
+  for(i2 in 1:n_status_typ2){
+
+  # probability of new infection
+  logit(tau1[status_typ2[i2]]) <- inprod(risk_factors[status_typ2[i2],], theta)
+
+  # probability of infection given previous status and dynamics
+  pi2_init[i2] <- tau1[status_typ2[i2]] * (1 - Status[status_typ2[i2] - 1]) +
+                  tau2 * Status[status_typ2[i2] - 1]
+
+  # probability of infection updated with test result
+  pi[status_typ2[i2]] <- test_res_typ2[i2] * (
+     Se[test_id_typ2[i2]] * pi2_init[i2] /
+     (Se[test_id_typ2[i2]] * pi2_init[i2] +
+      (1 - Sp[test_id_typ2[i2]]) * (1 - pi2_init[i2]))
+    ) +
+     (1 - test_res_typ2[i2]) * (
+     (1 - Se[test_id_typ2[i2]]) * pi2_init[i2] /
+     ((1 - Se[test_id_typ2[i2]]) * pi2_init[i2] +
+       Sp[test_id_typ2[i2]] * (1 - pi2_init[i2])
+     )
+     )
+
+  # status sampled from probability
+  Status[status_typ2[i2]] ~ dbern(pi[status_typ2[i2]])
+
+  }
+
+  ## 3: test > 1 on a month
+  ## status type = 3
+  for(i3 in 1:n_status_typ3){
+
+  # probability of infection is given by previous test result on the same month
+  pi3_init[i3] <- pi[status_typ3[i3] - 1]
+
+  # probability of infection updated with test result
+  pi[status_typ3[i3]] <- test_res_typ3[i3] * (
+     Se[test_id_typ3[i3]] * pi3_init[i3] /
+     (Se[test_id_typ3[i3]] * pi3_init[i3] +
+      (1 - Sp[test_id_typ3[i3]]) * (1 - pi3_init[i3]))
+    ) +
+     (1 - test_res_typ3[i3]) * (
+     (1 - Se[test_id_typ3[i3]]) * pi3_init[i3] /
+     ((1 - Se[test_id_typ3[i3]]) * pi3_init[i3] +
+       Sp[test_id_typ3[i3]] * (1 - pi3_init[i3])
+     )
+     )
+
+  # status sampled from probability
+  Status[status_typ3[i3]] ~ dbern(pi[status_typ3[i3]])
+
+  }
+
+  ## no test
+  ## no_test
+  for(j in 1:n_no_test){
+
+  # probability of new infection
+  logit(tau1[status_no_test[j]]) <- inprod(risk_factors[status_no_test[j],], theta)
+
+  # probability of infection given previous status and dynamics
+  pi[status_no_test[j]] <- tau1[status_no_test[j]] * (1 - Status[status_no_test[j] - 1]) +
+                 tau2 * Status[status_no_test[j] - 1]
+
+  # status sampled from probability
+  Status[status_no_test[j]] ~ dbern(pi[status_no_test[j]])
+
+  }
 
 ##############################################################################
 ###  Prediction of probability of infection
 ##############################################################################
+## 4: status to predict without test result
+for(i4 in 1:n_pred_no_test){
 
-  ## Loop for statuses to predict when test result is available
-  for(j in 1:n_pred_test){
+  # probability of new infection
+  logit(tau1[status_typ4[i4]]) <- inprod(risk_factors[status_typ4[i4],], theta)
 
-    ## Indices in loops:
-    # ind_p_test: relates to status index
-    # ind_last_is_test relates to herd_id -> 1 to number of herds between this loop and the next
-    # test_for_pred relates to the cases when test is available for prediction -> 1 to number of such cases
+  # probability of infection given previous status and dynamics
+  predicted_proba[herd_id_pr4[i4]] <- tau1[status_typ4[i4]] * (1 - Status[status_typ4[i4] - 1]) +
+                 tau2 * Status[status_typ4[i4] - 1]
 
-    # After having observed the risk factors and the test result
-    pi[ind_p_test[j]] <- tau1[ind_p_test[j]] * (1 - Status[ind_p_test[j] - 1]) +
-                               tau2 * Status[ind_p_test[j] - 1]
-
-    predicted_proba[ind_last_is_test[j]] <-
-    test_for_pred[j] *
-      (Se[test_id_for_pred[j]] * pi[ind_p_test[j]]) /
-      (Se[test_id_for_pred[j]] * pi[ind_p_test[j]] + (1 - Sp[test_id_for_pred[j]]) * (1 - pi[ind_p_test[j]])) +
-      (1 - test_for_pred[j]) *
-      (1 - Se[test_id_for_pred[j]]) * pi[ind_p_test[j]] /
-      ((1 - Se[test_id_for_pred[j]]) * pi[ind_p_test[j]] + Sp[test_id_for_pred[j]] * (1 - pi[ind_p_test[j]]))
-
-    predicted_status[ind_last_is_test[j]] ~ dbern(predicted_proba[ind_last_is_test[j]])
+  # status sampled from probability
+  predicted_status[herd_id_pr4[i4]] ~ dbern(predicted_proba[herd_id_pr4[i4]])
 
   }
 
+## 5: status to predict with a single test performed
+for(i5 in 1:n_pred_1test){
 
-  ## Loop for statuses to predict when test result is not available
-  for(k in 1:n_pred_no_test){
+  # probability of new infection
+  logit(tau1[status_typ5[i5]]) <- inprod(risk_factors[status_typ5[i5],], theta)
 
-    predicted_proba[ind_last_is_not_test[k]] <- tau1[ind_p_no_test[k]] * (1 - Status[ind_p_no_test[k] - 1]) +
-                                                tau2 * Status[ind_f[ind_last_is_not_test[k]]]
+  # probability of infection given previous status and dynamics
+  pi5_init[i5] <- tau1[status_typ5[i5]] * (1 - Status[status_typ5[i5] - 1]) +
+                  tau2 * Status[status_typ5[i5] - 1]
 
-    predicted_status[ind_last_is_not_test[k]] ~ dbern(predicted_proba[ind_last_is_not_test[k]])
+  # probability of infection updated with test result
+  predicted_proba[herd_id_pr5[i5]] <- test_res_typ5[i5] * (
+     Se[test_id_typ5[i5]] * pi5_init[i5] /
+     (Se[test_id_typ5[i5]] * pi5_init[i5] +
+      (1 - Sp[test_id_typ5[i5]]) * (1 - pi5_init[i5]))
+    ) +
+     (1 - test_res_typ5[i5]) * (
+     (1 - Se[test_id_typ5[i5]]) * pi5_init[i5] /
+     ((1 - Se[test_id_typ5[i5]]) * pi5_init[i5] +
+       Sp[test_id_typ5[i5]] * (1 - pi5_init[i5])
+     )
+     )
+
+  # status sampled from probability
+  predicted_status[herd_id_pr5[i5]] ~ dbern(predicted_proba[herd_id_pr5[i5]])
 
   }
 
+## 6: status to predict with several tests on this month
+## same as above except that pi_init is probability of infection after previous test
+## no dynamics
+for(i6 in 1:n_pred_ntests){
+
+  # probability of infection given previous status and dynamics
+  pi6_init[i6] <- Status[status_typ6[i6] - 1]
+
+  # probability of infection updated with test result
+  predicted_proba[herd_id_pr6[i6]] <- test_res_typ5[i6] * (
+     Se[test_id_typ5[i6]] * pi6_init[i6] /
+     (Se[test_id_typ6[i6]] * pi6_init[i6] +
+      (1 - Sp[test_id_typ6[i6]]) * (1 - pi6_init[i6]))
+    ) +
+     (1 - test_res_typ6[i6]) * (
+     (1 - Se[test_id_typ6[i6]]) * pi6_init[i6] /
+     ((1 - Se[test_id_typ6[i6]]) * pi6_init[i6] +
+       Sp[test_id_typ5[i6]] * (1 - pi5_init[i6])
+     )
+     )
+
+  # status sampled from probability
+  predicted_status[herd_id_pr6[i6]] ~ dbern(predicted_proba[herd_id_pr6[i6]])
+
+  }
 
 ##############################################################################
 ###  Priors
