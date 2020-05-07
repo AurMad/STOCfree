@@ -4,7 +4,7 @@
 \alias{compile_JAGS}
 \title{Compilation of the JAGS model}
 \usage{
-compile_JAGS(data, n_chains = 4, ...)
+compile_JAGS(data, n_chains = 4, keep_model_file = FALSE, ...)
 }
 \arguments{
 \item{data}{an object of class STOCfree_data}
@@ -12,6 +12,8 @@ compile_JAGS(data, n_chains = 4, ...)
 \item{n_chains}{number of MCMC chains}
 
 \item{...}{}
+
+\item{keep_model}{should the JAGS model file be saved on the disk}
 }
 \value{
 a compiled JAGS model

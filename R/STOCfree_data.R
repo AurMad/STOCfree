@@ -319,7 +319,6 @@ STOCfree_data <- function(test_data = data.frame(),
   attr(sfd, "number of risk factors")  <- n_risk_factors
 
   class(sfd) <- c(paste0(test_level,
-                         paste0("_", ifelse(n_tests == 1, "1test", "ntests")),
                          ifelse(n_risk_factors == 0, "", "_rf")),
                   "STOCfree_data")
 
@@ -491,7 +490,6 @@ sf_add_risk_factor <- function(sfd,
   n_tests <- attr(sfd, "number of tests")
 
   class(sfd) <- c(paste0(test_level,
-                         paste0("_", ifelse(n_tests == 1, "1test", "ntests")),
                          "_rf"),
                   "STOCfree_data")
 
