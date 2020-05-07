@@ -82,8 +82,9 @@ STOCfree_data <- function(test_data = data.frame(),
 
     n_herds <- n_herds - length(herds_discarded)
 
-    cat("The following herds were discarded because their first test result is too close to the month to predict:", herds_discarded)
-  }
+    warning("The following herds were discarded because their first test result is too close to the month to predict:", paste(herds_discarded, collapse = ", "))
+
+    }
 
   ## old herd ids / new herd ids
   herd_id_corresp <- data.frame(
@@ -162,11 +163,11 @@ STOCfree_data <- function(test_data = data.frame(),
 
   ## dataset to be merged with risk factor data
   ## numbers the status_id in the dataset
-  rfd <- test_data[, c("herd_id", "month_id")]
+  rfd <- test_data[, c("herd_id", "month_id", "test_id")]
   rfd <- unique(rfd)
-  rfd <- rfd[order(rfd$herd_id, rfd$month_id),]
+  rfd <- rfd[order(rfd$herd_id, rfd$month_id, rfd$test_id),]
   rfd$status_id <- 1:nrow(rfd)
-  rfd <- rfd[, c("status_id", "herd_id", "month_id")]
+  rfd <- rfd[, c("status_id", "herd_id", "month_id", "test_id")]
 
   ## Adding row status_id to test_data
   ## these are the status ids that will be used by JAGS
@@ -196,11 +197,18 @@ STOCfree_data <- function(test_data = data.frame(),
 
   }
 
-  ## Selecting the columns to keep from the test_data
+## ordering test_data by status_id and number of rows
+  test_data <- test_data[order(test_data$status_id),]
+  rownames(test_data) <- 1:nrow(test_data)
+## status type - used in model
+## default value
+## other values added below
+ test_data$status_type <- rep(2)
+
   ## Selecting the columns to keep from the test_data
   if(test_level == "animal"){
 
-    cln <- c("status_id", "herd_id", "month_id", "test_id", "n_tested", "n_pos")
+    cln <- c("status_id", "herd_id", "month_id", "status_type","test_id", "n_tested", "n_pos")
 
     test_data <- test_data[, cln]
 
@@ -223,7 +231,7 @@ STOCfree_data <- function(test_data = data.frame(),
   if(test_level == "herd"){
 
     test_data$test_res <- test_data[[test_res_col]]
-    cln   <- c("status_id", "herd_id", "month_id", "test_id", "test_res")
+    cln   <- c("status_id", "herd_id", "month_id", "status_type", "test_id", "test_res")
 
     test_data <- test_data[, cln]
 
@@ -241,6 +249,22 @@ STOCfree_data <- function(test_data = data.frame(),
     herd_test_data <- do.call("rbind", herd_test_data)
 
   }
+
+  ## status type - used in model
+  ## 1: first test in a herd
+  ## 2: first test on a month which is not first test in herd
+  ## 3: test > 1 on a month
+  ## 4: month of prediction without test result
+  ## 5: status to predict with a single test performed
+  ## 6: status to predict with several tests on this month
+  dplctd_month <- which(duplicated(test_data[, c("herd_id", "month_id"),]))
+  test_data$status_type[dplctd_month] <- rep(3)
+  rm(dplctd_month)
+  test_data$status_type[test_data$status_id %in% herd_test_data$ind_i] <- 1
+  test_data$status_type[test_data$status_id %in% herd_test_data$ind_p & is.na(test_data$test_res)]  <- 4
+  test_data$status_type[test_data$status_id %in% herd_test_data$ind_p & test_data$status_type == 2] <- 5
+  test_data$status_type[test_data$status_id %in% herd_test_data$ind_p & test_data$status_type == 3] <- 6
+
 
   ## Priors for infection dynamics
   ## all possible possibilities are listed and the unecessary ones removed
