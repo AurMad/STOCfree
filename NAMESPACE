@@ -2,10 +2,7 @@
 
 S3method(compile_JAGS,animal_rf)
 S3method(compile_JAGS,default)
-<<<<<<< HEAD
 S3method(compile_JAGS,herd)
-=======
->>>>>>> 421c7fc6f4433e86c5153fffd70a55cae36eed94
 S3method(compile_JAGS,herd_rf)
 S3method(sample_model,animal_1test)
 S3method(sample_model,animal_1test_rf)

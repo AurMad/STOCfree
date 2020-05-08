@@ -28,12 +28,8 @@ compile_JAGS.default <- function(data, n_chains, keep_model_file){
 
   }
 
-<<<<<<< HEAD
 #' @export
 compile_JAGS.herd <- function(data, n_chains = 4, keep_model_file = FALSE){
-=======
-compile_JAGS.herd <- function(data, n_chains, keep_model_file){
->>>>>>> 421c7fc6f4433e86c5153fffd70a55cae36eed94
 
   n_herds <- attr(data, "number of herds")
   month_max <- max(data$test_data$month_id)
@@ -117,11 +113,7 @@ compile_JAGS.herd <- function(data, n_chains, keep_model_file){
 
 
 #' @export
-<<<<<<< HEAD
 compile_JAGS.herd_rf <- function(data, n_chains = 4, keep_model_file = FALSE){
-=======
-compile_JAGS.herd_rf <- function(data, n_chains, keep_model_file){
->>>>>>> 421c7fc6f4433e86c5153fffd70a55cae36eed94
 
   n_herds <- attr(data, "number of herds")
   month_max <- max(data$test_data$month_id)
@@ -220,11 +212,7 @@ compile_JAGS.herd_rf <- function(data, n_chains, keep_model_file){
 
 
 #' @export
-<<<<<<< HEAD
 compile_JAGS.animal_rf = function(data, n_chains = 4, keep_model_file = FALSE){
-=======
-compile_JAGS.animal_rf = function(data, n_chains, keep_model_file){
->>>>>>> 421c7fc6f4433e86c5153fffd70a55cae36eed94
 
   n_herds <- attr(data, "number of herds")
   month_max <- max(data$test_data$month_id)
