@@ -22,6 +22,13 @@ write_JAGS_model.default <- function(data){
 
 write_JAGS_model.herd <- function(data){
 
+  test_data <- data$test_data
+  ## several tests on the same month
+  n_status_typ3 <- nrow(test_data[test_data$status_type == 3,])
+  n_status_typ4 <- nrow(test_data[test_data$status_type == 4,])
+  n_status_typ5 <- nrow(test_data[test_data$status_type == 5,])
+  n_status_typ6 <- nrow(test_data[test_data$status_type == 6,])
+
   cat('model{
 ##############################################################################
 ###  Inference from historical data
@@ -75,8 +82,9 @@ write_JAGS_model.herd <- function(data){
   # status sampled from probability
   Status[status_typ2[i2]] ~ dbern(pi[status_typ2[i2]])
 
-  }
+  }',
 
+      if(n_status_typ3 == 0){''} else {'
   ## 3: test > 1 on a month
   ## status type = 3
   for(i3 in 1:n_status_typ3){
@@ -101,8 +109,8 @@ write_JAGS_model.herd <- function(data){
   Status[status_typ3[i3]] ~ dbern(pi[status_typ3[i3]])
 
   }
-
-  ## no test
+'},
+  '## no test
   ## no_test
   for(j in 1:n_no_test){
 
@@ -118,6 +126,10 @@ write_JAGS_model.herd <- function(data){
 ##############################################################################
 ###  Prediction of probability of infection
 ##############################################################################
+
+',
+
+if(n_status_typ4 == 0){''} else {'
 ## 4: status to predict without test result
 for(i4 in 1:n_status_typ4){
 
@@ -128,7 +140,9 @@ for(i4 in 1:n_status_typ4){
   # status sampled from probability
   predicted_status[herd_id_pr4[i4]] ~ dbern(predicted_proba[herd_id_pr4[i4]])
 
-  }
+  }'},
+
+if(n_status_typ5 == 0){''} else {'
 
 ## 5: status to predict with a single test performed
 for(i5 in 1:n_status_typ5){
@@ -153,7 +167,9 @@ for(i5 in 1:n_status_typ5){
   # status sampled from probability
   predicted_status[herd_id_pr5[i5]] ~ dbern(predicted_proba[herd_id_pr5[i5]])
 
-  }
+  }'},
+
+if(n_status_typ6 == 0){''} else {'
 
 ## 6: status to predict with several tests on this month
 ## same as above except that pi_init is probability of infection after previous test
@@ -179,8 +195,8 @@ for(i6 in 1:n_status_typ6){
   # status sampled from probability
   predicted_status[herd_id_pr6[i6]] ~ dbern(predicted_proba[herd_id_pr6[i6]])
 
-  }
-
+  }'},
+'
 ##############################################################################
 ###  Priors
 ##############################################################################
@@ -208,10 +224,11 @@ write_JAGS_model.herd_rf <- function(data){
   test_data <- data$test_data
   ## several tests on the same month
   n_status_typ3 <- nrow(test_data[test_data$status_type == 3,])
+  n_status_typ4 <- nrow(test_data[test_data$status_type == 4,])
+  n_status_typ5 <- nrow(test_data[test_data$status_type == 5,])
   n_status_typ6 <- nrow(test_data[test_data$status_type == 6,])
 
-
-  cat('model{
+cat('model{
 ##############################################################################
 ###  Inference from historical data
 ##############################################################################
@@ -313,6 +330,8 @@ write_JAGS_model.herd_rf <- function(data){
 ##############################################################################
 ###  Prediction of probability of infection
 ##############################################################################
+',
+if(n_status_typ4 == 0){''} else {'
 ## 4: status to predict without test result
 for(i4 in 1:n_status_typ4){
 
@@ -328,6 +347,8 @@ for(i4 in 1:n_status_typ4){
 
   }
 
+'},
+if(n_status_typ5 == 0){''} else {'
 ## 5: status to predict with a single test performed
 for(i5 in 1:n_status_typ5){
 
@@ -353,8 +374,8 @@ for(i5 in 1:n_status_typ5){
   # status sampled from probability
   predicted_status[herd_id_pr5[i5]] ~ dbern(predicted_proba[herd_id_pr5[i5]])
 
-  }',
-  if(n_status_typ6 == 0){''} else {'
+  }'},
+if(n_status_typ6 == 0){''} else {'
 ## 6: status to predict with several tests on this month
 ## same as above except that pi_init is probability of infection after previous test
 ## no dynamics
@@ -411,96 +432,312 @@ for(i6 in 1:n_status_typ6){
 #' @export
 write_JAGS_model.animal <- function(data){
 
+  test_data <- data$test_data
+  ## several tests on the same month
+  n_status_typ3 <- nrow(test_data[test_data$status_type == 3,])
+  n_status_typ4 <- nrow(test_data[test_data$status_type == 4,])
+  n_status_typ5 <- nrow(test_data[test_data$status_type == 5,])
+  n_status_typ6 <- nrow(test_data[test_data$status_type == 6,])
+
+  # Formula for the posterior probability of infection:
+  #   D+: herd is infected
+  #   d+: animal is infected
+  #   pi_h: herd level prevalence
+  #   pi_w: animal level prevalence in infected herds
+  #   T+: test positive
+  #
+  #   p(D+) = p(D+|d+)*[p(d+|T+)p(T+) + p(d+|T-)p(T-)] +
+  #           p(D+|d-)*[p(d-|T+)p(T+) + p(d-|T-)p(T-)]
+  #
+  #   p(D+|d+) = 1 -> as soon as 1 animal infected, the herd is infected
+  #   p(D+|d-) = (1 - pi_w)*pi_h / [(1 - pi_w)*pi_h + (1 - pi_h)
+
 cat('model{
 
 ##############################################################################
 ###  Inference from historical data
 ##############################################################################
 
-  ## Loop for infection dynamics up to test before last
-  for(h in 1:n_herds){
+  ## First test in a herd - status type = 1
+  for(i1 in 1:n_status_typ1){
 
-    # First month
-    pi[ind_i[h]] ~ dbeta(pi1_beta_a, pi1_beta_b)
-    Status[ind_i[h]] ~ dbern(pi[ind_i[h]])
+  ## prior probability of herd infection on first test
+  pi1_init[i1] ~ dbeta(pi1_beta_a, pi1_beta_b)
 
-    # Months 2 to 1 minus final
-    for(t in ind_j[h]:ind_f[h]){
+  ## estimation of proportion of positives from Binomial
+  p_T1_i1[i1] ~ dbeta(1, 1)
+  n_pos_typ1[i1] ~ dbin(p_T1_i1[i1], n_tested_typ1[i1])
 
-      pi[t] <- tau1 * (1 - Status[t-1]) +
-               tau2 * Status[t-1]
+  ## posterior probability of herd infection
+  ### Overall prior probability of infection
+  prev_i1[i1] <- pi1_init[i1] * pi_within
+  ### p(D+|d-) probability that herd is infected even if no animal detected
+  D1_d0_i1[i1] <- (1 - pi_within) * pi1_init[i1] /
+                   (1 - prev_i1[i1])
+  ### p(d+|T+)
+  d1_T1_i1[i1] <- Se[test_id_typ1[i1]] * prev_i1[i1] /
+                  (Se[test_id_typ1[i1]] * prev_i1[i1] +
+                  (1 - Sp[test_id_typ1[i1]]) * (1 - prev_i1[i1]))
+  ### p(d+|T-)
+  d1_T0_i1[i1] <- (1 - Se[test_id_typ1[i1]]) * prev_i1[i1] /
+                  ((1 - Se[test_id_typ1[i1]]) * prev_i1[i1] +
+                  Sp[test_id_typ1[i1]] * (1- prev_i1[i1]))
+  ### p(d-|T+)
+  d0_T1_i1[i1] <- (1 - Sp[test_id_typ1[i1]]) * (1 - prev_i1[i1]) /
+                  ((1 - Sp[test_id_typ1[i1]]) * (1 - prev_i1[i1]) +
+                  Se[test_id_typ1[i1]] * prev_i1[i1])
+  ### p(d-|T-)
+  d0_T0_i1[i1] <- Sp[test_id_typ1[i1]] * (1 - prev_i1[i1]) /
+                  (Sp[test_id_typ1[i1]] * (1 - prev_i1[i1]) +
+                   (1 - Se[test_id_typ1[i1]]) * prev_i1[i1])
 
-      Status[t] ~ dbern(pi[t])
+  ### herd level posterior probability of infection
+  pi[status_typ1[i1]] <- d1_T1_i1[i1] * p_T1_i1[i1] +
+                         d1_T0_i1[i1] * (1 - p_T1_i1[i1]) +
+                         D1_d0_i1[i1] * (
+                         d0_T1_i1[i1] * p_T1_i1[i1] +
+                         d0_T0_i1[i1] * (1 - p_T1_i1[i1])  )
 
-    } #t
-
+  # status sampled from probability
+  Status[status_typ1[i1]] ~ dbern(pi[status_typ1[i1]])
 
   }
 
-  ## Loop for test results - historical data
-  for(i in 1:n_tests_perf){
 
-   p_infected[i] <- Status[ind_test[i]] * pi_within
+  ## 2: first test on a month which is not first test in herd
+  ## status type = 2
+  for(i2 in 1:n_status_typ2){
 
-   p_test_pos[i] <- Se * p_infected[i] +
-                  (1 - Sp) * (1 - p_infected[i])
+  # probability of infection given previous status and dynamics
+  pi2_init[i2] <- tau1 * (1 - Status[status_typ2[i2] - 1]) +
+                  tau2 * Status[status_typ2[i2] - 1]
 
-   n_pos[i] ~ dbin(p_test_pos[i], n_tested[i])
+  ## estimation of proportion of positives from Binomial
+  p_T1_i2[i2] ~ dbeta(1, 1)
+  n_pos_typ2[i2] ~ dbin(p_T1_i2[i2], n_tested_typ2[i2])
 
-   }
+  ## posterior probability of herd infection
+  ### Overall prior probability of infection
+  prev_i2[i2] <- pi2_init[i2] * pi_within
+  ### p(D+|d-) probability that herd is infected even if no animal detected
+  D1_d0_i2[i2] <- (1 - pi_within) * pi2_init[i2] /
+                   (1 - prev_i2[i2])
+  ### p(d+|T+)
+  d1_T1_i2[i2] <- Se[test_id_typ2[i2]] * prev_i2[i2] /
+                  (Se[test_id_typ2[i2]] * prev_i2[i2] +
+                  (1 - Sp[test_id_typ2[i2]]) * (1 - prev_i2[i2]))
+  ### p(d+|T-)
+  d1_T0_i2[i2] <- (1 - Se[test_id_typ2[i2]]) * prev_i2[i2] /
+                  ((1 - Se[test_id_typ2[i2]]) * prev_i2[i2] +
+                  Sp[test_id_typ2[i2]] * (1- prev_i2[i2]))
+  ### p(d-|T+)
+  d0_T1_i2[i2] <- (1 - Sp[test_id_typ2[i2]]) * (1 - prev_i2[i2]) /
+                  ((1 - Sp[test_id_typ2[i2]]) * (1 - prev_i2[i2]) +
+                  Se[test_id_typ2[i2]] * prev_i2[i2])
+  ### p(d-|T-)
+  d0_T0_i2[i2] <- Sp[test_id_typ2[i2]] * (1 - prev_i2[i2]) /
+                  (Sp[test_id_typ2[i2]] * (1 - prev_i2[i2]) +
+                   (1 - Se[test_id_typ2[i2]]) * prev_i2[i2])
 
+  ### herd level posterior probability of infection
+  pi[status_typ2[i2]] <- d1_T1_i2[i2] * p_T1_i2[i2] +
+                         d1_T0_i2[i2] * (1 - p_T1_i2[i2]) +
+                         D1_d0_i2[i2] * (
+                         d0_T1_i2[i2] * p_T1_i2[i2] +
+                         d0_T0_i2[i2] * (1 - p_T1_i2[i2])  )
+
+  # status sampled from probability
+  Status[status_typ2[i2]] ~ dbern(pi[status_typ2[i2]])
+
+  }
+',
+
+  if(n_status_typ3 == 0){''} else {'
+  ## 3: test > 1 on a month
+  ## status type = 3
+  for(i3 in 1:n_status_typ3){
+
+  # probability of infection is given by previous test result on the same month
+  pi3_init[i3] <- pi[status_typ3[i3] - 1]
+
+  ## estimation of proportion of positives from Binomial
+  p_T1_i3[i3] ~ dbeta(1, 1)
+  n_pos_typ3[i3] ~ dbin(p_T1_i3[i3], n_tested_typ3[i3])
+
+  ## posterior probability of herd infection
+  ### Overall prior probability of infection
+  prev_i3[i3] <- pi3_init[i3] * pi_within
+  ### p(D+|d-) probability that herd is infected even if no animal detected
+  D1_d0_i3[i3] <- (1 - pi_within) * pi3_init[i3] /
+                   (1 - prev_i3[i3])
+  ### p(d+|T+)
+  d1_T1_i3[i3] <- Se[test_id_typ3[i3]] * prev_i3[i3] /
+                  (Se[test_id_typ3[i3]] * prev_i3[i3] +
+                  (1 - Sp[test_id_typ3[i3]]) * (1 - prev_i3[i3]))
+  ### p(d+|T-)
+  d1_T0_i3[i3] <- (1 - Se[test_id_typ3[i3]]) * prev_i3[i3] /
+                  ((1 - Se[test_id_typ3[i3]]) * prev_i3[i3] +
+                  Sp[test_id_typ3[i3]] * (1- prev_i3[i3]))
+  ### p(d-|T+)
+  d0_T1_i3[i3] <- (1 - Sp[test_id_typ3[i3]]) * (1 - prev_i3[i3]) /
+                  ((1 - Sp[test_id_typ3[i3]]) * (1 - prev_i3[i3]) +
+                  Se[test_id_typ3[i3]] * prev_i3[i3])
+  ### p(d-|T-)
+  d0_T0_i3[i3] <- Sp[test_id_typ3[i3]] * (1 - prev_i3[i3]) /
+                  (Sp[test_id_typ3[i3]] * (1 - prev_i3[i3]) +
+                   (1 - Se[test_id_typ3[i3]]) * prev_i3[i3])
+
+  ### herd level posterior probability of infection
+  pi[status_typ3[i3]] <- d1_T1_i3[i3] * p_T1_i3[i3] +
+                         d1_T0_i3[i3] * (1 - p_T1_i3[i3]) +
+                         D1_d0_i3[i3] * (
+                         d0_T1_i3[i3] * p_T1_i3[i3] +
+                         d0_T0_i3[i3] * (1 - p_T1_i3[i3])  )
+
+  # status sampled from probability
+  Status[status_typ3[i3]] ~ dbern(pi[status_typ3[i3]])
+
+  }'}, '
+
+  ## no test
+  ## no_test
+  for(j in 1:n_no_test){
+
+  # probability of infection given previous status and dynamics
+  pi[status_no_test[j]] <- tau1 * (1 - Status[status_no_test[j] - 1]) +
+                           tau2 * Status[status_no_test[j] - 1]
+
+  # status sampled from probability
+  Status[status_no_test[j]] ~ dbern(pi[status_no_test[j]])
+
+  }
 
 ##############################################################################
 ###  Prediction of probability of infection
 ##############################################################################
+',
 
-  ## Loop for statuses to predict when test result is available
-  for(j in 1:n_pred_test){
+  if(n_status_typ4 == 0){''} else {'
+## 4: status to predict without test result
+for(i4 in 1:n_status_typ4){
 
-    ## Indices in loops:
-    # ind_p_test: relates to status index
-    # ind_last_is_test relates to herd_id -> 1 to number of herds between this loop and the next
-    # test_for_pred relates to the cases when test is available for prediction -> 1 to number of such cases
+  # probability of infection given previous status and dynamics
+  predicted_proba[herd_id_pr4[i4]] <- tau1 * (1 - Status[status_typ4[i4] - 1]) +
+                 tau2 * Status[status_typ4[i4] - 1]
 
-    ## Distribution of number of positive tests
-    n_pos_for_pred[j] ~ dbinom(p_pos[j], n_tested_for_pred[j])
-    p_pos[j] ~ dbeta(1, 1)
+  # status sampled from probability
+  predicted_status[herd_id_pr4[i4]] ~ dbern(predicted_proba[herd_id_pr4[i4]])
 
-    # After having observed the risk factors and the test result
-    pi[ind_p_test[j]] <- tau1 * (1 - Status[ind_p_test[j] - 1]) +
-                         tau2 * Status[ind_p_test[j] - 1]
+  }'},
 
-    predicted_proba[ind_last_is_test[j]] <-
-    p_pos[j] *
-      (Se * pi[ind_p_test[j]] * pi_within) /
-      (Se * pi[ind_p_test[j]] * pi_within + (1 - Sp) * (1 - pi[ind_p_test[j]])) +
-    (1 - p_pos[j]) *
-      (1 - Se) * pi[ind_p_test[j]]  * pi_within /
-      ((1 - Se) * pi[ind_p_test[j]] * pi_within + Sp * (1 - pi[ind_p_test[j]]))
+if(n_status_typ5 == 0){''} else {'
 
-    predicted_status[ind_last_is_test[j]] ~ dbern(predicted_proba[ind_last_is_test[j]])
+## 5: status to predict with a single test performed
+for(i5 in 1:n_status_typ5){
 
-  }
+  # probability of infection given previous status and dynamics
+  pi5_init[i5] <- tau1 * (1 - Status[status_typ5[i5] - 1]) +
+                  tau2 * Status[status_typ5[i5] - 1]
 
+  ## estimation of proportion of positives from Binomial
+  p_T1_i5[i5] ~ dbeta(1, 1)
+  n_pos_typ5[i5] ~ dbin(p_T1_i5[i5], n_tested_typ5[i5])
 
-  ## Loop for statuses to predict when test result is not available
-  for(k in 1:n_pred_no_test){
+  ## posterior probability of herd infection
+  ### Overall prior probability of infection
+  prev_i5[i5] <- pi5_init[i5] * pi_within
+  ### p(D+|d-) probability that herd is infected even if no animal detected
+  D1_d0_i5[i5] <- (1 - pi_within) * pi5_init[i5] /
+                   (1 - prev_i5[i5])
+  ### p(d+|T+)
+  d1_T1_i5[i5] <- Se[test_id_typ5[i5]] * prev_i5[i5] /
+                  (Se[test_id_typ5[i5]] * prev_i5[i5] +
+                  (1 - Sp[test_id_typ5[i5]]) * (1 - prev_i5[i5]))
+  ### p(d+|T-)
+  d1_T0_i5[i5] <- (1 - Se[test_id_typ5[i5]]) * prev_i5[i5] /
+                  ((1 - Se[test_id_typ5[i5]]) * prev_i5[i5] +
+                  Sp[test_id_typ5[i5]] * (1- prev_i5[i5]))
+  ### p(d-|T+)
+  d0_T1_i5[i5] <- (1 - Sp[test_id_typ5[i5]]) * (1 - prev_i5[i5]) /
+                  ((1 - Sp[test_id_typ5[i5]]) * (1 - prev_i5[i5]) +
+                  Se[test_id_typ5[i5]] * prev_i5[i5])
+  ### p(d-|T-)
+  d0_T0_i5[i5] <- Sp[test_id_typ5[i5]] * (1 - prev_i5[i5]) /
+                  (Sp[test_id_typ5[i5]] * (1 - prev_i5[i5]) +
+                   (1 - Se[test_id_typ5[i5]]) * prev_i5[i5])
 
-    predicted_proba[ind_last_is_not_test[k]] <- tau1 * (1 - Status[ind_p_no_test[k] - 1]) +
-                                                tau2 * Status[ind_f[ind_last_is_not_test[k]]]
+  ### herd level posterior probability of infection
+  predicted_proba[herd_id_pr5[i5]] <- d1_T1_i5[i5] * p_T1_i5[i5] +
+                         d1_T0_i5[i5] * (1 - p_T1_i5[i5]) +
+                         D1_d0_i5[i5] * (
+                         d0_T1_i5[i5] * p_T1_i5[i5] +
+                         d0_T0_i5[i5] * (1 - p_T1_i5[i5])  )
 
-    predicted_status[ind_last_is_not_test[k]] ~ dbern(predicted_proba[ind_last_is_not_test[k]])
+  # status sampled from probability
+  predicted_status[herd_id_pr5[i5]] ~ dbern(predicted_proba[herd_id_pr5[i5]])
 
-  }
+  }'},
 
+if(n_status_typ6 == 0){''} else {'
 
+## 6: status to predict with several tests on this month
+## same as above except that pi_init is probability of infection after previous test
+## no dynamics
+for(i6 in 1:n_status_typ6){
+
+  # probability of infection given previous status and dynamics
+  pi6_init[i6] <- Status[status_typ6[i6] - 1]
+
+  ## estimation of proportion of positives from Binomial
+  p_T1_i6[i6] ~ dbeta(1, 1)
+  n_pos_typ6[i6] ~ dbin(p_T1_i6[i6], n_tested_typ6[i6])
+
+  ## posterior probability of herd infection
+  ### Overall prior probability of infection
+  prev_i6[i6] <- pi6_init[i6] * pi_within
+  ### p(D+|d-) probability that herd is infected even if no animal detected
+  D1_d0_i6[i6] <- (1 - pi_within) * pi6_init[i6] /
+                   (1 - prev_i6[i6])
+  ### p(d+|T+)
+  d1_T1_i6[i6] <- Se[test_id_typ6[i6]] * prev_i6[i6] /
+                  (Se[test_id_typ6[i6]] * prev_i6[i6] +
+                  (1 - Sp[test_id_typ6[i6]]) * (1 - prev_i6[i6]))
+  ### p(d+|T-)
+  d1_T0_i6[i6] <- (1 - Se[test_id_typ6[i6]]) * prev_i6[i6] /
+                  ((1 - Se[test_id_typ6[i6]]) * prev_i6[i6] +
+                  Sp[test_id_typ6[i6]] * (1- prev_i6[i6]))
+  ### p(d-|T+)
+  d0_T1_i6[i6] <- (1 - Sp[test_id_typ6[i6]]) * (1 - prev_i6[i6]) /
+                  ((1 - Sp[test_id_typ6[i6]]) * (1 - prev_i6[i6]) +
+                  Se[test_id_typ6[i6]] * prev_i6[i6])
+  ### p(d-|T-)
+  d0_T0_i6[i6] <- Sp[test_id_typ6[i6]] * (1 - prev_i6[i6]) /
+                  (Sp[test_id_typ6[i6]] * (1 - prev_i6[i6]) +
+                   (1 - Se[test_id_typ6[i6]]) * prev_i6[i6])
+
+  ### herd level posterior probability of infection
+  predicted_proba[herd_id_pr6[i6]] <- d1_T1_i6[i6] * p_T1_i6[i6] +
+                         d1_T0_i6[i6] * (1 - p_T1_i6[i6]) +
+                         D1_d0_i6[i6] * (
+                         d0_T1_i6[i6] * p_T1_i6[i6] +
+                         d0_T0_i6[i6] * (1 - p_T1_i6[i6])  )
+
+  # status sampled from probability
+  predicted_status[herd_id_pr6[i6]] ~ dbern(predicted_proba[herd_id_pr6[i6]])
+
+  }'},
+'
 ##############################################################################
 ###  Priors
 ##############################################################################
 
   ## Priors for sensitivities and specificities
-  Se ~ dbeta(Se_beta_a, Se_beta_b)
-  Sp ~ dbeta(Sp_beta_a, Sp_beta_b)
+  for(i_test in 1:n_tests){
+
+  Se[i_test] ~ dbeta(Se_beta_a[i_test], Se_beta_b[i_test])
+  Sp[i_test] ~ dbeta(Sp_beta_a[i_test], Sp_beta_b[i_test])
+
+  }
 
   ## Prior for within herd prevalence in infected herds
   pi_within ~ dbeta(pi_within_a, pi_within_b)
@@ -516,93 +753,312 @@ cat('model{
 
 write_JAGS_model.animal_rf <- function(data){
 
+  test_data <- data$test_data
+  ## several tests on the same month
+  n_status_typ3 <- nrow(test_data[test_data$status_type == 3,])
+  n_status_typ4 <- nrow(test_data[test_data$status_type == 4,])
+  n_status_typ5 <- nrow(test_data[test_data$status_type == 5,])
+  n_status_typ6 <- nrow(test_data[test_data$status_type == 6,])
+
   cat('model{
+  # Formula for the posterior probability of infection:
+  #   D+: herd is infected
+  #   d+: animal is infected
+  #   pi_h: herd level prevalence
+  #   pi_w: animal level prevalence in infected herds
+  #   T+: test positive
+  #
+  #   p(D+) = p(D+|d+)*[p(d+|T+)p(T+) + p(d+|T-)p(T-)] +
+  #           p(D+|d-)*[p(d-|T+)p(T+) + p(d-|T-)p(T-)]
+  #
+  #   p(D+|d+) = 1 -> as soon as 1 animal infected, the herd is infected
+  #   p(D+|d-) = (1 - pi_w)*pi_h / [(1 - pi_w)*pi_h + (1 - pi_h)
 
-##############################################################################
-###  Inference from historical data
-##############################################################################
+  ##############################################################################
+  ###  Inference from historical data
+  ##############################################################################
 
-  ## Loop for infection dynamics up to test before last
-  for(h in 1:n_herds){
+  ## First test in a herd - status type = 1
+  for(i1 in 1:n_status_typ1){
 
-    # First month
-    pi[ind_i[h]] ~ dbeta(pi1_beta_a, pi1_beta_b)
-    Status[ind_i[h]] ~ dbern(pi[ind_i[h]])
+    ## prior probability of herd infection on first test
+    pi1_init[i1] ~ dbeta(pi1_beta_a, pi1_beta_b)
 
-    # Months 2 to 1 minus final
-    for(t in ind_j[h]:ind_f[h]){
+    ## estimation of proportion of positives from Binomial
+    p_T1_i1[i1] ~ dbeta(1, 1)
+    n_pos_typ1[i1] ~ dbin(p_T1_i1[i1], n_tested_typ1[i1])
 
-    logit(tau1[t]) <- inprod(risk_factors[t,], theta)
+    ## posterior probability of herd infection
+    ### Overall prior probability of infection
+    prev_i1[i1] <- pi1_init[i1] * pi_within
+    ### p(D+|d-) probability that herd is infected even if no animal detected
+    D1_d0_i1[i1] <- (1 - pi_within) * pi1_init[i1] /
+      (1 - prev_i1[i1])
+    ### p(d+|T+)
+    d1_T1_i1[i1] <- Se[test_id_typ1[i1]] * prev_i1[i1] /
+      (Se[test_id_typ1[i1]] * prev_i1[i1] +
+         (1 - Sp[test_id_typ1[i1]]) * (1 - prev_i1[i1]))
+    ### p(d+|T-)
+    d1_T0_i1[i1] <- (1 - Se[test_id_typ1[i1]]) * prev_i1[i1] /
+      ((1 - Se[test_id_typ1[i1]]) * prev_i1[i1] +
+         Sp[test_id_typ1[i1]] * (1- prev_i1[i1]))
+    ### p(d-|T+)
+    d0_T1_i1[i1] <- (1 - Sp[test_id_typ1[i1]]) * (1 - prev_i1[i1]) /
+      ((1 - Sp[test_id_typ1[i1]]) * (1 - prev_i1[i1]) +
+         Se[test_id_typ1[i1]] * prev_i1[i1])
+    ### p(d-|T-)
+    d0_T0_i1[i1] <- Sp[test_id_typ1[i1]] * (1 - prev_i1[i1]) /
+      (Sp[test_id_typ1[i1]] * (1 - prev_i1[i1]) +
+         (1 - Se[test_id_typ1[i1]]) * prev_i1[i1])
 
-    pi[t] <- tau1[t] * (1 - Status[t-1]) +
-               tau2 * Status[t-1]
+    ### herd level posterior probability of infection
+    pi[status_typ1[i1]] <- d1_T1_i1[i1] * p_T1_i1[i1] +
+      d1_T0_i1[i1] * (1 - p_T1_i1[i1]) +
+      D1_d0_i1[i1] * (
+        d0_T1_i1[i1] * p_T1_i1[i1] +
+          d0_T0_i1[i1] * (1 - p_T1_i1[i1])  )
 
-    Status[t] ~ dbern(pi[t])
-
-    } #t
-
-  ## tau1 for test to predict
-  logit(tau1[ind_p[h]]) <- inprod(risk_factors[ind_p[h],], theta)
-
-  }
-
-  ## Loop for test results - historical data
-  for(i in 1:n_tests_perf){
-
-   p_infected[i] <- Status[ind_test[i]] * pi_within
-
-   p_test_pos[i] <- Se[test_id[i]] * p_infected[i] +
-                  (1 - Sp[test_id[i]]) * (1 - p_infected[i])
-
-   n_pos[i] ~ dbin(p_test_pos[i], n_tested[i])
-
-   }
-
-
-##############################################################################
-###  Prediction of probability of infection
-##############################################################################
-
-  ## Loop for statuses to predict when test result is available
-  for(j in 1:n_pred_test){
-
-    ## Indices in loops:
-    # ind_p_test: relates to status index
-    # ind_last_is_test relates to herd_id -> 1 to number of herds between this loop and the next
-    # test_for_pred relates to the cases when test is available for prediction -> 1 to number of such cases
-
-    ## Distribution of number of positive tests
-    n_pos_for_pred[j] ~ dbinom(p_pos[j], n_tested_for_pred[j])
-    p_pos[j] ~ dbeta(1, 1)
-
-    # After having observed the risk factors and the test result
-    pi[ind_p_test[j]] <- tau1[ind_p_test[j]] * (1 - Status[ind_p_test[j] - 1]) +
-                         tau2 * Status[ind_p_test[j] - 1]
-
-    predicted_proba[ind_last_is_test[j]] <-
-    p_pos[j] *
-      (Se[test_id_for_pred[j]] * pi[ind_p_test[j]] * pi_within) /
-      (Se[test_id_for_pred[j]] * pi[ind_p_test[j]] * pi_within + (1 - Sp[test_id_for_pred[j]]) * (1 - pi[ind_p_test[j]])) +
-    (1 - p_pos[j]) *
-      (1 - Se[test_id_for_pred[j]]) * pi[ind_p_test[j]]  * pi_within /
-      ((1 - Se[test_id_for_pred[j]]) * pi[ind_p_test[j]] * pi_within + Sp[test_id_for_pred[j]] * (1 - pi[ind_p_test[j]]))
-
-    predicted_status[ind_last_is_test[j]] ~ dbern(predicted_proba[ind_last_is_test[j]])
+    # status sampled from probability
+    Status[status_typ1[i1]] ~ dbern(pi[status_typ1[i1]])
 
   }
 
 
-  ## Loop for statuses to predict when test result is not available
-  for(k in 1:n_pred_no_test){
+  ## 2: first test on a month which is not first test in herd
+  ## status type = 2
+  for(i2 in 1:n_status_typ2){
 
-    predicted_proba[ind_last_is_not_test[k]] <- tau1[ind_last_is_not_test[k]] * (1 - Status[ind_p_no_test[k] - 1]) +
-                                                tau2 * Status[ind_f[ind_last_is_not_test[k]]]
+  # probability of new infection
+  logit(tau1[status_typ2[i2]]) <- inprod(risk_factors[status_typ2[i2],], theta)
 
-    predicted_status[ind_last_is_not_test[k]] ~ dbern(predicted_proba[ind_last_is_not_test[k]])
+  # probability of infection given previous status and dynamics
+  pi2_init[i2] <- tau1[status_typ2[i2]] * (1 - Status[status_typ2[i2] - 1]) +
+    tau2 * Status[status_typ2[i2] - 1]
+
+    ## estimation of proportion of positives from Binomial
+    p_T1_i2[i2] ~ dbeta(1, 1)
+    n_pos_typ2[i2] ~ dbin(p_T1_i2[i2], n_tested_typ2[i2])
+
+    ## posterior probability of herd infection
+    ### Overall prior probability of infection
+    prev_i2[i2] <- pi2_init[i2] * pi_within
+    ### p(D+|d-) probability that herd is infected even if no animal detected
+    D1_d0_i2[i2] <- (1 - pi_within) * pi2_init[i2] /
+      (1 - prev_i2[i2])
+    ### p(d+|T+)
+    d1_T1_i2[i2] <- Se[test_id_typ2[i2]] * prev_i2[i2] /
+      (Se[test_id_typ2[i2]] * prev_i2[i2] +
+         (1 - Sp[test_id_typ2[i2]]) * (1 - prev_i2[i2]))
+    ### p(d+|T-)
+    d1_T0_i2[i2] <- (1 - Se[test_id_typ2[i2]]) * prev_i2[i2] /
+      ((1 - Se[test_id_typ2[i2]]) * prev_i2[i2] +
+         Sp[test_id_typ2[i2]] * (1- prev_i2[i2]))
+    ### p(d-|T+)
+    d0_T1_i2[i2] <- (1 - Sp[test_id_typ2[i2]]) * (1 - prev_i2[i2]) /
+      ((1 - Sp[test_id_typ2[i2]]) * (1 - prev_i2[i2]) +
+         Se[test_id_typ2[i2]] * prev_i2[i2])
+    ### p(d-|T-)
+    d0_T0_i2[i2] <- Sp[test_id_typ2[i2]] * (1 - prev_i2[i2]) /
+      (Sp[test_id_typ2[i2]] * (1 - prev_i2[i2]) +
+         (1 - Se[test_id_typ2[i2]]) * prev_i2[i2])
+
+    ### herd level posterior probability of infection
+    pi[status_typ2[i2]] <- d1_T1_i2[i2] * p_T1_i2[i2] +
+      d1_T0_i2[i2] * (1 - p_T1_i2[i2]) +
+      D1_d0_i2[i2] * (
+        d0_T1_i2[i2] * p_T1_i2[i2] +
+          d0_T0_i2[i2] * (1 - p_T1_i2[i2])  )
+
+    # status sampled from probability
+    Status[status_typ2[i2]] ~ dbern(pi[status_typ2[i2]])
 
   }
 
+',
 
+if(n_status_typ3 == 0){''} else {'
+  ## 3: test > 1 on a month
+  ## status type = 3
+  for(i3 in 1:n_status_typ3){
+
+    # probability of infection is given by previous test result on the same month
+    pi3_init[i3] <- pi[status_typ3[i3] - 1]
+
+    ## estimation of proportion of positives from Binomial
+    p_T1_i3[i3] ~ dbeta(1, 1)
+    n_pos_typ3[i3] ~ dbin(p_T1_i3[i3], n_tested_typ3[i3])
+
+    ## posterior probability of herd infection
+    ### Overall prior probability of infection
+    prev_i3[i3] <- pi3_init[i3] * pi_within
+    ### p(D+|d-) probability that herd is infected even if no animal detected
+    D1_d0_i3[i3] <- (1 - pi_within) * pi3_init[i3] /
+      (1 - prev_i3[i3])
+    ### p(d+|T+)
+    d1_T1_i3[i3] <- Se[test_id_typ3[i3]] * prev_i3[i3] /
+      (Se[test_id_typ3[i3]] * prev_i3[i3] +
+         (1 - Sp[test_id_typ3[i3]]) * (1 - prev_i3[i3]))
+    ### p(d+|T-)
+    d1_T0_i3[i3] <- (1 - Se[test_id_typ3[i3]]) * prev_i3[i3] /
+      ((1 - Se[test_id_typ3[i3]]) * prev_i3[i3] +
+         Sp[test_id_typ3[i3]] * (1- prev_i3[i3]))
+    ### p(d-|T+)
+    d0_T1_i3[i3] <- (1 - Sp[test_id_typ3[i3]]) * (1 - prev_i3[i3]) /
+      ((1 - Sp[test_id_typ3[i3]]) * (1 - prev_i3[i3]) +
+         Se[test_id_typ3[i3]] * prev_i3[i3])
+    ### p(d-|T-)
+    d0_T0_i3[i3] <- Sp[test_id_typ3[i3]] * (1 - prev_i3[i3]) /
+      (Sp[test_id_typ3[i3]] * (1 - prev_i3[i3]) +
+         (1 - Se[test_id_typ3[i3]]) * prev_i3[i3])
+
+    ### herd level posterior probability of infection
+    pi[status_typ3[i3]] <- d1_T1_i3[i3] * p_T1_i3[i3] +
+      d1_T0_i3[i3] * (1 - p_T1_i3[i3]) +
+      D1_d0_i3[i3] * (
+        d0_T1_i3[i3] * p_T1_i3[i3] +
+          d0_T0_i3[i3] * (1 - p_T1_i3[i3])  )
+
+    # status sampled from probability
+    Status[status_typ3[i3]] ~ dbern(pi[status_typ3[i3]])
+
+  }'},
+'
+  ## no test
+  ## no_test
+  for(j in 1:n_no_test){
+
+  # probability of new infection
+  logit(tau1[status_no_test[j]]) <- inprod(risk_factors[status_no_test[j],], theta)
+
+  # probability of infection given previous status and dynamics
+  pi[status_no_test[j]] <- tau1[status_no_test[j]] * (1 - Status[status_no_test[j] - 1]) +
+    tau2 * Status[status_no_test[j] - 1]
+
+  # status sampled from probability
+  Status[status_no_test[j]] ~ dbern(pi[status_no_test[j]])
+
+  }
+
+  ##############################################################################
+  ###  Prediction of probability of infection
+  ##############################################################################
+  ',
+
+if(n_status_typ4 == 0){''} else {'
+## 4: status to predict without test result
+  for(i4 in 1:n_status_typ4){
+
+  # probability of new infection
+  logit(tau1[status_no_test[j]]) <- inprod(risk_factors[status_no_test[j],], theta)
+
+  # probability of infection given previous status and dynamics
+  pi[status_no_test[j]] <- tau1[status_no_test[j]] * (1 - Status[status_no_test[j] - 1]) +
+    tau2 * Status[status_no_test[j] - 1]
+
+    # status sampled from probability
+    predicted_status[herd_id_pr4[i4]] ~ dbern(predicted_proba[herd_id_pr4[i4]])
+
+  }'},
+
+  if(n_status_typ5 == 0){''} else {'
+
+  ## 5: status to predict with a single test performed
+  for(i5 in 1:n_status_typ5){
+
+  # probability of new infection
+  logit(tau1[status_typ5[i5]]) <- inprod(risk_factors[status_typ5[i5],], theta)
+
+  # probability of infection given previous status and dynamics
+  pi5_init[i5] <- tau1[status_typ5[i5]] * (1 - Status[status_typ5[i5] - 1]) + tau2 * Status[status_typ5[i5] - 1]
+
+    ## estimation of proportion of positives from Binomial
+    p_T1_i5[i5] ~ dbeta(1, 1)
+    n_pos_typ5[i5] ~ dbin(p_T1_i5[i5], n_tested_typ5[i5])
+
+    ## posterior probability of herd infection
+    ### Overall prior probability of infection
+    prev_i5[i5] <- pi5_init[i5] * pi_within
+    ### p(D+|d-) probability that herd is infected even if no animal detected
+    D1_d0_i5[i5] <- (1 - pi_within) * pi5_init[i5] /
+      (1 - prev_i5[i5])
+    ### p(d+|T+)
+    d1_T1_i5[i5] <- Se[test_id_typ5[i5]] * prev_i5[i5] /
+      (Se[test_id_typ5[i5]] * prev_i5[i5] +
+         (1 - Sp[test_id_typ5[i5]]) * (1 - prev_i5[i5]))
+    ### p(d+|T-)
+    d1_T0_i5[i5] <- (1 - Se[test_id_typ5[i5]]) * prev_i5[i5] /
+      ((1 - Se[test_id_typ5[i5]]) * prev_i5[i5] +
+         Sp[test_id_typ5[i5]] * (1- prev_i5[i5]))
+    ### p(d-|T+)
+    d0_T1_i5[i5] <- (1 - Sp[test_id_typ5[i5]]) * (1 - prev_i5[i5]) /
+      ((1 - Sp[test_id_typ5[i5]]) * (1 - prev_i5[i5]) +
+         Se[test_id_typ5[i5]] * prev_i5[i5])
+    ### p(d-|T-)
+    d0_T0_i5[i5] <- Sp[test_id_typ5[i5]] * (1 - prev_i5[i5]) /
+      (Sp[test_id_typ5[i5]] * (1 - prev_i5[i5]) +
+         (1 - Se[test_id_typ5[i5]]) * prev_i5[i5])
+
+  ### herd level posterior probability of infection
+  predicted_proba[herd_id_pr5[i5]] <- d1_T1_i5[i5] * p_T1_i5[i5] +
+                         d1_T0_i5[i5] * (1 - p_T1_i5[i5]) +
+                         D1_d0_i5[i5] * (
+                         d0_T1_i5[i5] * p_T1_i5[i5] +
+                         d0_T0_i5[i5] * (1 - p_T1_i5[i5])  )
+
+  # status sampled from probability
+  predicted_status[herd_id_pr5[i5]] ~ dbern(predicted_proba[herd_id_pr5[i5]])
+
+  }'},
+
+ if(n_status_typ6 == 0){''} else {'
+
+  ## 6: status to predict with several tests on this month
+  ## same as above except that pi_init is probability of infection after previous test
+  ## no dynamics
+  for(i6 in 1:n_status_typ6){
+
+    # probability of infection given previous status and dynamics
+    pi6_init[i6] <- Status[status_typ6[i6] - 1]
+
+    ## estimation of proportion of positives from Binomial
+    p_T1_i6[i6] ~ dbeta(1, 1)
+    n_pos_typ6[i6] ~ dbin(p_T1_i6[i6], n_tested_typ6[i6])
+
+    ## posterior probability of herd infection
+    ### Overall prior probability of infection
+    prev_i6[i6] <- pi6_init[i6] * pi_within
+    ### p(D+|d-) probability that herd is infected even if no animal detected
+    D1_d0_i6[i6] <- (1 - pi_within) * pi6_init[i6] /
+      (1 - prev_i6[i6])
+    ### p(d+|T+)
+    d1_T1_i6[i6] <- Se[test_id_typ6[i6]] * prev_i6[i6] /
+      (Se[test_id_typ6[i6]] * prev_i6[i6] +
+         (1 - Sp[test_id_typ6[i6]]) * (1 - prev_i6[i6]))
+    ### p(d+|T-)
+    d1_T0_i6[i6] <- (1 - Se[test_id_typ6[i6]]) * prev_i6[i6] /
+      ((1 - Se[test_id_typ6[i6]]) * prev_i6[i6] +
+         Sp[test_id_typ6[i6]] * (1- prev_i6[i6]))
+    ### p(d-|T+)
+    d0_T1_i6[i6] <- (1 - Sp[test_id_typ6[i6]]) * (1 - prev_i6[i6]) /
+      ((1 - Sp[test_id_typ6[i6]]) * (1 - prev_i6[i6]) +
+         Se[test_id_typ6[i6]] * prev_i6[i6])
+    ### p(d-|T-)
+    d0_T0_i6[i6] <- Sp[test_id_typ6[i6]] * (1 - prev_i6[i6]) /
+      (Sp[test_id_typ6[i6]] * (1 - prev_i6[i6]) +
+         (1 - Se[test_id_typ6[i6]]) * prev_i6[i6])
+
+  ### herd level posterior probability of infection
+  predicted_proba[herd_id_pr6[i6]] <- d1_T1_i6[i6] * p_T1_i6[i6] +
+                         d1_T0_i6[i6] * (1 - p_T1_i6[i6]) +
+                         D1_d0_i6[i6] * (
+                         d0_T1_i6[i6] * p_T1_i6[i6] +
+                         d0_T0_i6[i6] * (1 - p_T1_i6[i6])  )
+
+  # status sampled from probability
+  predicted_status[herd_id_pr6[i6]] ~ dbern(predicted_proba[herd_id_pr6[i6]])
+
+  }'},
+'
 ##############################################################################
 ###  Priors
 ##############################################################################

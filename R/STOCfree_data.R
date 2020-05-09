@@ -261,7 +261,9 @@ STOCfree_data <- function(test_data = data.frame(),
   test_data$status_type[dplctd_month] <- rep(3)
   rm(dplctd_month)
   test_data$status_type[test_data$status_id %in% herd_test_data$ind_i] <- 1
-  test_data$status_type[test_data$status_id %in% herd_test_data$ind_p & is.na(test_data$test_res)]  <- 4
+  if(test_level == "herd")   test_data$status_type[test_data$status_id %in% herd_test_data$ind_p & is.na(test_data$test_res)]  <- 4
+  if(test_level == "animal") test_data$status_type[test_data$status_id %in% herd_test_data$ind_p & is.na(test_data$n_pos)]  <- 4
+  test_data$status_type[test_data$status_id %in% herd_test_data$ind_p & (is.na(test_data$test_res) | is.na(test_data$n_pos))]  <- 4
   test_data$status_type[test_data$status_id %in% herd_test_data$ind_p & test_data$status_type == 2] <- 5
   test_data$status_type[test_data$status_id %in% herd_test_data$ind_p & test_data$status_type == 3] <- 6
 
