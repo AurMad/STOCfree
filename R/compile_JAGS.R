@@ -26,7 +26,7 @@ compile_JAGS <- function(data,
 compile_JAGS.default <- function(data,
                                  n_chains,
                                  keep_model_file,
-                                 status_discrete){
+                                 status_discrete = TRUE){
 
   print("No method defined for this type of data")
 
@@ -36,7 +36,7 @@ compile_JAGS.default <- function(data,
 compile_JAGS.herd <- function(data,
                               n_chains = 4,
                               keep_model_file = FALSE,
-                              status_discrete){
+                              status_discrete = TRUE){
 
   n_herds <- attr(data, "number of herds")
   month_max <- max(data$test_data$month_id)
@@ -143,7 +143,7 @@ compile_JAGS.herd <- function(data,
 compile_JAGS.herd_rf <- function(data,
                                  n_chains = 4,
                                  keep_model_file = FALSE,
-                                 status_discrete){
+                                 status_discrete = TRUE){
 
   n_herds <- attr(data, "number of herds")
   month_max <- max(data$test_data$month_id)
@@ -252,7 +252,7 @@ compile_JAGS.herd_rf <- function(data,
 compile_JAGS.animal = function(data,
                                n_chains = 4,
                                keep_model_file = FALSE,
-                               status_discrete){
+                               status_discrete = TRUE){
 
   n_herds <- attr(data, "number of herds")
   month_max <- max(data$test_data$month_id)
@@ -361,7 +361,7 @@ compile_JAGS.animal = function(data,
 compile_JAGS.animal_rf = function(data,
                                   n_chains = 4,
                                   keep_model_file = FALSE,
-                                  status_discrete){
+                                  status_discrete = TRUE){
 
   n_herds <- attr(data, "number of herds")
   month_max <- max(data$test_data$month_id)
