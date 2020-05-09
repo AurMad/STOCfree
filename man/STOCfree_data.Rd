@@ -16,6 +16,7 @@ STOCfree_data(
   risk_date_col = NULL,
   risk_factor_col = NULL,
   risk_factor_type = c("continuous", "categorical"),
+  status_discrete = TRUE,
   lag1 = 0,
   lag2 = 0,
   FUN = sum
@@ -43,6 +44,8 @@ STOCfree_data(
 \item{risk_factor_col}{name of the column(s) with risk factor values}
 
 \item{risk_factor_type}{risk factor type. Must be either continuous or categorical}
+
+\item{FUN}{}
 }
 \value{
 A list of class STOCfree_data. A specific sub-class is defined based on the input.

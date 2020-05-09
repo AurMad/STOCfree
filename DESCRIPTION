@@ -1,7 +1,7 @@
 Package: STOCfree
 Type: Package
 Title: STOC free model: prediction of probability of freedom from longitudinal data
-Version: 0.6.1
+Version: 0.7
 Authors@R: person("Aurélien", "Madouasse", email = "aurelien.madouasse@oniris-nantes.fr",
                   role = c("aut", "cre"))
 Maintainer: Aurélien Madouasse <aurelien.madouasse@oniris-nantes.fr>

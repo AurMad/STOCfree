@@ -11,6 +11,10 @@
 #' @param risk_factor_col name of the column(s) with risk factor values
 #' @param risk_factor_type risk factor type. Must be either continuous or categorical
 #' @param test_name_col when several tests are used, name of the column containing the test names
+#' @param status_discrete
+#' @param lag1
+#' @param lag2
+#' @param FUN
 #'
 #' @return A list of class STOCfree_data. A specific sub-class is defined based on the input.
 #' @export
@@ -27,6 +31,7 @@ STOCfree_data <- function(test_data = data.frame(),
                           risk_date_col = NULL,
                           risk_factor_col = NULL,
                           risk_factor_type = c("continuous", "categorical"),
+                          status_discrete = TRUE,
                           lag1 = 0,
                           lag2 = 0,
                           FUN = sum){
@@ -314,6 +319,7 @@ STOCfree_data <- function(test_data = data.frame(),
   )
 
   attr(sfd, "level")  <- test_level
+  attr(sfd, "status_discrete")  <- status_discrete
   attr(sfd, "number of herds")  <- n_herds
   attr(sfd, "number of tests")  <- n_tests
   attr(sfd, "month first test") <- month_first

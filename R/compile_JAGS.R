@@ -32,6 +32,7 @@ compile_JAGS.default <- function(data, n_chains, keep_model_file){
 compile_JAGS.herd <- function(data, n_chains = 4, keep_model_file = FALSE){
 
   n_herds <- attr(data, "number of herds")
+  status_discrete <- attr(data, "status_discrete")
   month_max <- max(data$test_data$month_id)
 
   test_data <- data$test_data
@@ -114,7 +115,9 @@ compile_JAGS.herd <- function(data, n_chains = 4, keep_model_file = FALSE){
     JAGS_data$herd_id_pr6 <- test_data$herd_id[test_data$status_type == 6]
   }
 
+  if(isFALSE(status_discrete)) class(data)[1] <- paste0(class(data)[1], "_proba")
   write_JAGS_model(data)
+  if(isFALSE(status_discrete)) class(data)[1] <- gsub("_proba", "", class(data)[1])
 
   JAGS_model_compiled <- rjags::jags.model(
     file = "JAGS_model.txt",
@@ -134,6 +137,7 @@ compile_JAGS.herd <- function(data, n_chains = 4, keep_model_file = FALSE){
 compile_JAGS.herd_rf <- function(data, n_chains = 4, keep_model_file = FALSE){
 
   n_herds <- attr(data, "number of herds")
+  status_discrete <- attr(data, "status_discrete")
   month_max <- max(data$test_data$month_id)
 
   test_data <- data$test_data
@@ -218,7 +222,9 @@ compile_JAGS.herd_rf <- function(data, n_chains = 4, keep_model_file = FALSE){
     JAGS_data$herd_id_pr6 <- test_data$herd_id[test_data$status_type == 6]
   }
 
+  if(isFALSE(status_discrete)) class(data)[1] <- paste0(class(data)[1], "_proba")
   write_JAGS_model(data)
+  if(isFALSE(status_discrete)) class(data)[1] <- gsub("_proba", "", class(data)[1])
 
   JAGS_model_compiled <- rjags::jags.model(
     file = "JAGS_model.txt",
@@ -238,6 +244,7 @@ compile_JAGS.herd_rf <- function(data, n_chains = 4, keep_model_file = FALSE){
 compile_JAGS.animal = function(data, n_chains = 4, keep_model_file = FALSE){
 
   n_herds <- attr(data, "number of herds")
+  status_discrete <- attr(data, "status_discrete")
   month_max <- max(data$test_data$month_id)
 
   test_data <- data$test_data
@@ -322,7 +329,9 @@ compile_JAGS.animal = function(data, n_chains = 4, keep_model_file = FALSE){
     JAGS_data$herd_id_pr6 <- test_data$herd_id[test_data$status_type == 6]
   }
 
+  if(isFALSE(status_discrete)) class(data)[1] <- paste0(class(data)[1], "_proba")
   write_JAGS_model(data)
+  if(isFALSE(status_discrete)) class(data)[1] <- gsub("_proba", "", class(data)[1])
 
   JAGS_model_compiled <- rjags::jags.model(
     file = "JAGS_model.txt",
@@ -342,6 +351,7 @@ compile_JAGS.animal = function(data, n_chains = 4, keep_model_file = FALSE){
 compile_JAGS.animal_rf = function(data, n_chains = 4, keep_model_file = FALSE){
 
   n_herds <- attr(data, "number of herds")
+  status_discrete <- attr(data, "status_discrete")
   month_max <- max(data$test_data$month_id)
 
   test_data <- data$test_data
@@ -433,7 +443,9 @@ compile_JAGS.animal_rf = function(data, n_chains = 4, keep_model_file = FALSE){
     JAGS_data$herd_id_pr6 <- test_data$herd_id[test_data$status_type == 6]
   }
 
+  if(isFALSE(status_discrete)) class(data)[1] <- paste0(class(data)[1], "_proba")
   write_JAGS_model(data)
+  if(isFALSE(status_discrete)) class(data)[1] <- gsub("_proba", "", class(data)[1])
 
   JAGS_model_compiled <- rjags::jags.model(
     file = "JAGS_model.txt",
