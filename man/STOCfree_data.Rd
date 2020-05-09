@@ -16,7 +16,6 @@ STOCfree_data(
   risk_date_col = NULL,
   risk_factor_col = NULL,
   risk_factor_type = c("continuous", "categorical"),
-  status_discrete = TRUE,
   lag1 = 0,
   lag2 = 0,
   FUN = sum

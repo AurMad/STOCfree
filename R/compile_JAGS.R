@@ -14,6 +14,7 @@
 compile_JAGS <- function(data,
                          n_chains = 4,
                          keep_model_file = FALSE,
+                         status_discrete = TRUE,
                          ...){
 
   UseMethod("compile_JAGS")
@@ -22,17 +23,22 @@ compile_JAGS <- function(data,
 
 
 #' @export
-compile_JAGS.default <- function(data, n_chains, keep_model_file){
+compile_JAGS.default <- function(data,
+                                 n_chains,
+                                 keep_model_file,
+                                 status_discrete){
 
   print("No method defined for this type of data")
 
   }
 
 #' @export
-compile_JAGS.herd <- function(data, n_chains = 4, keep_model_file = FALSE){
+compile_JAGS.herd <- function(data,
+                              n_chains = 4,
+                              keep_model_file = FALSE,
+                              status_discrete){
 
   n_herds <- attr(data, "number of herds")
-  status_discrete <- attr(data, "status_discrete")
   month_max <- max(data$test_data$month_id)
 
   test_data <- data$test_data
@@ -134,10 +140,12 @@ compile_JAGS.herd <- function(data, n_chains = 4, keep_model_file = FALSE){
 
 
 #' @export
-compile_JAGS.herd_rf <- function(data, n_chains = 4, keep_model_file = FALSE){
+compile_JAGS.herd_rf <- function(data,
+                                 n_chains = 4,
+                                 keep_model_file = FALSE,
+                                 status_discrete){
 
   n_herds <- attr(data, "number of herds")
-  status_discrete <- attr(data, "status_discrete")
   month_max <- max(data$test_data$month_id)
 
   test_data <- data$test_data
@@ -241,10 +249,12 @@ compile_JAGS.herd_rf <- function(data, n_chains = 4, keep_model_file = FALSE){
 
 
 #' @export
-compile_JAGS.animal = function(data, n_chains = 4, keep_model_file = FALSE){
+compile_JAGS.animal = function(data,
+                               n_chains = 4,
+                               keep_model_file = FALSE,
+                               status_discrete){
 
   n_herds <- attr(data, "number of herds")
-  status_discrete <- attr(data, "status_discrete")
   month_max <- max(data$test_data$month_id)
 
   test_data <- data$test_data
@@ -348,10 +358,12 @@ compile_JAGS.animal = function(data, n_chains = 4, keep_model_file = FALSE){
 
 
 #' @export
-compile_JAGS.animal_rf = function(data, n_chains = 4, keep_model_file = FALSE){
+compile_JAGS.animal_rf = function(data,
+                                  n_chains = 4,
+                                  keep_model_file = FALSE,
+                                  status_discrete){
 
   n_herds <- attr(data, "number of herds")
-  status_discrete <- attr(data, "status_discrete")
   month_max <- max(data$test_data$month_id)
 
   test_data <- data$test_data
