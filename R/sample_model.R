@@ -41,7 +41,7 @@ sample_model.herd <- function(compiled_model,
 
   ## iterations for burnin
   message(paste0("Burnin (", n_burnin, " iterations)"))
-  update(compiled_model, n.iter = n_iter)
+  update(compiled_model, n.iter = n_burnin)
 
   ## samples from posterior distributions
   variables_to_save <- c("Se", "Sp", "tau1", "tau2",
@@ -89,7 +89,7 @@ sample_model.herd_rf <- function(compiled_model,
 
   ## iterations for burnin
   message(paste0("Burnin (", n_burnin, " iterations)"))
-  update(compiled_model, n.iter = n_iter)
+  update(compiled_model, n.iter = n_burnin)
 
   ## samples from posterior distributions
   variables_to_save <- c("Se", "Sp", "theta", "tau2",
@@ -136,7 +136,7 @@ sample_model.animal <- function(compiled_model,
 
   ## iterations for burnin
   message(paste0("Burnin (", n_burnin, " iterations)"))
-  update(compiled_model, n.iter = n_iter)
+  update(compiled_model, n.iter = n_burnin)
 
   ## samples from posterior distributions
   variables_to_save <- c("Se", "Sp", "pi_within", "tau1", "tau2",
@@ -184,7 +184,7 @@ sample_model.animal_rf <- function(compiled_model,
 
   ## iterations for burnin
   message(paste0("Burnin (", n_burnin, " iterations)"))
-  update(compiled_model, n.iter = n_iter)
+  update(compiled_model, n.iter = n_burnin)
 
   ## samples from posterior distributions
   variables_to_save <- c("Se", "Sp", "pi_within", "theta", "tau2",

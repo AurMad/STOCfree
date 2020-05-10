@@ -8,7 +8,7 @@ compile_JAGS(
   data,
   n_chains = 4,
   keep_model_file = FALSE,
-  status_discrete = TRUE,
+  status = c("discrete", "proba", "predict"),
   ...
 )
 }
@@ -17,9 +17,9 @@ compile_JAGS(
 
 \item{n_chains}{number of MCMC chains}
 
-\item{...}{}
+\item{keep_model_file}{if TRUE, the JAGS model is written as a text file in the working folder}
 
-\item{keep_model}{should the JAGS model file be saved on the disk}
+\item{status}{'discrete' latent status (0/1) is modelled, 'proba' probability of latent status is modelled, 'predict' predictive simulation from the model prior and data}
 }
 \value{
 a compiled JAGS model
