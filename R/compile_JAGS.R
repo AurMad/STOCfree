@@ -253,7 +253,7 @@ compile_JAGS.herd_rf <- function(data,
 
 
 #' @export
-compile_JAGS.animal = function(data,
+compile_JAGS.animal <- function(data,
                                n_chains = 4,
                                keep_model_file = FALSE,
                                status = c("discrete", "proba", "predict")){
@@ -364,7 +364,7 @@ compile_JAGS.animal = function(data,
 
 
 #' @export
-compile_JAGS.animal_rf = function(data,
+compile_JAGS.animal_rf <- function(data,
                                   n_chains = 4,
                                   keep_model_file = FALSE,
                                   status = c("discrete", "proba", "predict")){

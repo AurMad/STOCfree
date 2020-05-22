@@ -470,7 +470,7 @@ cat('model{
 
   ## test result
   p_test_pos_typ3[i3] <- Se[test_id_typ3[i3]] * pi[status_typ3[i3]] * pi_within +
-                          (1 - Sp[test_id_typ3[i3]]) * (1 - pi[status_typ2[i2]] * pi_within)
+                          (1 - Sp[test_id_typ3[i3]]) * (1 - pi[status_typ2[i3]] * pi_within)
 
   n_pos_typ3[i3] ~ dbin(p_test_pos_typ3[i3], n_tested_typ3[i3])
 
@@ -709,7 +709,7 @@ if(n_status_typ3 == 0){''} else {'
 
     ## test result
     p_test_pos_typ3[i3] <- Se[test_id_typ3[i3]] * pi[status_typ3[i3]] * pi_within +
-      (1 - Sp[test_id_typ3[i3]]) * (1 - pi[status_typ2[i2]] * pi_within)
+      (1 - Sp[test_id_typ3[i3]]) * (1 - pi[status_typ2[i3]] * pi_within)
 
     n_pos_typ3[i3] ~ dbin(p_test_pos_typ3[i3], n_tested_typ3[i3])
 
@@ -1331,7 +1331,7 @@ write_JAGS_model.animal_proba <- function(data){
 
   ## test result
   p_test_pos_typ3[i3] <- Se[test_id_typ3[i3]] * pi[status_typ3[i3]] * pi_within +
-                          (1 - Sp[test_id_typ3[i3]]) * (1 - pi[status_typ2[i2]] * pi_within)
+                          (1 - Sp[test_id_typ3[i3]]) * (1 - pi[status_typ2[i3]] * pi_within)
 
   n_pos_typ3[i3] ~ dbin(p_test_pos_typ3[i3], n_tested_typ3[i3])
 
@@ -1570,7 +1570,7 @@ write_JAGS_model.animal_rf_proba <- function(data){
 
     ## test result
     p_test_pos_typ3[i3] <- Se[test_id_typ3[i3]] * pi[status_typ3[i3]] * pi_within +
-      (1 - Sp[test_id_typ3[i3]]) * (1 - pi[status_typ2[i2]] * pi_within)
+      (1 - Sp[test_id_typ3[i3]]) * (1 - pi[status_typ2[i3]] * pi_within)
 
     n_pos_typ3[i3] ~ dbin(p_test_pos_typ3[i3], n_tested_typ3[i3])
 
