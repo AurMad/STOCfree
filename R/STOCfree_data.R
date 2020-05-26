@@ -220,8 +220,7 @@ STOCfree_data <- function(test_data = data.frame(),
       data.frame(
         herd_id = as.integer(unique(x$herd_id)),
         ind_i = as.integer(min(x$status_id)),
-        ind_p = as.integer(max(x$status_id)),
-        last_is_test = ifelse(is.na(x[x$month_id == month_last_id, "n_pos"]), 0, 1)
+        ind_p = as.integer(max(x$status_id))
       )
     })
     herd_test_data <- do.call("rbind", herd_test_data)
@@ -241,8 +240,7 @@ STOCfree_data <- function(test_data = data.frame(),
       data.frame(
         herd_id = as.integer(unique(x$herd_id)),
         ind_i = as.integer(min(x$status_id)),
-        ind_p = as.integer(max(x$status_id)),
-        last_is_test = ifelse(is.na(x[x$month_id == month_last_id, "test_res"]), 0, 1)
+        ind_p = as.integer(max(x$status_id))
       )
     })
     herd_test_data <- do.call("rbind", herd_test_data)
@@ -530,7 +528,7 @@ sf_remove_risk_factor <- function(sfd,
 make_animal_test <- function(test_data, test_res_col){
 
   test_data <- by(test_data,
-                list(test_data$herd_id, test_data$month_id),
+                list(test_data$herd_id, test_data$month_id, test_data$test_id),
                 function(x){
                   data.frame(
                     herd_id = unique(x$herd_id),
