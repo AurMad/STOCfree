@@ -220,8 +220,6 @@ STOCfree_data <- function(test_data = data.frame(),
       data.frame(
         herd_id = as.integer(unique(x$herd_id)),
         ind_i = as.integer(min(x$status_id)),
-        ind_j = as.integer(min(x$status_id) + 1),
-        ind_f = as.integer(max(x$status_id) - 1),
         ind_p = as.integer(max(x$status_id)),
         last_is_test = ifelse(is.na(x[x$month_id == month_last_id, "n_pos"]), 0, 1)
       )
@@ -243,8 +241,6 @@ STOCfree_data <- function(test_data = data.frame(),
       data.frame(
         herd_id = as.integer(unique(x$herd_id)),
         ind_i = as.integer(min(x$status_id)),
-        ind_j = as.integer(min(x$status_id) + 1),
-        ind_f = as.integer(max(x$status_id) - 1),
         ind_p = as.integer(max(x$status_id)),
         last_is_test = ifelse(is.na(x[x$month_id == month_last_id, "test_res"]), 0, 1)
       )
