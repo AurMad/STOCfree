@@ -83,10 +83,10 @@ make_nwinf_data <- function(sfd,
 #'
 #' @param nwinf a dataset created with the make_nwinf_data() function
 #' @param rf_data risk factor data. Ids for farms must be the same as in the original test results data.
-#' @param rf_col
-#' @param rf_date_col
-#' @param lag1
-#' @param lag2
+#' @param rf_col name of the column containing the risk factor data
+#' @param rf_date_col name of the column with date of risk factor occurrence
+#' @param lag1 start of interval between risk factor occurrence and new infection
+#' @param lag2 end of interval between risk factor occurrence and new infection
 #'
 #' @return
 #' @export

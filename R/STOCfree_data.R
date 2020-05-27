@@ -4,13 +4,13 @@
 #' @param test_herd_col name of the column with herd / farm identifiers
 #' @param test_date_col name of the column with date of test
 #' @param test_res_col name of the column with test results
+#' @param test_name_col when several tests are used, name of the column containing the test names
 #' @param test_level level at which the tests are performed. Must be either herd of animal
 #' @param risk_factor_data a data.frame containing the risk factors
 #' @param risk_herd_col name of the column with herd / farm identifiers
 #' @param risk_date_col name of the column with date when the risk factors apply
 #' @param risk_factor_col name of the column(s) with risk factor values
 #' @param risk_factor_type risk factor type. Must be either continuous or categorical
-#' @param test_name_col when several tests are used, name of the column containing the test names
 #' @param lag1
 #' @param lag2
 #' @param FUN

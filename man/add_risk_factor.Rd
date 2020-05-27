@@ -19,7 +19,13 @@ add_risk_factor(
 
 \item{rf_data}{risk factor data. Ids for farms must be the same as in the original test results data.}
 
-\item{lag2}{}
+\item{rf_col}{name of the column containing the risk factor data}
+
+\item{rf_date_col}{name of the column with date of risk factor occurrence}
+
+\item{lag1}{start of interval between risk factor occurrence and new infection}
+
+\item{lag2}{end of interval between risk factor occurrence and new infection}
 }
 \value{
 
