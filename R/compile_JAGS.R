@@ -54,8 +54,8 @@ compile_JAGS.herd <- function(data,
 
   ## Priors for risk factors
   risk_factors <- data$risk_factors[data$risk_factors$ref == 0,]
-  theta_norm_mean <- risk_factors$mean_prior
-  theta_norm_prec <- 1 / risk_factors$sd_prior^2
+  theta_norm_mean <- data$risk_factors$mean_prior
+  theta_norm_prec <- 1 / data$risk_factors$sd_prior^2
 
   ## Priors for test characteristics
   test_char <- data$test_perf_prior
@@ -163,8 +163,8 @@ compile_JAGS.herd_rf <- function(data,
 
   ## Priors for risk factors
   risk_factors <- data$risk_factors[data$risk_factors$ref == 0,]
-  theta_norm_mean <- risk_factors$mean_prior
-  theta_norm_prec <- 1 / risk_factors$sd_prior^2
+  theta_norm_mean <- data$risk_factors$mean_prior
+  theta_norm_prec <- 1 / data$risk_factors$sd_prior^2
 
   ## Priors for test characteristics
   test_char <- data$test_perf_prior
@@ -385,8 +385,8 @@ compile_JAGS.animal_rf <- function(data,
 
   ## Priors for risk factors
   risk_factors <- data$risk_factors[data$risk_factors$ref == 0,]
-  theta_norm_mean <- risk_factors$mean_prior
-  theta_norm_prec <- 1 / risk_factors$sd_prior^2
+  theta_norm_mean <- data$risk_factors$mean_prior
+  theta_norm_prec <- 1 / data$risk_factors$sd_prior^2
 
   ## Priors for test characteristics
   test_char <- data$test_perf_prior

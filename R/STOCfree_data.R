@@ -69,7 +69,7 @@ STOCfree_data <- function(test_data = data.frame(),
                                    end = paste0(month_last, "-01"))
 
   ## List of all months in the dataset numbered
-  date_min_herds <- all_months_list$date__1[which(all_months_list$month_id == (max(all_months_list$month_id) - 4))]
+  date_min_herds <- all_months_list$date__1[which(all_months_list$month_id == (max(all_months_list$month_id) - 2))]
   ## First date in the dataset for each herd
   herd_first_date <- tapply(
     as.Date(test_data[[test_date_col]]),
@@ -183,7 +183,6 @@ STOCfree_data <- function(test_data = data.frame(),
     risk_factor = "Intercept",
     type = "intercept",
     modality = NA,
-    ref = 0,
     stringsAsFactors = FALSE
   )
 
@@ -359,14 +358,15 @@ STOCfree_data <- function(test_data = data.frame(),
 #'
 #' @examples
 sf_add_risk_factor <- function(sfd,
-                                  risk_factor_data,
-                                  risk_herd_col = NULL,
-                                  risk_date_col = NULL,
-                                  risk_factor_col = NULL,
-                                  risk_factor_type = c("continuous", "categorical"),
-                                  lag1 = 0,
-                                  lag2 = 0,
-                                  FUN = sum){
+                               risk_factor_data,
+                               risk_herd_col = NULL,
+                               risk_date_col = NULL,
+                               risk_factor_col = NULL,
+                               risk_factor_type = c("continuous", "categorical"),
+                               risk_factor_ref = NULL,
+                               lag1 = 0,
+                               lag2 = 0,
+                               FUN = sum){
 
   if(length(lag1) == 1 & length(risk_factor_col) > 1){ lag1 <- rep(lag1, length(risk_factor_col)) }
   if(length(lag2) == 1 & length(risk_factor_col) > 1){ lag2 <- rep(lag2, length(risk_factor_col)) }
@@ -374,10 +374,11 @@ sf_add_risk_factor <- function(sfd,
   ## First month in the test data
   month_first <- attr(sfd, "month first test")
 
-  ## Final risk factor data
+  ## Final risk factor data - to be populated
   rfd <- sfd$risk_factor_data
 
   ## Risk factor data to incorporate in the final data
+  risk_factor_data <- risk_factor_data[, c(risk_herd_col, risk_date_col, risk_factor_col)]
   risk_factor_data <- merge(risk_factor_data,
                             sfd$herd_id_corresp)
 
@@ -394,83 +395,204 @@ sf_add_risk_factor <- function(sfd,
     as.Date(risk_factor_data[[risk_date_col]]),
     "%Y-%m-01"))
 
+  ## dates as months in the risk_factor_data made to correspond to the
+  ## the dates in the STOCfree_data object
   risk_factor_data <- merge(risk_factor_data, months_list)
 
+  ## the month_id column is renamed lagged_month
+  ## this will be used to merge these data with the STOCfree data with a lag
   colnames(risk_factor_data)[match("month_id", colnames(risk_factor_data))] <- "lagged_month"
 
+  ## Going through the list of all risk factors
   for(i in 1:length(risk_factor_col)){
 
-  ## final risk factor data
-  risk_factor_data_i <- risk_factor_data[
-    order(risk_factor_data$herd_id,
-          risk_factor_data$lagged_month),
-    c("herd_id", "lagged_month", risk_factor_col[i])]
+    ## dataset for this risk factor
+    risk_factor_data_i <- risk_factor_data[
+      order(risk_factor_data$herd_id,
+            risk_factor_data$lagged_month),
+      c("herd_id", "lagged_month", risk_factor_col[i])]
 
-  colnames(risk_factor_data_i)[3] <- "risk_factor"
+    colnames(risk_factor_data_i)[3] <- "risk_factor"
 
-  ## lagged variables
-  rfd_i <- merge(rfd[, c("status_id", "herd_id", "month_id")],
-                 data.frame(
-                 lagged_month = lag1[i]:lag2[i]
-               ))
+    ## lagged months from lag1 to lag2
+    rfd_i <- merge(rfd[, c("status_id", "herd_id", "month_id")],
+                   data.frame(
+                     lagged_month = lag1[i]:lag2[i]
+                   ))
 
-  rfd_i$lagged_month <- with(rfd_i, month_id - lagged_month)
+    ## each month_id in each herd is matched with the lagged months of interest
+    rfd_i$lagged_month <- with(rfd_i, month_id - lagged_month)
 
-  ## merging with risk factor data
-  risk_factor_data_i <- merge(rfd_i,
-                            risk_factor_data_i,
-                            all.x = TRUE)
+    ## merging with risk factor data
+    risk_factor_data_i <- merge(rfd_i,
+                                risk_factor_data_i,
+                                all.x = TRUE)
 
-  risk_factor_data_i$risk_factor[is.na(risk_factor_data_i$risk_factor)] <- 0
+    ##########################
+    ## Categorical risk factor
+    ##########################
+    if(risk_factor_type[i] == "categorical"){
 
-  ## aggregation by month id
-  rf_aggr <- dplyr::group_by(risk_factor_data_i, status_id, herd_id, month_id)
-  rf_aggr <- dplyr::summarise(rf_aggr, risk_factor = FUN(risk_factor))
+      ## when several modalities observed for the same status (month)
+      ## only the most frequent is kept
+      risk_factor_data_i <- dplyr::group_by(risk_factor_data_i, status_id, herd_id, month_id)
+      risk_factor_data_i <- dplyr::count(risk_factor_data_i, risk_factor)
+      risk_factor_data_i <- dplyr::slice(risk_factor_data_i, which.max(n))
 
-  if(risk_factor_type[i] == "categorical"){
+      ## list of modalities for this risk factor
+      ls_modalities <- as.data.frame(
+        table(risk_factor_data[[risk_factor_col[i]]]),
+        stringsAsFactors = FALSE
+      )
 
-    rf_aggr$risk_factor <- with(rf_aggr,
-                                ifelse(risk_factor >= 1, 1, 0))
+      ls_modalities <- ls_modalities[rev(order(ls_modalities$Freq)),]
 
+      ## removing the column with count of modality occurrences
+      risk_factor_data_i <- risk_factor_data_i[, -match("n", colnames(risk_factor_data_i))]
+
+      ## case where a reference modality is provided
+      ## (when no reference provided, the most frequent modality is used as reference)
+      if(!is.null(risk_factor_ref)){
+
+        i_ref <- match(risk_factor_ref, ls_modalities[, 1])
+        if(length(i_ref) == 0) stop(paste("The reference modality", risk_factor_ref, "does not exist"))
+        mod_ref <- ls_modalities[i_ref, ]
+        ls_modalities <- ls_modalities[-i_ref, ]
+        ls_modalities <- ls_modalities[rev(order(ls_modalities$Freq)),]
+
+        ls_modalities <- rbind(mod_ref, ls_modalities)
+
+      }
+
+      ls_modalities$modality <- 1:nrow(ls_modalities)
+
+      colnames(ls_modalities) <- c("modality_name", "freq", "modality")
+      ls_modalities <- ls_modalities[, c("modality", "modality_name", "freq")]
+
+      ## updating risk factor list
+      ### if risk factor already exists, it is removed
+      if(paste(risk_factor_col[i], lag1, lag2, sep = "_") %in% sfd$risk_factors$risk_factor){
+
+        i_row <- match(paste(risk_factor_col[i], lag1, lag2, sep = "_"), sfd$risk_factors$risk_factor)
+        sfd$risk_factors <- sfd$risk_factors[-i_row,]
+
+      }
+
+      ## row with reference modality removed
+      ls_modalities <- ls_modalities[-1, ]
+
+      tab_rf_i <- data.frame(
+        risk_factor = rep(paste(risk_factor_col[i], lag1, lag2, sep = "_")),
+        type = rep(risk_factor_type[i]),
+        modality = ls_modalities$modality_name,
+        stringsAsFactors = FALSE)
+
+      sfd$risk_factors <- rbind(sfd$risk_factors,
+                                tab_rf_i)
+
+
+      ## contrast matrix - each modality in a different column
+      for(j in 1:nrow(ls_modalities)){
+
+        risk_factor_data_i$tmp <- ifelse(risk_factor_data_i$risk_factor == ls_modalities$modality_name[j], 1, 0)
+        ## when missing values, the reference category is used
+        risk_factor_data_i$tmp[is.na(risk_factor_data_i$tmp)] <- 0
+
+        ## column name for this modality
+        ## if lag1 and lag2 = 0, lags not included in the name
+        if(lag1[i] == 0 & lag2[i] == 0){
+
+          nm_modality <- paste(risk_factor_col[i], ls_modalities$modality_name[j], sep = "_")
+
+        } else {
+
+          nm_modality <- paste(risk_factor_col[i], lag1[i], lag2[i], ls_modalities$modality_name[j], sep = "_")
+
+        }
+
+        colnames(risk_factor_data_i)[length(risk_factor_data_i)] <- nm_modality
+
+        ## if the modality exists in the final risk factor dataset, it is removed
+        if(nm_modality %in% colnames(rfd)){
+
+          i_col <- match(nm_modality, colnames(rfd))
+          rfd <- rfd[, -i_col]
+
+        }
+
+      }
+
+      ## id of the column with risk factor
+      j_col_rf <- match("risk_factor", colnames(risk_factor_data_i))
+      ## risk factor column removed to keep contrasts only
+      risk_factor_data_i <- risk_factor_data_i[, -j_col_rf]
+      ## column names with the different modalities
+      col_modalities <- colnames(risk_factor_data_i)[j_col_rf:length(risk_factor_data_i)]
+
+    }
+    ##########################
+    ## continuous risk factors
+    ##########################
+    if(risk_factor_type[i] == "continuous"){
+
+      ## Missing values values for continuous risk factors replaced by 0
+      risk_factor_data_i$risk_factor[is.na(risk_factor_data_i$risk_factor)] <- 0
+
+      ## aggregation by month id
+      risk_factor_data_i <- dplyr::group_by(risk_factor_data_i, status_id, herd_id, month_id)
+      risk_factor_data_i <- dplyr::summarise(risk_factor_data_i, risk_factor = FUN(risk_factor))
+
+
+
+      if(lag1[i] == 0 & lag2[i] == 0){
+
+        rf_name <- risk_factor_col[i]
+
+      } else {
+
+        rf_name <- paste(risk_factor_col[i], lag1[i], lag2[i], sep = "_")
+
+      }
+
+      ## renaming the column corresponding to the risk factor
+      colnames(risk_factor_data_i)[match("risk_factor", colnames(risk_factor_data_i))] <- rf_name
+
+      ## if the risk factor exists in the final risk factor dataset, it is removed
+      if(rf_name %in% colnames(rfd)){
+
+        i_col <- match(rf_name, colnames(rfd))
+        rfd <- rfd[, -i_col]
+
+      }
+
+      ## updating risk factor list
+      if(rf_name %in% sfd$risk_factors$risk_factor){
+
+        i_row <- match(rf_name, sfd$risk_factors$risk_factor)
+        sfd$risk_factors <- sfd$risk_factors[-i_row,]
+
+      }
+      sfd$risk_factors <- rbind(sfd$risk_factors,
+                                data.frame(
+                                  risk_factor = rf_name,
+                                  type = risk_factor_type[i],
+                                  modality = NA,
+                                  stringsAsFactors = FALSE))
+
+
+    }
   }
 
   ## Final risk factor data
-  rfd <- merge(
-    rfd, rf_aggr,
-    all.x = TRUE)
+  rfd <- merge(rfd,
+               risk_factor_data_i,
+               all.x = TRUE)
 
-  if(lag1[i] == 0 & lag2[i] == 0){
-
-    rf_name <- risk_factor_col[i]
-
-  } else {
-
-    rf_name <- paste(risk_factor_col[i], lag1[i], lag2[i], sep = "_")
-
-    }
-
-
-  if(!is.na(match(rf_name, colnames(rfd)))){
-
-    sfd <- sf_remove_risk_factor(sfd,
-                          risk_factor = rf_name)
-
-  }
-  colnames(rfd)[match("risk_factor", colnames(rfd))] <- rf_name
-
-  ## updating risk factor list
-  sfd$risk_factors <- rbind(sfd$risk_factors,
-                            data.frame(
-                              risk_factor = rf_name,
-                              type = risk_factor_type[i],
-                              modality = ifelse(risk_factor_type[i] == "categorical", 1, NA),
-                              ref = 0,
-                              stringsAsFactors = FALSE))
-
-  }
 
   rfd <- rfd[order(rfd$status),]
   rownames(rfd) <- 1:nrow(rfd)
+
+  rfd
 
   sfd$risk_factor_data <- rfd
 
@@ -480,9 +602,9 @@ sf_add_risk_factor <- function(sfd,
     sfd$inf_dyn_priors <- sfd$inf_dyn_priors[-grep("tau1", names(sfd$inf_dyn_priors))]
 
   }
-
-  ## Number of risk factors
-  n_risk_factors <- length(sfd$risk_factor_data) - 4
+  #
+  # ## Number of risk factors
+  n_risk_factors <- nrow(sfd$risk_factors) - 1
   attr(sfd, "number of risk factors")  <- n_risk_factors
 
   test_level <- attr(sfd, "level")
@@ -494,6 +616,7 @@ sf_add_risk_factor <- function(sfd,
 
 
   sfd
+
 }
 
 

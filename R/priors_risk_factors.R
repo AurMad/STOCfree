@@ -39,11 +39,20 @@ set_priors_rf <- function(x = STOCfree_data(),
 
   }
 
+
   ## Risk factor extracted from the STOCfree_data object
   risk_factors <- x$risk_factors
 
-  rf_rows <- which(risk_factors$risk_factor == risk_factor)
+  ## creation of columns for parameters of prior distributions
+  if(!"mean_prior" %in% colnames(risk_factors)){
 
+    risk_factors$mean_prior <- rep(NA)
+    risk_factors$sd_prior   <- rep(NA)
+
+  }
+
+
+  rf_rows <- which(risk_factors$risk_factor == risk_factor)
   if(risk_factor == "Intercept"){
 
     risk_factors$mean_prior[rf_rows] <- mean
@@ -61,14 +70,24 @@ set_priors_rf <- function(x = STOCfree_data(),
 
   if(unique(risk_factors$type[rf_rows]) == "categorical"){
 
-    md_row <- which(risk_factors$modality == modality)
 
-    if(risk_factors$ref[md_row] == "1") stop("No priors to set for a reference modality")
+    if(is.null(modality)){
+
+      risk_factors$mean_prior[rf_rows] <- mean
+      risk_factors$sd_prior[rf_rows] <- sd
+
+    } else {
+
+    if(! modality %in% risk_factors$modality[rf_rows]) stop("Modality not found")
+
+    md_row <- which(risk_factors$modality == modality)
 
     row <- intersect(rf_rows, md_row)
 
     risk_factors$mean_prior[row] <- mean
     risk_factors$sd_prior[row] <- sd
+
+       }
 
   }
 
@@ -95,12 +114,9 @@ plot_priors_rf <- function(x = STOCfree_data(), n = 100000){
 
   ## Risk factor data
   risk_factors <- x$risk_factors
-  ## Discard rows associated with reference modalities of categorical variables
-  ind_cat_ref <- which(risk_factors$type == "categorical" &
-                         risk_factors$ref == 1)
-  if(length(ind_cat_ref) > 0) risk_factors <- risk_factors[-ind_cat_ref,]
+
   ## Number of variables (including intercept)
-  lg_x <- length(unique(risk_factors$risk_factor))
+  lg_x <- nrow(risk_factors)
   ## Number of rows of the plotting window (assuming 2 columns)
   plot_nrows <- ceiling(lg_x / 2)
 
