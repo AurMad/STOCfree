@@ -471,9 +471,9 @@ sf_add_risk_factor <- function(sfd,
 
       ## updating risk factor list
       ### if risk factor already exists, it is removed
-      if(paste(risk_factor_col[i], lag1, lag2, sep = "_") %in% sfd$risk_factors$risk_factor){
+      if(paste(risk_factor_col[i], lag1[i], lag2[i], sep = "_") %in% sfd$risk_factors$risk_factor){
 
-        i_row <- match(paste(risk_factor_col[i], lag1, lag2, sep = "_"), sfd$risk_factors$risk_factor)
+        i_row <- match(paste(risk_factor_col[i], lag1[i], lag2[i], sep = "_"), sfd$risk_factors$risk_factor)
         sfd$risk_factors <- sfd$risk_factors[-i_row,]
 
       }
@@ -482,7 +482,7 @@ sf_add_risk_factor <- function(sfd,
       ls_modalities <- ls_modalities[-1, ]
 
       tab_rf_i <- data.frame(
-        risk_factor = rep(paste(risk_factor_col[i], lag1, lag2, sep = "_")),
+        risk_factor = rep(paste(risk_factor_col[i], lag1[i], lag2[i], sep = "_")),
         type = rep(risk_factor_type[i]),
         modality = ls_modalities$modality_name,
         stringsAsFactors = FALSE)
