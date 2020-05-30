@@ -196,7 +196,7 @@ compile_JAGS.herd_rf <- function(data,
     theta_norm_mean = theta_norm_mean,
     theta_norm_prec = theta_norm_prec,
     n_risk_factors = length(theta_norm_mean),
-    risk_factors = as.matrix(data$risk_factor_data[, -(1:4)])
+    risk_factors = as.matrix(data$risk_factor_data[, -(1:3)])
   )
 
   if(n_status_typ3 > 0){

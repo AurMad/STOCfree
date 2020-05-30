@@ -89,6 +89,9 @@ STOCfree_data <- function(test_data = data.frame(),
 
     }
 
+  ## Error message if there are less than 2 herds remaining
+  if(n_herds < 2) stop("Less than 2 herds. The model cannot be run.")
+
   ## old herd ids / new herd ids
   herd_id_corresp <- data.frame(
     old_herd_id = sort(unique(unlist(test_data[, test_herd_col]))),
@@ -305,7 +308,7 @@ STOCfree_data <- function(test_data = data.frame(),
     herd_test_data = herd_test_data,
     test_perf_prior = test_perf_prior,
     risk_factors = risk_factors,
-    risk_factor_data = rfd,
+    risk_factor_data = rfd[, -match("test_id", colnames(rfd))],
     inf_dyn_priors = inf_dyn_priors
   )
 
@@ -446,6 +449,9 @@ sf_add_risk_factor <- function(sfd,
       )
 
       ls_modalities <- ls_modalities[rev(order(ls_modalities$Freq)),]
+
+      ## error message for categorical risk factors with 1 modality only
+      if(nrow(ls_modalities) < 2) stop(paste("Cannot include", risk_factor_col[i], ": only 1 modality in the data"))
 
       ## removing the column with count of modality occurrences
       risk_factor_data_i <- risk_factor_data_i[, -match("n", colnames(risk_factor_data_i))]
