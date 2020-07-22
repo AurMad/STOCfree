@@ -186,6 +186,7 @@ add_risk_factor <- function(nwinf = nwinf_data(),
 #'
 #' @details this function models a probability of new infection as a function of risk factor occurrence considered at various time intervals before a test is performed. New infection is defined, at the herd test level, as a positive test result recorded after a negative test result on the previous test. All herds with 2 test results of which the first one is negative are eligible for a new infection. The association with risk factors recorded between lag1 months and lag2 months before the second test result are modelled with logistic regression. For each combination of lag1 and lag2 the AIC of the logistic model is recorded. The best interval is the one with the lowest AIC.
 #'
+#'When several test results are available on a month, the first test result is used.
 #'
 #' @return a data.frame with a model AIC for each combination of lag1 (start of interval) and lag2 (end of interval)
 #' @export
@@ -224,10 +225,7 @@ logit_nwinf_lagged <- function(sf_data,
 
   ## New infection data created from test results
   nwinf_data <- sf_data$test_data
-
-  ## renaming columns with test results and test dates
-  # colnames(nwinf_data)[match(sf_data$var_names[c("test_res_col", "test_date_col")],
-  #                            colnames(nwinf_data))] <- c("test_res", "test_date")
+  nwinf_data <- nwinf_data[-which(duplicated(nwinf_data[, c("herd_id", "month_id")])),]
 
   nwinf_data <- nwinf_data[order(nwinf_data$status_id),]
 
@@ -324,7 +322,7 @@ logit_nwinf_lagged <- function(sf_data,
     model_data <- dplyr::group_by(model_data,
                                   herd_id, month_id)
     model_data <- dplyr::summarise(model_data,
-                                   nwinf = unique(nwinf),
+                                   nwinf = round(median(nwinf)+10^-6),
                                    risk_factor = FUN(risk_factor))
 
     lg_yi  <- length(model_data$nwinf)

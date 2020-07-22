@@ -38,4 +38,6 @@ Modelling of all possible lagged relationships between risk factor occurrence an
 }
 \details{
 this function models a probability of new infection as a function of risk factor occurrence considered at various time intervals before a test is performed. New infection is defined, at the herd test level, as a positive test result recorded after a negative test result on the previous test. All herds with 2 test results of which the first one is negative are eligible for a new infection. The association with risk factors recorded between lag1 months and lag2 months before the second test result are modelled with logistic regression. For each combination of lag1 and lag2 the AIC of the logistic model is recorded. The best interval is the one with the lowest AIC.
+
+When several test results are available on a month, the first test result is used.
 }
