@@ -53,6 +53,10 @@ sample_model.herd <- function(compiled_model,
                                  n.iter = n_iter,
                                  thin = n_thin)
 
+  ## Gelman diag from the coda package to assess convergence
+  r_hat <- coda::gelman.diag(samples, autoburnin = FALSE)$psrf
+  r_hat <- r_hat[-grep("predicted", rownames(r_hat)),]
+
   ## tidying the results for predcited probabilities
   predictions <- tidybayes::spread_draws(samples,
                                          predicted_proba[herd_id],
@@ -73,7 +77,8 @@ sample_model.herd <- function(compiled_model,
 
   list(
     parameters = parameters,
-    proba_inf = predictions
+    proba_inf = predictions,
+    Gelman_diag = r_hat
   )
 
 }
@@ -101,7 +106,11 @@ sample_model.herd_rf <- function(compiled_model,
                                  n.iter = n_iter,
                                  thin = n_thin)
 
-  ## tidying the results for predcited probabilities
+  ## Gelman diag from the coda package to assess convergence
+  r_hat <- coda::gelman.diag(samples, autoburnin = FALSE)$psrf
+  r_hat <- r_hat[-grep("predicted", rownames(r_hat)),]
+
+  ## tidying the results for predicted probabilities
   predictions <- tidybayes::spread_draws(samples,
                                          predicted_proba[herd_id],
                                          predicted_status[herd_id])
@@ -121,7 +130,9 @@ sample_model.herd_rf <- function(compiled_model,
 
   list(
     parameters = parameters,
-    proba_inf = predictions
+    proba_inf = predictions,
+    Gelman_diag = r_hat
+
   )
 
 }
@@ -148,7 +159,11 @@ sample_model.animal <- function(compiled_model,
                                  n.iter = n_iter,
                                  thin = n_thin)
 
-  ## tidying the results for predcited probabilities
+  ## Gelman diag from the coda package to assess convergence
+  r_hat <- coda::gelman.diag(samples, autoburnin = FALSE)$psrf
+  r_hat <- r_hat[-grep("predicted", rownames(r_hat)),]
+
+  ## tidying the results for predicted probabilities
   predictions <- tidybayes::spread_draws(samples,
                                          predicted_proba[herd_id],
                                          predicted_status[herd_id])
@@ -168,7 +183,9 @@ sample_model.animal <- function(compiled_model,
 
   list(
     parameters = parameters,
-    proba_inf = predictions
+    proba_inf = predictions,
+    Gelman_diag = r_hat
+
   )
 
 }
@@ -196,7 +213,11 @@ sample_model.animal_rf <- function(compiled_model,
                                  n.iter = n_iter,
                                  thin = n_thin)
 
-  ## tidying the results for predcited probabilities
+  ## Gelman diag from the coda package to assess convergence
+  r_hat <- coda::gelman.diag(samples, autoburnin = FALSE)$psrf
+  r_hat <- r_hat[-grep("predicted", rownames(r_hat)),]
+
+  ## tidying the results for predicted probabilities
   predictions <- tidybayes::spread_draws(samples,
                                          predicted_proba[herd_id],
                                          predicted_status[herd_id])
@@ -216,7 +237,9 @@ sample_model.animal_rf <- function(compiled_model,
 
   list(
     parameters = parameters,
-    proba_inf = predictions
+    proba_inf = predictions,
+    Gelman_diag = r_hat
+
   )
 
 }
