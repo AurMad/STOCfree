@@ -54,8 +54,12 @@ sample_model.herd <- function(compiled_model,
                                  thin = n_thin)
 
   ## Gelman diag from the coda package to assess convergence
-  r_hat <- coda::gelman.diag(samples, autoburnin = FALSE)$psrf
-  r_hat <- r_hat[-grep("predicted", rownames(r_hat)),]
+  r_hat <- NA
+  tryCatch({
+    r_hat <- coda::gelman.diag(samples, autoburnin = FALSE)$psrf
+    r_hat <- r_hat[-grep("predicted", rownames(r_hat)),] },
+    error = function(e){print("Problem with the coda::gelman.diag() function.")}
+  )
 
   ## tidying the results for predcited probabilities
   predictions <- tidybayes::spread_draws(samples,
@@ -107,8 +111,12 @@ sample_model.herd_rf <- function(compiled_model,
                                  thin = n_thin)
 
   ## Gelman diag from the coda package to assess convergence
-  r_hat <- coda::gelman.diag(samples, autoburnin = FALSE)$psrf
-  r_hat <- r_hat[-grep("predicted", rownames(r_hat)),]
+  r_hat <- NA
+  tryCatch({
+    r_hat <- coda::gelman.diag(samples, autoburnin = FALSE)$psrf
+    r_hat <- r_hat[-grep("predicted", rownames(r_hat)),] },
+    error = function(e){print("Problem with the coda::gelman.diag() function.")}
+  )
 
   ## tidying the results for predicted probabilities
   predictions <- tidybayes::spread_draws(samples,
@@ -160,8 +168,12 @@ sample_model.animal <- function(compiled_model,
                                  thin = n_thin)
 
   ## Gelman diag from the coda package to assess convergence
-  r_hat <- coda::gelman.diag(samples, autoburnin = FALSE)$psrf
-  r_hat <- r_hat[-grep("predicted", rownames(r_hat)),]
+  r_hat <- NA
+  tryCatch({
+    r_hat <- coda::gelman.diag(samples, autoburnin = FALSE)$psrf
+    r_hat <- r_hat[-grep("predicted", rownames(r_hat)),] },
+    error = function(e){print("Problem with the coda::gelman.diag() function.")}
+  )
 
   ## tidying the results for predicted probabilities
   predictions <- tidybayes::spread_draws(samples,
@@ -214,8 +226,12 @@ sample_model.animal_rf <- function(compiled_model,
                                  thin = n_thin)
 
   ## Gelman diag from the coda package to assess convergence
-  r_hat <- coda::gelman.diag(samples, autoburnin = FALSE)$psrf
-  r_hat <- r_hat[-grep("predicted", rownames(r_hat)),]
+  r_hat <- NA
+  tryCatch({
+    r_hat <- coda::gelman.diag(samples, autoburnin = FALSE)$psrf
+    r_hat <- r_hat[-grep("predicted", rownames(r_hat)),] },
+    error = function(e){print("Problem with the coda::gelman.diag() function.")}
+  )
 
   ## tidying the results for predicted probabilities
   predictions <- tidybayes::spread_draws(samples,
