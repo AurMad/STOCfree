@@ -25,6 +25,7 @@ STOCfree_data <- function(test_data = data.frame(),
                           test_res_col = NULL,
                           test_name_col = NULL,
                           test_level = c("herd", "animal"),
+                          tes_N_anim = NULL,
                           risk_factor_data = NULL,
                           risk_herd_col = NULL,
                           risk_date_col = NULL,
@@ -654,19 +655,39 @@ sf_remove_risk_factor <- function(sfd,
 #' @export
 #'
 #' @examples
-make_animal_test <- function(test_data, test_res_col){
+make_animal_test <- function(test_data, test_res_col, tes_N_anim){
 
-  test_data <- by(test_data,
-                list(test_data$herd_id, test_data$month_id, test_data$test_id),
-                function(x){
-                  data.frame(
-                    herd_id = unique(x$herd_id),
-                    month_id = unique(x$month_id),
-                    test_id = unique(x$test_id),
-                    n_tested = length(na.omit(x[[test_res_col]])),
-                    n_pos = sum(x[[test_res_col]])
-                  )
-                })
+  ## if no denominator is provided for the binomial distribution, the the number of animals tested is used
+  if(is.null(tes_N_anim)){
+
+    test_data <- by(test_data,
+                    list(test_data$herd_id, test_data$month_id, test_data$test_id),
+                    function(x){
+                      data.frame(
+                        herd_id = unique(x$herd_id),
+                        month_id = unique(x$month_id),
+                        test_id = unique(x$test_id),
+                        n_tested = length(na.omit(x[[test_res_col]])),
+                        n_pos = sum(x[[test_res_col]])
+                      )
+                    })
+
+  } else {
+
+    test_data <- by(test_data,
+                    list(test_data$herd_id, test_data$month_id, test_data$test_id),
+                    function(x){
+                      data.frame(
+                        herd_id = unique(x$herd_id),
+                        month_id = unique(x$month_id),
+                        test_id = unique(x$test_id),
+                        n_tested = max(x[[test_res_col]]),
+                        n_pos = sum(x[[test_res_col]])
+                      )
+                    })
+
+      }
+
 
   test_data <- do.call("rbind", test_data)
   test_data <- test_data[order(test_data$herd_id, test_data$month_id),]
