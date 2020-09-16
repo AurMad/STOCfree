@@ -6,6 +6,7 @@
 #' @param test_res_col name of the column with test results
 #' @param test_name_col when several tests are used, name of the column containing the test names
 #' @param test_level level at which the tests are performed. Must be either herd of animal
+#' @param test_N_anim name of the column with the number of animals to use as the denominator in the animal level model.
 #' @param risk_factor_data a data.frame containing the risk factors
 #' @param risk_herd_col name of the column with herd / farm identifiers
 #' @param risk_date_col name of the column with date when the risk factors apply
@@ -25,7 +26,7 @@ STOCfree_data <- function(test_data = data.frame(),
                           test_res_col = NULL,
                           test_name_col = NULL,
                           test_level = c("herd", "animal"),
-                          tes_N_anim = NULL,
+                          test_N_anim = NULL,
                           risk_factor_data = NULL,
                           risk_herd_col = NULL,
                           risk_date_col = NULL,
@@ -166,7 +167,7 @@ STOCfree_data <- function(test_data = data.frame(),
                      all = TRUE)
 
   ## If level of testing is animal, test results is number pos / number tested
-  if(test_level == "animal") test_data <- make_animal_test(test_data, test_res_col)
+  if(test_level == "animal") test_data <- make_animal_test(test_data, test_res_col, test_N_anim)
 
   ## dataset to be merged with risk factor data
   ## numbers the status_id in the dataset
@@ -655,10 +656,10 @@ sf_remove_risk_factor <- function(sfd,
 #' @export
 #'
 #' @examples
-make_animal_test <- function(test_data, test_res_col, tes_N_anim){
+make_animal_test <- function(test_data, test_res_col, test_N_anim){
 
   ## if no denominator is provided for the binomial distribution, the the number of animals tested is used
-  if(is.null(tes_N_anim)){
+  if(is.null(test_N_anim)){
 
     test_data <- by(test_data,
                     list(test_data$herd_id, test_data$month_id, test_data$test_id),
@@ -681,7 +682,7 @@ make_animal_test <- function(test_data, test_res_col, tes_N_anim){
                         herd_id = unique(x$herd_id),
                         month_id = unique(x$month_id),
                         test_id = unique(x$test_id),
-                        n_tested = max(x[[test_res_col]]),
+                        n_tested = max(x[[test_N_anim]]),
                         n_pos = sum(x[[test_res_col]])
                       )
                     })

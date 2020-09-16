@@ -4,7 +4,7 @@
 \alias{make_animal_test}
 \title{Aggregate animal level data at the herd-month level}
 \usage{
-make_animal_test(test_data, test_res_col)
+make_animal_test(test_data, test_res_col, test_N_anim)
 }
 \arguments{
 \item{test_data}{}

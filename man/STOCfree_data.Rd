@@ -11,6 +11,7 @@ STOCfree_data(
   test_res_col = NULL,
   test_name_col = NULL,
   test_level = c("herd", "animal"),
+  test_N_anim = NULL,
   risk_factor_data = NULL,
   risk_herd_col = NULL,
   risk_date_col = NULL,
@@ -33,6 +34,8 @@ STOCfree_data(
 \item{test_name_col}{when several tests are used, name of the column containing the test names}
 
 \item{test_level}{level at which the tests are performed. Must be either herd of animal}
+
+\item{test_N_anim}{name of the column with the number of animals to use as the denominator in the animal level model.}
 
 \item{risk_factor_data}{a data.frame containing the risk factors}
 
