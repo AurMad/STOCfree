@@ -691,6 +691,7 @@ make_animal_test <- function(test_data, test_res_col, test_N_anim){
 
 
   test_data <- do.call("rbind", test_data)
+  test_data <- test_data[!is.na(test_data$n_tested),]
   test_data <- test_data[order(test_data$herd_id, test_data$month_id),]
   rownames(test_data) <- 1:nrow(test_data)
 
