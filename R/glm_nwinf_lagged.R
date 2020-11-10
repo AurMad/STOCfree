@@ -225,7 +225,8 @@ logit_nwinf_lagged <- function(sf_data,
 
   ## New infection data created from test results
   nwinf_data <- sf_data$test_data
-  nwinf_data <- nwinf_data[-which(duplicated(nwinf_data[, c("herd_id", "month_id")])),]
+  nwinf_data_dup <- which(duplicated(nwinf_data[, c("herd_id", "month_id")]))
+  if(length(nwinf_data_dup) > 0) nwinf_data <- nwinf_data[-nwinf_data_dup,]
 
   nwinf_data <- nwinf_data[order(nwinf_data$status_id),]
 
@@ -320,7 +321,8 @@ logit_nwinf_lagged <- function(sf_data,
     model_data <- dplyr::filter(nwinf_model_data,
                                 time_lag >= l1 & time_lag <= l2)
     model_data <- dplyr::group_by(model_data,
-                                  herd_id, month_id)
+                                  herd_id, month_id,
+                                  .groups = "drop")
     model_data <- dplyr::summarise(model_data,
                                    nwinf = round(median(nwinf)+10^-6),
                                    risk_factor = FUN(risk_factor))
