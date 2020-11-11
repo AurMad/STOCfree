@@ -2,21 +2,22 @@ STOCfree: prediction of probabilities of freedom from infection from
 longitudinal data
 ================
 
-  - [Overview](#overview)
-  - [Package installation and update](#package-installation-and-update)
-  - [Attaching packages](#attaching-packages)
-  - [Steps of the analysis](#steps-of-the-analysis)
-  - [Test data](#test-data)
-  - [Priors for test characteristics](#priors-for-test-characteristics)
-  - [Priors for the model parameters related to
+-   [Overview](#overview)
+-   [Package installation and update](#package-installation-and-update)
+-   [Attaching packages](#attaching-packages)
+-   [Steps of the analysis](#steps-of-the-analysis)
+-   [Test data](#test-data)
+-   [Priors for test characteristics](#priors-for-test-characteristics)
+-   [Priors for the model parameters related to
     status](#priors-for-the-model-parameters-related-to-status)
-  - [Model compilation](#model-compilation)
-  - [Model sampling](#model-sampling)
-  - [Model results](#model-results)
-  - [Inclusion of risk factors](#inclusion-of-risk-factors)
-  - [Animal level models](#animal-level-models)
+-   [Model compilation](#model-compilation)
+-   [Model sampling](#model-sampling)
+-   [Model results](#model-results)
+-   [Inclusion of risk factors](#inclusion-of-risk-factors)
+-   [Animal level models](#animal-level-models)
 
-# Overview
+Overview
+========
 
 The aim of the `STOCfree` package is to predict herd level probabilities
 of freedom from infection from longitudinal data collected as part of
@@ -74,65 +75,59 @@ Specifying different types of input will lead to different functions
 being called internally. Currently, the following types of inputs can be
 modelled:
 
-  - Herd level test results, 1 test, no risk factors
-  - Herd level test results, 1 test, several risk factors
-  - Herd level test results, several tests, no risk factors
-  - Herd level test results, several tests, several risk factors
-  - Animal level test results, one test, no risk factors
-  - Animal level test results, several tests, several risk factors
+-   Herd level test results, 1 test, no risk factors
+-   Herd level test results, 1 test, several risk factors
+-   Herd level test results, several tests, no risk factors
+-   Herd level test results, several tests, several risk factors
+-   Animal level test results, one test, no risk factors
+-   Animal level test results, several tests, several risk factors
 
 The next sections describe how to install the package, set up and run
 the model.
 
-# Package installation and update
+Package installation and update
+===============================
 
 Before installing the package, you need to make sure that JAGS is
 installed. This programme can be installed from the following website:
-<https://sourceforge.net/projects/mcmc-jags/files/>.
+<a href="https://sourceforge.net/projects/mcmc-jags/files/" class="uri">https://sourceforge.net/projects/mcmc-jags/files/</a>.
+If R cannot find JAGS upon calling `compile_JAGS()` try running the
+following in the console
+`Sys.setenv(JAGS_HOME=“PATH/JAGS installation”)`.
 
 The easiest way to install the `STOCfree` package is from Github. This
 requires installing the `devtool` package first. You will need R version
 3.6 or later to install the package. You may be asked to install or
 update several packages during the installation.
 
-``` r
-install.packages("devtools")
-```
+    install.packages("devtools")
 
 Then load the `devtool` package:
 
-``` r
-library(devtools)
-```
+    library(devtools)
 
 In order to install (or update) the STOCfree package, run the following
 line:
 
-``` r
-install_github("AurMad/STOCfree")
-```
+    install_github("AurMad/STOCfree")
 
-# Attaching packages
+Attaching packages
+==================
 
 The `STOCfree` package needs to be attached.
 
-``` r
-library(STOCfree)
-```
+    library(STOCfree)
 
 The list of available functions and datasets can be accessed by typing
 
-``` r
-help(package="STOCfree")
-```
+    help(package="STOCfree")
 
 We also attach the following packages that will be used later:
 
-``` r
-library(ggplot2)
-```
+    library(ggplot2)
 
-# Steps of the analysis
+Steps of the analysis
+=====================
 
 Modelling will usually consist in the following steps:
 
@@ -146,9 +141,11 @@ Modelling will usually consist in the following steps:
 7.  Sample from the JAGS model
 8.  Analyse the model outputs
 
-# Test data
+Test data
+=========
 
-## Example dataset
+Example dataset
+---------------
 
 We demonstrate the use of the package by using a toy dataset called
 `herdBTM` which is included in the package. These are not real data and
@@ -161,9 +158,7 @@ is an optical density ratio (continuous) which is converted into a
 negative or positive test result based on a threshold of 35. The dataset
 looks as follows:
 
-``` r
-head(herdBTM)
-```
+    head(herdBTM)
 
     ## # A tibble: 6 x 6
     ##   Farm  DateOfTest   ODR Test    TestResult LocalSeroPrev
@@ -177,16 +172,17 @@ head(herdBTM)
 
 The columns of the dataset correspond to:
 
-  - `Farm`: farm ID
-  - `DateOfTest`: date when the test was performed
-  - `ODR`: optical density ratio associated with ELISA test
-  - `Test`: type of test used, either routine ELISA on bulk tank milk
+-   `Farm`: farm ID
+-   `DateOfTest`: date when the test was performed
+-   `ODR`: optical density ratio associated with ELISA test
+-   `Test`: type of test used, either routine ELISA on bulk tank milk
     (“BTM\_ODR”) or confirmatory test (“confirm”)
-  - `TestResult`: test result. 0 for negative; 1 for positive
-  - `LocalSeroPrev`: local seroprevalence, a risk factor of new
+-   `TestResult`: test result. 0 for negative; 1 for positive
+-   `LocalSeroPrev`: local seroprevalence, a risk factor of new
     infection
 
-## `STOCfree_data` objects
+`STOCfree_data` objects
+-----------------------
 
 All the later analyses rely on the construction of a `STOCfree_data`
 object. As an example, a `STOCfree_data` object is constructed from the
@@ -194,32 +190,26 @@ object. As an example, a `STOCfree_data` object is constructed from the
 function. Type `?STOCfree_data` in the console to see the list of
 arguments that can be used.
 
-``` r
-sfd <- STOCfree_data(test_data = herdBTM,
-                     test_herd_col = "Farm",
-                     test_date_col = "DateOfTest",
-                     test_res_col = "TestResult",                     ,
-                     test_name_col = "Test",
-                     test_level = "herd")
-```
+    sfd <- STOCfree_data(test_data = herdBTM,
+                         test_herd_col = "Farm",
+                         test_date_col = "DateOfTest",
+                         test_res_col = "TestResult",                     ,
+                         test_name_col = "Test",
+                         test_level = "herd")
 
 The function returns an object of class `STOCfree_data`. The
 `herd_ntests` subclass implies that the tests are performed at the herd
 level, than more than one test is used and that no risk factor is
 included. The subclass is used for method dispatch later on.
 
-``` r
-class(sfd)
-```
+    class(sfd)
 
     ## [1] "herd"          "STOCfree_data"
 
 A `STOCfree_data` object is in fact a list of `data.frames`. Below we
 provide a brief explanation on the content of this list.
 
-``` r
-str(sfd)
-```
+    str(sfd)
 
     ## List of 8
     ##  $ var_names       : Named chr [1:4] "Farm" "DateOfTest" "TestResult" "Test"
@@ -266,40 +256,39 @@ str(sfd)
 
 The list components are:
 
-  - `var_names`: correspondence between column names in the original
+-   `var_names`: correspondence between column names in the original
     datasets and relevant data used in the models
-  - `herd_id_corresp`: for the analysis herds are numbered from 1 to the
+-   `herd_id_corresp`: for the analysis herds are numbered from 1 to the
     number of herds. This table contains the correspondence between
     these IDs and the original IDs
-  - `test_data`: data with test results
-  - `herd_test_data`: herd level indices in the sequence of all months
+-   `test_data`: data with test results
+-   `herd_test_data`: herd level indices in the sequence of all months
     for all herds used in the model. For each herd, the model needs the
     indices associated with the first, second, penultimate and last
     tests in the sequence.
-  - `test_perf_prior`: table with parameters for the prior distributions
+-   `test_perf_prior`: table with parameters for the prior distributions
     for test characteristics.
-  - `risk_factors`: list and type of risk factors that will be included
+-   `risk_factors`: list and type of risk factors that will be included
     in the model
-  - `risk_factor_data`: dataset containing risk factor values for all
+-   `risk_factor_data`: dataset containing risk factor values for all
     herds and all months in the analysis
-  - `inf_dyn_priors`: table with priors for infection dynamics:
+-   `inf_dyn_priors`: table with priors for infection dynamics:
     probability of being status positive on the first month, probability
     of becoming status positive between consecutive months when
     applicable, probability of not eliminating the infection between
     consecutive months
 
-# Priors for test characteristics
+Priors for test characteristics
+===============================
 
-The model accounts for the fact that the sensitivity and specificty of
+The model accounts for the fact that the sensitivity and specificity of
 the different tests used can be below 1. Hypotheses about these
 parameters are included through the use of Beta distributions as priors
 for the different sensitivities and specificities. We can check the
-current values for the parameters associated with these disitrbutions
+current values for the parameters associated with these distributions
 using the `show_tests()` function.
 
-``` r
-show_tests(sfd)
-```
+    show_tests(sfd)
 
     ##      test test_id Se_a Se_b Sp_a Sp_b
     ## 1 BTM_ODR       1   NA   NA   NA   NA
@@ -312,27 +301,23 @@ the prior distribution for sensitivity as Se \~ Beta(20, 2).
 As can be seen, no value has been defined yet. This can be done as
 follows:
 
-``` r
-sfd <- set_priors_tests(sfd,
-                 test = "BTM_ODR",
-                 Se_a = 5000,
-                 Se_b = 260,
-                 Sp_a = 20,
-                 Sp_b = 2)
+    sfd <- set_priors_tests(sfd,
+                     test = "BTM_ODR",
+                     Se_a = 5000,
+                     Se_b = 260,
+                     Sp_a = 20,
+                     Sp_b = 2)
 
-sfd <- set_priors_tests(sfd,
-                 test = "confirm",
-                 Se_a = 20,
-                 Se_b = 2,
-                 Sp_a = 10000,
-                 Sp_b = 1)
-```
+    sfd <- set_priors_tests(sfd,
+                     test = "confirm",
+                     Se_a = 20,
+                     Se_b = 2,
+                     Sp_a = 10000,
+                     Sp_b = 1)
 
 We can check that the priors have changed:
 
-``` r
-show_tests(sfd)
-```
+    show_tests(sfd)
 
     ##      test test_id Se_a Se_b  Sp_a Sp_b
     ## 1 BTM_ODR       1 5000  260    20    2
@@ -341,54 +326,49 @@ show_tests(sfd)
 The prior distributions can be plotted with the `plot_priors_tests()`
 function.
 
-``` r
-plot_priors_tests(sfd)
-```
+    plot_priors_tests(sfd)
 
 ![](README_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
 
 In order to help selecting appropriate parameter values for the Beta
 distributions, we have designed a Shiny app which is available from
-Github. See <https://github.com/AurMad/betadistapp>
+Github. See
+<a href="https://github.com/AurMad/betadistapp" class="uri">https://github.com/AurMad/betadistapp</a>
 
-# Priors for the model parameters related to status
+Priors for the model parameters related to status
+=================================================
 
 These parameters are the probability of being status positive on the
 first time step (pi1), the probability of becoming status positive
 between consecutive months (tau1) and the probability of remaining test
 positive between consecutive months (tau2). When risk factors are
 included in the model, tau1 is modelled as a function of these risk
-factors and the paramters for the prior distribution of tau1 will not be
-taken into account.
+factors and the parameters for the prior distribution of tau1 will not
+be taken into account.
 
-``` r
-show_inf_dyn(sfd)
-```
+    show_inf_dyn(sfd)
 
     ##  pi1_a  pi1_b tau1_a tau1_b tau2_a tau2_b 
     ##     NA     NA     NA     NA     NA     NA
 
 Parameter values are provided for these prior distributions as follows:
 
-``` r
-sfd <- set_priors_inf_dyn(sfd,
-                   pi1_a = 1,
-                   pi1_b = 1,
-                   tau1_a = 1.5, 
-                   tau1_b = 10,
-                   tau2_a = 10, 
-                   tau2_b = 1.5)
-```
+    sfd <- set_priors_inf_dyn(sfd,
+                       pi1_a = 1,
+                       pi1_b = 1,
+                       tau1_a = 1.5, 
+                       tau1_b = 10,
+                       tau2_a = 10, 
+                       tau2_b = 1.5)
 
 These distributions can be plotted.
 
-``` r
-plot_priors_inf_dyn(sfd)
-```
+    plot_priors_inf_dyn(sfd)
 
 ![](README_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
 
-# Model compilation
+Model compilation
+=================
 
 This step consists in compiling the JAGS model associated with the
 `STOCfree_data` object we have created.
@@ -402,10 +382,8 @@ risk factors.
 
 Compilation of the JAGS model is done as follows:
 
-``` r
-compiled_model <- compile_JAGS(sfd, 
-                               n_chains = 3)
-```
+    compiled_model <- compile_JAGS(sfd, 
+                                   n_chains = 3)
 
     ## Compiling model graph
     ##    Resolving undeclared variables
@@ -417,90 +395,87 @@ compiled_model <- compile_JAGS(sfd,
     ## 
     ## Initializing model
 
-# Model sampling
+Model sampling
+==============
 
 Sampling from the parameter posterior distributions is done using the
 `sample_model()` function. This function takes as arguments a compiled
 model as created in the previous section, a number of burnin iterations,
-a number of sampling ietrations and a thinning interval (1 in `n_thin`
+a number of sampling iterations and a thinning interval (1 in `n_thin`
 iterations stored).
 
-``` r
-samples <- sample_model(compiled_model, 
-                        n_burnin = 100, 
-                        n_iter = 100, 
-                        n_thin = 5)
-```
+    samples <- sample_model(compiled_model, 
+                            n_burnin = 100, 
+                            n_iter = 100, 
+                            n_thin = 5)
 
     ## Burnin (100 iterations)
 
     ## Sampling (100 iterations)
 
-# Model results
+    ## [1] "Problem with the coda::gelman.diag() function."
 
-## Structure of the returned object
+Model results
+=============
+
+Structure of the returned object
+--------------------------------
 
 The model returns a list containing 3 `data.frames`. These data.frames
 were constructed from the JAGS MCMC draws and reformatted using the
 `spread_draws()` function from the `tidybayes` package.
 
-  - `parameters`: MCMC draws for the sensitivities, specificities, tau1
+-   `parameters`: MCMC draws for the sensitivities, specificities, tau1
     (when applicable), tau2 and risk factor related parameters
-  - `proba_inf`: predicted probability of being status positive on the
+-   `proba_inf`: predicted probability of being status positive on the
     month of surveillance (last month with test results in the dataset)
-  - `choice_cutoff`: for later use. Should be ignored for now.
+-   `choice_cutoff`: for later use. Should be ignored for now.
 
-<!-- end list -->
+<!-- -->
 
-``` r
-str(samples, 
-    max.level = 2)
-```
+    str(samples, 
+        max.level = 2)
 
-    ## List of 2
-    ##  $ parameters: tibble [60 x 9] (S3: tbl_df/tbl/data.frame)
-    ##  $ proba_inf : tibble [6,000 x 6] (S3: grouped_df/tbl_df/tbl/data.frame)
+    ## List of 3
+    ##  $ parameters : tibble [60 x 9] (S3: tbl_df/tbl/data.frame)
+    ##  $ proba_inf  : tibble [6,000 x 6] (S3: grouped_df/tbl_df/tbl/data.frame)
     ##   ..- attr(*, "groups")= tibble [100 x 2] (S3: tbl_df/tbl/data.frame)
     ##   .. ..- attr(*, ".drop")= logi TRUE
+    ##  $ Gelman_diag: logi NA
 
 It may be easier to store these tables in separate objects.
 
-``` r
-parameters <- samples$parameters
-proba_inf  <- samples$proba_inf
-```
+    parameters <- samples$parameters
+    proba_inf  <- samples$proba_inf
 
 When running a model using a large dataset, it is recommended to store
 `parameters` and `proba_inf` data, as csv files for example.
 
-``` r
-write.csv(samples$parameters, 
-          "parameters.csv", 
-          row.names = FALSE)
+    write.csv(samples$parameters, 
+              "parameters.csv", 
+              row.names = FALSE)
 
-write.csv(samples$proba_inf, 
-          "proba_inf.csv", 
-          row.names = FALSE)
-```
+    write.csv(samples$proba_inf, 
+              "proba_inf.csv", 
+              row.names = FALSE)
 
 These results can be loaded back easily:
 
-``` r
-parameters <- read.csv("parameters.csv")
-proba_inf  <- read.csv("proba_inf.csv")
-```
+    parameters <- read.csv("parameters.csv")
+    proba_inf  <- read.csv("proba_inf.csv")
 
 Each table contains the 3 following columns:
 
-  - `.chain`: chain number. Between 1 and 3 in the example because we
+-   `.chain`: chain number. Between 1 and 3 in the example because we
     ran 3 MCMC chains in JAGS. This number is the value we selected for
     `n_chains` in the call to `compile_JAGS()`.
-  - `.iteration`: iteration number. Defined by the `n_iter` value in the
+-   `.iteration`: iteration number. Defined by the `n_iter` value in the
     call to `sample_model()`
-  - `.draw`: number of iterations from the first iteration in chain 1,
+-   `.draw`: number of iterations from the first iteration in chain 1,
     pooling all the chains
 
-## Assessing convergence
+Assessing convergence
+---------------------
 
 The results are formatted in a way that facilitates their graphical
 analysis with `ggplot()` from the `ggplot2` package. It is
@@ -509,72 +484,67 @@ Given the small number of herds and the small number of iterations, the
 plot below does not look as it should to indicate that convergence has
 been reached.
 
-``` r
-ggplot(parameters, 
-       aes(x = .iteration,
-           y = Se.1, col = factor(.chain))) +
-  geom_line()
-```
+    ggplot(parameters, 
+           aes(x = .iteration,
+               y = Se.1, col = factor(.chain))) +
+      geom_line()
 
 ![](README_files/figure-gfm/unnamed-chunk-24-1.png)<!-- -->
 
-## Plotting posterior densities
+Plotting posterior densities
+----------------------------
 
 It is also straightforward to plot the posterior densities of the
 different variables of interest.
 
-  - Posterior density for the sensitivity of test 1
+-   Posterior density for the sensitivity of test 1
 
-<!-- end list -->
+<!-- -->
 
-``` r
-ggplot(parameters, aes(x = Se.1)) +
-  geom_density()
-```
+    ggplot(parameters, aes(x = Se.1)) +
+      geom_density()
 
 ![](README_files/figure-gfm/unnamed-chunk-25-1.png)<!-- -->
 
-  - Posterior density for the predicted probability of being status
+-   Posterior density for the predicted probability of being status
     positive on the month of surveillance
 
-<!-- end list -->
+<!-- -->
 
-``` r
-ggplot(proba_inf, 
-       aes(x = predicted_proba)) +
-  geom_density()
-```
+    ggplot(proba_inf, 
+           aes(x = predicted_proba)) +
+      geom_density()
 
 ![](README_files/figure-gfm/unnamed-chunk-26-1.png)<!-- -->
 
-  - Posterior density for the predicted probability of being status
+-   Posterior density for the predicted probability of being status
     positive on the month of surveillance for a given herd
 
-<!-- end list -->
+<!-- -->
 
-``` r
-herd <- 1
+    herd <- 1
 
-ggplot(proba_inf[proba_inf$herd_id == herd,], 
-       aes(x = predicted_proba)) +
-  geom_density()
-```
+    ggplot(proba_inf[proba_inf$herd_id == herd,], 
+           aes(x = predicted_proba)) +
+      geom_density()
 
 ![](README_files/figure-gfm/unnamed-chunk-27-1.png)<!-- -->
 
-# Inclusion of risk factors
+Inclusion of risk factors
+=========================
 
 Risk factors are included with the objective of detecting infection
 earlier when the interval between tests is long, as is usually the case.
 They can also improve the performance of the prediction of the
 probability of being status positive when test performance is not good.
 
-The association between the probablity of becoming status positive
+The association between the probability of becoming status positive
 (tau1) and risk factors is modelled with logistic regression. The
 uncertainty in status as measured by test result is accounted for in the
 regression through test sensitivity and specificity.
 
-## Selection of risk factors to include in the Bayesian model
+Selection of risk factors to include in the Bayesian model
+----------------------------------------------------------
 
 Bayesian inference in JAGS can take a lot of time. This time increases
 with the size of the dataset modelled as well as with the number of MCMC
@@ -595,9 +565,7 @@ test positive later.
 To show how to use the available functions, we use the `intro` dataset
 which is included in the package.
 
-``` r
-intro
-```
+    intro
 
     ## # A tibble: 1,324 x 3
     ##    Farm  dateIntr   nAnim
@@ -622,22 +590,18 @@ the number of animals purchased between the month of seroconversion
 (month 0) and 24 months earlier. The time of seroconversion is taken as
 the midpoint between the 2 test dates considered.
 
-``` r
-nAnim_lagged <- logit_nwinf_lagged(
-  sf_data = sfd,
-  rf_data = intro,
-  rf_date_col = "dateIntr",
-  rf_col = "nAnim",
-  time_of_inf = "mid",
-  lag1 = 0,
-  lag2 = 24)
-```
+    nAnim_lagged <- logit_nwinf_lagged(
+      sf_data = sfd,
+      rf_data = intro,
+      rf_date_col = "dateIntr",
+      rf_col = "nAnim",
+      time_of_inf = "mid",
+      lag1 = 0,
+      lag2 = 24)
 
 The function returns a table with the AICs of all the models evaluated.
 
-``` r
-str(nAnim_lagged)
-```
+    str(nAnim_lagged)
 
     ## 'data.frame':    325 obs. of  4 variables:
     ##  $ lag1: int  0 0 1 0 1 2 0 1 2 3 ...
@@ -645,27 +609,25 @@ str(nAnim_lagged)
     ##  $ l   : int  0 1 0 2 1 0 3 2 1 0 ...
     ##  $ AIC : num  366 365 365 365 365 ...
     ##  - attr(*, "out.attrs")=List of 2
-    ##   ..$ dim     : Named int  25 25 1 1
-    ##   .. ..- attr(*, "names")= chr  "lag1" "lag2" "l" "AIC"
+    ##   ..$ dim     : Named int [1:4] 25 25 1 1
+    ##   .. ..- attr(*, "names")= chr [1:4] "lag1" "lag2" "l" "AIC"
     ##   ..$ dimnames:List of 4
-    ##   .. ..$ lag1: chr  "lag1= 0" "lag1= 1" "lag1= 2" "lag1= 3" ...
-    ##   .. ..$ lag2: chr  "lag2= 0" "lag2= 1" "lag2= 2" "lag2= 3" ...
+    ##   .. ..$ lag1: chr [1:25] "lag1= 0" "lag1= 1" "lag1= 2" "lag1= 3" ...
+    ##   .. ..$ lag2: chr [1:25] "lag2= 0" "lag2= 1" "lag2= 2" "lag2= 3" ...
     ##   .. ..$ l   : chr "l=NA"
     ##   .. ..$ AIC : chr "AIC=NA"
 
 This can be plotted using the code below. From the Figure below it can
-be seen that between the worst (AIC \> 350) and the best (AIC \< 342)
-model, the difference in AIC is rather limited. There is a drop in AIC
-for intervals starting from 8 months before seroconversion.
+be seen that between the worst (AIC &gt; 350) and the best (AIC &lt;
+342) model, the difference in AIC is rather limited. There is a drop in
+AIC for intervals starting from 8 months before seroconversion.
 
-``` r
-ggplot(data = nAnim_lagged, aes(x = lag2, y = lag1, fill = AIC)) +
-  geom_tile() +
-  xlab("Time Lag 2 (months)") +
-  ylab("Time Lag 1 (months)") +
-  scale_fill_gradient(low = "red", high = "yellow", aesthetics = "fill") +
-  ggtitle("Number of animals purchased")
-```
+    ggplot(data = nAnim_lagged, aes(x = lag2, y = lag1, fill = AIC)) +
+      geom_tile() +
+      xlab("Time Lag 2 (months)") +
+      ylab("Time Lag 1 (months)") +
+      scale_fill_gradient(low = "red", high = "yellow", aesthetics = "fill") +
+      ggtitle("Number of animals purchased")
 
 ![](README_files/figure-gfm/unnamed-chunk-31-1.png)<!-- -->
 
@@ -673,44 +635,36 @@ When the function is used to evaluate several candidate variables, all
 these variables can be incldued in a multivariate logistic model. For
 this, we create a dataset with the different variables of interest.
 
-  - Model outcome
+-   Model outcome
 
-<!-- end list -->
+<!-- -->
 
-``` r
-nwinf <- make_nwinf_data(sfd, 
-                         time_of_inf = "mid")
-```
+    nwinf <- make_nwinf_data(sfd, 
+                             time_of_inf = "mid")
 
-  - Covariates
+-   Covariates
 
 Here, we include the number of animals purchased 8 months before the
 test of interest. This is done by calling the `add_risk_factor()`.
 
-``` r
-nwinf <- add_risk_factor(nwinf,
-                         intro,
-                         rf_col = "nAnim",
-                         rf_date_col = "dateIntr",
-                         lag1 = 8,
-                         lag2 = 8)
-```
+    nwinf <- add_risk_factor(nwinf,
+                             intro,
+                             rf_col = "nAnim",
+                             rf_date_col = "dateIntr",
+                             lag1 = 8,
+                             lag2 = 8)
 
-  - Model
+-   Model
 
-The multivariate logistic model is setimated with R `glm()` function
+The multivariate logistic model is estimated with R `glm()` function
 called by `logit_nwinf()` function from the `STOCfree` package:
 
-``` r
-modl <- logit_nwinf(nwinf, 
-                    risk_factors = "nAnim_8_8")
-```
+    modl <- logit_nwinf(nwinf, 
+                        risk_factors = "nAnim_8_8")
 
 The model results are:
 
-``` r
-summary(modl)
-```
+    summary(modl)
 
     ## 
     ## Call:
@@ -735,38 +689,36 @@ summary(modl)
     ## 
     ## Number of Fisher Scoring iterations: 4
 
-## Inclusion of risk factors in the Bayesian model
+Inclusion of risk factors in the Bayesian model
+-----------------------------------------------
 
 The `STOCfree_data()` object is updated to include the risk factors
 selected for the analysis. This is done with the `sf_add_risk_factor()`
 function.
 
-``` r
-sfd <- sf_add_risk_factor(
-  sfd = sfd,
-  risk_factor_data = intro,
-  risk_herd_col = "Farm",
-  risk_date_col = "dateIntr",
-  risk_factor_col = "nAnim",
-  risk_factor_type = "continuous",
-  lag1 = 8,
-  lag2 = 8,
-  FUN = sum)
-```
+    sfd <- sf_add_risk_factor(
+      sfd = sfd,
+      risk_factor_data = intro,
+      risk_herd_col = "Farm",
+      risk_date_col = "dateIntr",
+      risk_factor_col = "nAnim",
+      risk_factor_type = "continuous",
+      lag1 = 8,
+      lag2 = 8,
+      FUN = sum)
 
 Doing this will result in the priors required for infection related
 parameters to be different from above. The priors for tau1 are not
-needed anymore. They are replaced by prior distributions for the
+needed any more. They are replaced by prior distributions for the
 logistic regression.
 
-``` r
-show_inf_dyn(sfd)
-```
+    show_inf_dyn(sfd)
 
     ##  pi1_a  pi1_b tau2_a tau2_b 
     ##    1.0    1.0   10.0    1.5
 
-## Priors for the logistic regression
+Priors for the logistic regression
+----------------------------------
 
 The Bayesian model models the probability of becoming status positive
 (usually getting infected) as a function of one or several risk factors,
@@ -778,55 +730,49 @@ with the number of animals purchased 8 months before the month of
 surveillance. Below is the list of covariates included in the
 `STOCfree_data` so far.
 
-``` r
-show_rf(sfd)
-```
+    show_rf(sfd)
 
     ##   risk_factor       type modality
     ## 1   Intercept  intercept       NA
     ## 2   nAnim_8_8 continuous       NA
 
-``` r
-sfd <- set_priors_rf(sfd,
-                   risk_factor = "Intercept",
-                   mean = -3, sd = 1)
+    sfd <- set_priors_rf(sfd,
+                       risk_factor = "Intercept",
+                       mean = -3, sd = 1)
 
 
-sfd <- set_priors_rf(sfd,
-                   risk_factor = "nAnim_8_8",
-                   mean = 0, sd = 2)
-```
+    sfd <- set_priors_rf(sfd,
+                       risk_factor = "nAnim_8_8",
+                       mean = 0, sd = 2)
 
 This has updated the list of covariates with the normal distribution
 parameters.
 
-``` r
-show_rf(sfd)
-```
+    show_rf(sfd)
 
     ##   risk_factor       type modality mean_prior sd_prior
     ## 1   Intercept  intercept       NA         -3        1
     ## 2   nAnim_8_8 continuous       NA          0        2
 
 These priors can be plotted on the probability scale. The prior
-distribution for the intrcept implies that in herds buying no cows, the
+distribution for the intercept implies that in herds buying no cows, the
 probability of becoming positive is most likely below 0.4, with most of
 the density below 0.2.
 
-``` r
-plot_priors_rf(sfd)
-```
+    plot_priors_rf(sfd)
 
 ![](README_files/figure-gfm/unnamed-chunk-41-1.png)<!-- -->
 
-## Running the Bayesian model
+Running the Bayesian model
+--------------------------
 
 This is done as explained above by calling first the `compile_JAGS()`
 and then the `sample_model()` functions. In this case, estimates for the
 logistic regression parameters will appear as theta.1 (model intercept)
 and theta.2 (coefficient for the nAnim\_8\_8 variable).
 
-# Animal level models
+Animal level models
+===================
 
 When test results are available at the animal level, the model works
 slightly differently. In this case, the probability of infection is

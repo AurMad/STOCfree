@@ -35,7 +35,7 @@ The next sections describe how to install the package, set up and run the model.
 
 # Package installation and update
 
-Before installing the package, you need to make sure that JAGS is installed. This programme can be installed from the following website: https://sourceforge.net/projects/mcmc-jags/files/.
+Before installing the package, you need to make sure that JAGS is installed. This programme can be installed from the following website: https://sourceforge.net/projects/mcmc-jags/files/. If R cannot find JAGS upon calling `compile_JAGS()` try running the following in the console `Sys.setenv(JAGS_HOME=“PATH/JAGS installation”)`.
 
 The easiest way to install the `STOCfree` package is from Github. This requires installing the `devtool` package first. You will need R version 3.6 or later to install the package. You may be asked to install or update several packages during the installation.
 
