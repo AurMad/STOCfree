@@ -145,7 +145,7 @@ The list components are:
 
 # Priors for test characteristics
 
-The model accounts for the fact that the sensitivity and specificty of the different tests used can be below 1. Hypotheses about these parameters are included through the use of Beta distributions as priors for the different sensitivities and specificities. We can check the current values for the parameters associated with these disitrbutions using the `show_tests()` function. 
+The model accounts for the fact that the sensitivity and specificity of the different tests used can be below 1. Hypotheses about these parameters are included through the use of Beta distributions as priors for the different sensitivities and specificities. We can check the current values for the parameters associated with these distributions using the `show_tests()` function.
 
 ```{r}
 show_tests(sfd)
@@ -187,7 +187,7 @@ In order to help selecting appropriate parameter values for the Beta distributio
 
 # Priors for the model parameters related to status
 
-These parameters are the probability of being status positive on the first time step (pi1), the probability of becoming status positive between consecutive months (tau1) and the probability of remaining test positive between consecutive months (tau2). When risk factors are included in the model, tau1 is modelled as a function of these risk factors and the paramters for the prior distribution of tau1 will not be taken into account.
+These parameters are the probability of being status positive on the first time step (pi1), the probability of becoming status positive between consecutive months (tau1) and the probability of remaining test positive between consecutive months (tau2). When risk factors are included in the model, tau1 is modelled as a function of these risk factors and the parameters for the prior distribution of tau1 will not be taken into account.
 
 ```{r}
 show_inf_dyn(sfd)
@@ -226,7 +226,7 @@ compiled_model <- compile_JAGS(sfd,
 
 # Model sampling
 
-Sampling from the parameter posterior distributions is done using the `sample_model()` function. This function takes as arguments a compiled model as created in the previous section, a number of burnin iterations, a number of sampling ietrations and a thinning interval (1 in `n_thin` iterations stored).
+Sampling from the parameter posterior distributions is done using the `sample_model()` function. This function takes as arguments a compiled model as created in the previous section, a number of burnin iterations, a number of sampling iterations and a thinning interval (1 in `n_thin` iterations stored).
 
 ```{r}
 samples <- sample_model(compiled_model, 
@@ -326,7 +326,7 @@ ggplot(proba_inf[proba_inf$herd_id == herd,],
 
 Risk factors are included with the objective of detecting infection earlier when the interval between tests is long, as is usually the case. They can also improve the performance of the prediction of the probability of being status positive when test performance is not good.
 
-The association between the probablity of becoming status positive (tau1) and risk factors is modelled with logistic regression. The uncertainty in status as measured by test result is accounted for in the regression through test sensitivity and specificity.
+The association between the probability of becoming status positive (tau1) and risk factors is modelled with logistic regression. The uncertainty in status as measured by test result is accounted for in the regression through test sensitivity and specificity.
 
 ## Selection of risk factors to include in the Bayesian model
 
@@ -394,7 +394,7 @@ nwinf <- add_risk_factor(nwinf,
 
 - Model
 
-The multivariate logistic model is setimated with R `glm()` function called by `logit_nwinf()` function from the `STOCfree` package:
+The multivariate logistic model is estimated with R `glm()` function called by `logit_nwinf()` function from the `STOCfree` package:
 
 ```{r}
 modl <- logit_nwinf(nwinf, 
@@ -423,7 +423,7 @@ sfd <- sf_add_risk_factor(
   FUN = sum)
 ```
 
-Doing this will result in the priors required for infection related parameters to be different from above. The priors for tau1 are not needed anymore. They are replaced by prior distributions for the logistic regression.
+Doing this will result in the priors required for infection related parameters to be different from above. The priors for tau1 are not needed any more. They are replaced by prior distributions for the logistic regression.
 
 ```{r}
 show_inf_dyn(sfd)
@@ -454,7 +454,7 @@ This has updated the list of covariates with the normal distribution parameters.
 show_rf(sfd)
 ```
 
-These priors can be plotted on the probability scale. The prior distribution for the intrcept implies that in herds buying no cows, the probability of becoming positive is most likely below 0.4, with most of the density below 0.2.
+These priors can be plotted on the probability scale. The prior distribution for the intercept implies that in herds buying no cows, the probability of becoming positive is most likely below 0.4, with most of the density below 0.2.
 
 ```{r}
 plot_priors_rf(sfd)
