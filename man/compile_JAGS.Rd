@@ -4,13 +4,7 @@
 \alias{compile_JAGS}
 \title{Compilation of the JAGS model}
 \usage{
-compile_JAGS(
-  data,
-  n_chains = 4,
-  keep_model_file = FALSE,
-  status = c("discrete", "proba", "predict"),
-  ...
-)
+compile_JAGS(data, n_chains = 4, keep_model_file = FALSE, ...)
 }
 \arguments{
 \item{data}{an object of class STOCfree_data}

@@ -14,7 +14,6 @@
 compile_JAGS <- function(data,
                          n_chains = 4,
                          keep_model_file = FALSE,
-                         status = c("discrete", "proba", "predict"),
                          ...){
 
   UseMethod("compile_JAGS")
@@ -25,8 +24,7 @@ compile_JAGS <- function(data,
 #' @export
 compile_JAGS.default <- function(data,
                                  n_chains,
-                                 keep_model_file,
-                                 status = c("discrete", "proba", "predict")){
+                                 keep_model_file){
 
   print("No method defined for this type of data")
 
@@ -35,8 +33,7 @@ compile_JAGS.default <- function(data,
 #' @export
 compile_JAGS.herd <- function(data,
                               n_chains = 4,
-                              keep_model_file = FALSE,
-                              status = c("discrete", "proba", "predict")){
+                              keep_model_file = FALSE){
 
   n_herds <- attr(data, "number of herds")
   month_max <- max(data$test_data$month_id)
@@ -121,11 +118,7 @@ compile_JAGS.herd <- function(data,
     JAGS_data$herd_id_pr6 <- test_data$herd_id[test_data$status_type == 6]
   }
 
-  class(data)[1] <- paste0(class(data)[1], "_", status[1])
   write_JAGS_model(data)
-  class(data)[1] <- gsub("_discrete", "", class(data)[1])
-  class(data)[1] <- gsub("_proba", "", class(data)[1])
-  class(data)[1] <- gsub("_status", "", class(data)[1])
 
   JAGS_model_compiled <- rjags::jags.model(
     file = "JAGS_model.txt",
@@ -232,11 +225,7 @@ compile_JAGS.herd_rf <- function(data,
     JAGS_data$herd_id_pr6 <- test_data$herd_id[test_data$status_type == 6]
   }
 
-  class(data)[1] <- paste0(class(data)[1], "_", status[1])
   write_JAGS_model(data)
-  class(data)[1] <- gsub("_discrete", "", class(data)[1])
-  class(data)[1] <- gsub("_proba", "", class(data)[1])
-  class(data)[1] <- gsub("_status", "", class(data)[1])
 
   JAGS_model_compiled <- rjags::jags.model(
     file = "JAGS_model.txt",
@@ -343,11 +332,7 @@ compile_JAGS.animal <- function(data,
     JAGS_data$herd_id_pr6 <- test_data$herd_id[test_data$status_type == 6]
   }
 
-  class(data)[1] <- paste0(class(data)[1], "_", status[1])
   write_JAGS_model(data)
-  class(data)[1] <- gsub("_discrete", "", class(data)[1])
-  class(data)[1] <- gsub("_proba", "", class(data)[1])
-  class(data)[1] <- gsub("_status", "", class(data)[1])
 
   JAGS_model_compiled <- rjags::jags.model(
     file = "JAGS_model.txt",
@@ -461,11 +446,7 @@ compile_JAGS.animal_rf <- function(data,
     JAGS_data$herd_id_pr6 <- test_data$herd_id[test_data$status_type == 6]
   }
 
-  class(data)[1] <- paste0(class(data)[1], "_", status[1])
   write_JAGS_model(data)
-  class(data)[1] <- gsub("_discrete", "", class(data)[1])
-  class(data)[1] <- gsub("_proba", "", class(data)[1])
-  class(data)[1] <- gsub("_status", "", class(data)[1])
 
   JAGS_model_compiled <- rjags::jags.model(
     file = "JAGS_model.txt",
