@@ -19,6 +19,7 @@ STOCfree_data(
   risk_factor_type = c("continuous", "categorical"),
   lag1 = 0,
   lag2 = 0,
+  time_interval = c("month", "year", "week"),
   FUN = sum
 )
 }
@@ -47,7 +48,7 @@ STOCfree_data(
 
 \item{risk_factor_type}{risk factor type. Must be either continuous or categorical}
 
-\item{FUN}{}
+\item{time_interval}{}
 }
 \value{
 A list of class STOCfree_data. A specific sub-class is defined based on the input.

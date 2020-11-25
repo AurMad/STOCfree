@@ -15,6 +15,7 @@
 #' @param lag1
 #' @param lag2
 #' @param FUN
+#' @param time_interval
 #'
 #' @return A list of class STOCfree_data. A specific sub-class is defined based on the input.
 #' @export
@@ -34,8 +35,16 @@ STOCfree_data <- function(test_data = data.frame(),
                           risk_factor_type = c("continuous", "categorical"),
                           lag1 = 0,
                           lag2 = 0,
+                          time_interval = c("month", "year", "week"),
                           FUN = sum){
 
+  time_interval <- match.arg(time_interval)
+  time_in <- as.character(factor(time_interval,
+                                 levels = c("month", "year", "week"),
+                                 labels = c("%Y-%m", "%Y", "%Y-%W")))
+  time_out <- as.character(factor(time_interval,
+                                  levels = c("month", "year", "week"),
+                                  labels = c("%Y-%m-%d", "%Y-%m-%d", "%Y-%W-%u")))
   ## Number of tests used
   if(is.null(test_res_col)) stop("Argument 'test_res_col' missing. Provide a column name for test results")
 
@@ -63,12 +72,16 @@ STOCfree_data <- function(test_data = data.frame(),
   ## Number of herds in the test dataset
   n_herds <- length(unique(test_data[[test_herd_col]]))
   ## Month of first test in the data
-  month_first <- format(min(as.Date(test_data[[test_date_col]])), "%Y-%m")
+  month_first <- min(as.Date(test_data[[test_date_col]]))
   ## Month of last test in the data
-  month_last <- format(max(as.Date(test_data[[test_date_col]])), "%Y-%m")
+  month_last <- max(as.Date(test_data[[test_date_col]]))
   ## List of all months in the dataset numbered
-  all_months_list <- make_month_id(start = paste0(month_first, "-01"),
-                                   end = paste0(month_last, "-01"))
+  all_months <- unique(format(seq(month_first, month_last, by = 1), time_in))
+  ## Convert them back to a date and put them in a data.frame
+  all_months_list <- data.frame(date__1 = as.Date(paste0(all_months, "-1-1"), format = time_out),
+               month_id = seq_len(length(all_months)))
+  month_first <- format(month_first, time_in)
+  month_last <- format(month_last, time_in)
 
   ## List of all months in the dataset numbered
   date_min_herds <- all_months_list$date__1[which(all_months_list$month_id == (max(all_months_list$month_id) - 2))]
