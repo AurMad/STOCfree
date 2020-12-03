@@ -24,6 +24,6 @@ seq_dates <- seq(as.Date("2020-01-01"),
 
 data.frame(date = seq_dates,
  lagged_date = date_from_lag(
-  date = sqt,
+  date = seq_dates,
   time_lag = -2))
 }

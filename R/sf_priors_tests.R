@@ -5,7 +5,6 @@
 #' @return
 #' @export
 #'
-#' @examples
 show_tests <- function(x = STOCfree_data()){
 
   x$test_perf_prior
@@ -24,7 +23,6 @@ show_tests <- function(x = STOCfree_data()){
 #' @return
 #' @export
 #'
-#' @examples
 set_priors_tests <- function(x = STOCfree_data(),
                  test = character(),
                  Se_a = 1, Se_b = 1,
@@ -60,7 +58,6 @@ set_priors_tests <- function(x = STOCfree_data(),
 #' @return
 #' @export
 #'
-#' @examples
 plot_priors_tests <- function(data = STOCfree_data(),
                               test = character()){
 

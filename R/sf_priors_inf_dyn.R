@@ -5,7 +5,6 @@
 #' @return a table with the alpha and beta parameters of the Beta distributions associated with the prior probabilities of infection on the first test and the probability of remaining infected between consecutive tests
 #' @export
 #'
-#' @examples
 show_inf_dyn <- function(x = STOCfree_data()){
 
   x$inf_dyn_priors
@@ -24,7 +23,6 @@ show_inf_dyn <- function(x = STOCfree_data()){
 #' @return
 #' @export
 #'
-#' @examples
 set_priors_inf_dyn <- function(data = STOCfree_data(),
                                pi1_a = 1, pi1_b = 1,
                                pi_within_a = 1, pi_within_b = 1,
@@ -61,7 +59,6 @@ set_priors_inf_dyn <- function(data = STOCfree_data(),
 #' @return
 #' @export
 #'
-#' @examples
 plot_priors_inf_dyn <- function(data = STOCfree_data()){
 
   priors <- data$inf_dyn_priors

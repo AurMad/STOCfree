@@ -1,46 +1,32 @@
-#' Compilation of the JAGS model
+#' Creates the JAGS model input data
 #'
-#' @param data an object of class STOCfree_data
-#' @param n_chains number of MCMC chains
-#' @param keep_model_file if TRUE, the JAGS model is written as a text file in the working folder
-#' @param status 'discrete' latent status (0/1) is modelled, 'proba' probability of latent status is modelled, 'predict' predictive simulation from the model prior and data
+#' @param STOCfree_data a STOCfree data object
 #'
-#' @return
-#' a compiled JAGS model
+#' @details this function should only be used for checking the data
 #'
 #' @export
-#'
-#' @examples
-compile_JAGS <- function(data,
-                         n_chains = 4,
-                         keep_model_file = FALSE,
-                         ...){
+STOCfree_JAGS_data <- function(STOCfree_data){
 
-  UseMethod("compile_JAGS")
+  UseMethod("STOCfree_JAGS_data")
 
-  }
+}
 
 
-#' @export
-compile_JAGS.default <- function(data,
-                                 n_chains,
-                                 keep_model_file){
+STOCfree_JAGS_data.default <- function(STOCfree_data){
 
   print("No method defined for this type of data")
 
-  }
+}
 
-#' @export
-compile_JAGS.herd <- function(data,
-                              n_chains = 4,
-                              keep_model_file = FALSE){
 
-  n_herds <- attr(data, "number of herds")
-  month_max <- max(data$test_data$month_id)
+STOCfree_JAGS_data.herd <- function(STOCfree_data){
 
-  test_data <- data$test_data
+  n_herds <- attr(STOCfree_data, "number of herds")
+  month_max <- max(STOCfree_data$test_data$month_id)
+
+  test_data <- STOCfree_data$test_data
   ## no test
-  status_no_test <- data$risk_factor_data$status_id
+  status_no_test <- STOCfree_data$risk_factor_data$status_id
   status_no_test <- sort(status_no_test[-which(status_no_test %in% test_data$status_id)])
 
   ## number of tests of optional types
@@ -50,12 +36,12 @@ compile_JAGS.herd <- function(data,
   n_status_typ6 <- nrow(test_data[test_data$status_type == 6,])
 
   ## Priors for risk factors
-  risk_factors <- data$risk_factors[data$risk_factors$ref == 0,]
-  theta_norm_mean <- data$risk_factors$mean_prior
-  theta_norm_prec <- 1 / data$risk_factors$sd_prior^2
+  risk_factors <- STOCfree_data$risk_factors[STOCfree_data$risk_factors$ref == 0,]
+  theta_norm_mean <- STOCfree_data$risk_factors$mean_prior
+  theta_norm_prec <- 1 / STOCfree_data$risk_factors$sd_prior^2
 
   ## Priors for test characteristics
-  test_char <- data$test_perf_prior
+  test_char <- STOCfree_data$test_perf_prior
 
   ## Data used by JAGS
   JAGS_data <- list(
@@ -72,12 +58,12 @@ compile_JAGS.herd <- function(data,
     ## no test
     n_no_test = length(status_no_test),
     status_no_test = status_no_test,
-    pi1_beta_a = data$inf_dyn_priors["pi1_a"],
-    pi1_beta_b = data$inf_dyn_priors["pi1_b"],
-    tau1_beta_a = data$inf_dyn_priors["tau1_a"],
-    tau1_beta_b = data$inf_dyn_priors["tau1_b"],
-    tau2_beta_a = data$inf_dyn_priors["tau2_a"],
-    tau2_beta_b = data$inf_dyn_priors["tau2_b"],
+    pi1_beta_a = STOCfree_data$inf_dyn_priors["pi1_a"],
+    pi1_beta_b = STOCfree_data$inf_dyn_priors["pi1_b"],
+    tau1_beta_a = STOCfree_data$inf_dyn_priors["tau1_a"],
+    tau1_beta_b = STOCfree_data$inf_dyn_priors["tau1_b"],
+    tau2_beta_a = STOCfree_data$inf_dyn_priors["tau2_a"],
+    tau2_beta_b = STOCfree_data$inf_dyn_priors["tau2_b"],
     n_tests = nrow(test_char),
     Se_beta_a = test_char$Se_a,
     Se_beta_b = test_char$Se_b,
@@ -85,7 +71,7 @@ compile_JAGS.herd <- function(data,
     Sp_beta_b = test_char$Sp_b
   )
 
-    if(n_status_typ3 > 0){
+  if(n_status_typ3 > 0){
     ## 3: test > 1 on a month
     JAGS_data$n_status_typ3 <- n_status_typ3
     JAGS_data$status_typ3 <- test_data$status_id[test_data$status_type == 3]
@@ -118,34 +104,18 @@ compile_JAGS.herd <- function(data,
     JAGS_data$herd_id_pr6 <- test_data$herd_id[test_data$status_type == 6]
   }
 
-  write_JAGS_model(data)
-
-  JAGS_model_compiled <- rjags::jags.model(
-    file = "JAGS_model.txt",
-    data = JAGS_data,
-    n.chains = n_chains)
-
-  if(file.exists("JAGS_model.txt") & isFALSE(keep_model_file)) file.remove("JAGS_model.txt")
-
-  class(JAGS_model_compiled) <- c("jags", "herd")
-
-  JAGS_model_compiled
+  JAGS_data
 
 }
 
+STOCfree_JAGS_data.herd_rf <- function(STOCfree_data){
 
-#' @export
-compile_JAGS.herd_rf <- function(data,
-                                 n_chains = 4,
-                                 keep_model_file = FALSE,
-                                 status = c("discrete", "proba", "predict")){
-
-  n_herds <- attr(data, "number of herds")
-  month_max <- max(data$test_data$month_id)
+  n_herds <- attr(STOCfree_data, "number of herds")
+  month_max <- max(STOCfree_data$test_data$month_id)
 
   test_data <- data$test_data
   ## no test
-  status_no_test <- data$risk_factor_data$status_id
+  status_no_test <- STOCfree_data$risk_factor_data$status_id
   status_no_test <- sort(status_no_test[-which(status_no_test %in% test_data$status_id)])
 
   ## number of tests of optional types
@@ -155,12 +125,12 @@ compile_JAGS.herd_rf <- function(data,
   n_status_typ6 <- nrow(test_data[test_data$status_type == 6,])
 
   ## Priors for risk factors
-  risk_factors <- data$risk_factors[data$risk_factors$ref == 0,]
-  theta_norm_mean <- data$risk_factors$mean_prior
-  theta_norm_prec <- 1 / data$risk_factors$sd_prior^2
+  risk_factors <- STOCfree_data$risk_factors[STOCfree_data$risk_factors$ref == 0,]
+  theta_norm_mean <- STOCfree_data$risk_factors$mean_prior
+  theta_norm_prec <- 1 / STOCfree_data$risk_factors$sd_prior^2
 
   ## Priors for test characteristics
-  test_char <- data$test_perf_prior
+  test_char <- STOCfree_data$test_perf_prior
 
   ## Data used by JAGS
   JAGS_data <- list(
@@ -177,10 +147,10 @@ compile_JAGS.herd_rf <- function(data,
     ## no test
     n_no_test = length(status_no_test),
     status_no_test = status_no_test,
-    pi1_beta_a = data$inf_dyn_priors["pi1_a"],
-    pi1_beta_b = data$inf_dyn_priors["pi1_b"],
-    tau2_beta_a = data$inf_dyn_priors["tau2_a"],
-    tau2_beta_b = data$inf_dyn_priors["tau2_b"],
+    pi1_beta_a = STOCfree_data$inf_dyn_priors["pi1_a"],
+    pi1_beta_b = STOCfree_data$inf_dyn_priors["pi1_b"],
+    tau2_beta_a = STOCfree_data$inf_dyn_priors["tau2_a"],
+    tau2_beta_b = STOCfree_data$inf_dyn_priors["tau2_b"],
     n_tests = nrow(test_char),
     Se_beta_a = test_char$Se_a,
     Se_beta_b = test_char$Se_b,
@@ -189,11 +159,11 @@ compile_JAGS.herd_rf <- function(data,
     theta_norm_mean = theta_norm_mean,
     theta_norm_prec = theta_norm_prec,
     n_risk_factors = length(theta_norm_mean),
-    risk_factors = as.matrix(data$risk_factor_data[, -(1:3)])
+    risk_factors = as.matrix(STOCfree_data$risk_factor_data[, -(1:3)])
   )
 
   if(n_status_typ3 > 0){
-  ## 3: test > 1 on a month
+    ## 3: test > 1 on a month
     JAGS_data$n_status_typ3 <- n_status_typ3
     JAGS_data$status_typ3 <- test_data$status_id[test_data$status_type == 3]
     JAGS_data$test_res_typ3 <- test_data$test_res[test_data$status_type == 3]
@@ -225,34 +195,18 @@ compile_JAGS.herd_rf <- function(data,
     JAGS_data$herd_id_pr6 <- test_data$herd_id[test_data$status_type == 6]
   }
 
-  write_JAGS_model(data)
-
-  JAGS_model_compiled <- rjags::jags.model(
-    file = "JAGS_model.txt",
-    data = JAGS_data,
-    n.chains = n_chains)
-
-  if(file.exists("JAGS_model.txt") & isFALSE(keep_model_file)) file.remove("JAGS_model.txt")
-
-  class(JAGS_model_compiled) <- c("jags", "herd_rf")
-
-  JAGS_model_compiled
+  JAGS_data
 
 }
 
+STOCfree_JAGS_data.animal <- function(STOCfree_data){
 
-#' @export
-compile_JAGS.animal <- function(data,
-                               n_chains = 4,
-                               keep_model_file = FALSE,
-                               status = c("discrete", "proba", "predict")){
+  n_herds <- attr(STOCfree_data, "number of herds")
+  month_max <- max(STOCfree_data$test_data$month_id)
 
-  n_herds <- attr(data, "number of herds")
-  month_max <- max(data$test_data$month_id)
-
-  test_data <- data$test_data
+  test_data <- STOCfree_data$test_data
   ## no test
-  status_no_test <- data$risk_factor_data$status_id
+  status_no_test <- STOCfree_data$risk_factor_data$status_id
   status_no_test <- sort(status_no_test[-which(status_no_test %in% test_data$status_id)])
 
   ## number of tests of optional types
@@ -262,7 +216,7 @@ compile_JAGS.animal <- function(data,
   n_status_typ6 <- nrow(test_data[test_data$status_type == 6,])
 
   ## Priors for test characteristics
-  test_char <- data$test_perf_prior
+  test_char <- STOCfree_data$test_perf_prior
 
   ## Data used by JAGS
   JAGS_data <- list(
@@ -281,14 +235,14 @@ compile_JAGS.animal <- function(data,
     ## no test
     n_no_test = length(status_no_test),
     status_no_test = status_no_test,
-    pi1_beta_a = data$inf_dyn_priors["pi1_a"],
-    pi1_beta_b = data$inf_dyn_priors["pi1_b"],
-    pi_within_a = data$inf_dyn_priors["pi_within_a"],
-    pi_within_b = data$inf_dyn_priors["pi_within_b"],
-    tau1_beta_a = data$inf_dyn_priors["tau1_a"],
-    tau1_beta_b = data$inf_dyn_priors["tau1_b"],
-    tau2_beta_a = data$inf_dyn_priors["tau2_a"],
-    tau2_beta_b = data$inf_dyn_priors["tau2_b"],
+    pi1_beta_a = STOCfree_data$inf_dyn_priors["pi1_a"],
+    pi1_beta_b = STOCfree_data$inf_dyn_priors["pi1_b"],
+    pi_within_a = STOCfree_data$inf_dyn_priors["pi_within_a"],
+    pi_within_b = STOCfree_data$inf_dyn_priors["pi_within_b"],
+    tau1_beta_a = STOCfree_data$inf_dyn_priors["tau1_a"],
+    tau1_beta_b = STOCfree_data$inf_dyn_priors["tau1_b"],
+    tau2_beta_a = STOCfree_data$inf_dyn_priors["tau2_a"],
+    tau2_beta_b = STOCfree_data$inf_dyn_priors["tau2_b"],
     n_tests = nrow(test_char),
     Se_beta_a = test_char$Se_a,
     Se_beta_b = test_char$Se_b,
@@ -332,34 +286,19 @@ compile_JAGS.animal <- function(data,
     JAGS_data$herd_id_pr6 <- test_data$herd_id[test_data$status_type == 6]
   }
 
-  write_JAGS_model(data)
-
-  JAGS_model_compiled <- rjags::jags.model(
-    file = "JAGS_model.txt",
-    data = JAGS_data,
-    n.chains = n_chains)
-
-  if(file.exists("JAGS_model.txt") & isFALSE(keep_model_file)) file.remove("JAGS_model.txt")
-
-  class(JAGS_model_compiled) <- c("jags", "animal")
-
-  JAGS_model_compiled
+  JAGS_data
 
 }
 
 
-#' @export
-compile_JAGS.animal_rf <- function(data,
-                                  n_chains = 4,
-                                  keep_model_file = FALSE,
-                                  status = c("discrete", "proba", "predict")){
+STOCfree_JAGS_data.animal_rf <- function(STOCfree_data){
 
-  n_herds <- attr(data, "number of herds")
-  month_max <- max(data$test_data$month_id)
+  n_herds <- attr(STOCfree_data, "number of herds")
+  month_max <- max(STOCfree_data$test_data$month_id)
 
-  test_data <- data$test_data
+  test_data <- STOCfree_data$test_data
   ## no test
-  status_no_test <- data$risk_factor_data$status_id
+  status_no_test <- STOCfree_data$risk_factor_data$status_id
   status_no_test <- sort(status_no_test[-which(status_no_test %in% test_data$status_id)])
 
   ## number of tests of optional types
@@ -369,12 +308,12 @@ compile_JAGS.animal_rf <- function(data,
   n_status_typ6 <- nrow(test_data[test_data$status_type == 6,])
 
   ## Priors for risk factors
-  risk_factors <- data$risk_factors[data$risk_factors$ref == 0,]
-  theta_norm_mean <- data$risk_factors$mean_prior
-  theta_norm_prec <- 1 / data$risk_factors$sd_prior^2
+  risk_factors <- STOCfree_data$risk_factors[data$risk_factors$ref == 0,]
+  theta_norm_mean <- STOCfree_data$risk_factors$mean_prior
+  theta_norm_prec <- 1 / STOCfree_data$risk_factors$sd_prior^2
 
   ## Priors for test characteristics
-  test_char <- data$test_perf_prior
+  test_char <- STOCfree_data$test_perf_prior
 
   ## Data used by JAGS
   JAGS_data <- list(
@@ -393,12 +332,12 @@ compile_JAGS.animal_rf <- function(data,
     ## no test
     n_no_test = length(status_no_test),
     status_no_test = status_no_test,
-    pi1_beta_a = data$inf_dyn_priors["pi1_a"],
-    pi1_beta_b = data$inf_dyn_priors["pi1_b"],
-    pi_within_a = data$inf_dyn_priors["pi_within_a"],
-    pi_within_b = data$inf_dyn_priors["pi_within_b"],
-    tau2_beta_a = data$inf_dyn_priors["tau2_a"],
-    tau2_beta_b = data$inf_dyn_priors["tau2_b"],
+    pi1_beta_a = STOCfree_data$inf_dyn_priors["pi1_a"],
+    pi1_beta_b = STOCfree_data$inf_dyn_priors["pi1_b"],
+    pi_within_a = STOCfree_data$inf_dyn_priors["pi_within_a"],
+    pi_within_b = STOCfree_data$inf_dyn_priors["pi_within_b"],
+    tau2_beta_a = STOCfree_data$inf_dyn_priors["tau2_a"],
+    tau2_beta_b = STOCfree_data$inf_dyn_priors["tau2_b"],
     n_tests = nrow(test_char),
     Se_beta_a = test_char$Se_a,
     Se_beta_b = test_char$Se_b,
@@ -407,7 +346,7 @@ compile_JAGS.animal_rf <- function(data,
     theta_norm_mean = theta_norm_mean,
     theta_norm_prec = theta_norm_prec,
     n_risk_factors = length(theta_norm_mean),
-    risk_factors = as.matrix(data$risk_factor_data[, -(1:3)])
+    risk_factors = as.matrix(STOCfree_data$risk_factor_data[, -(1:3)])
   )
 
   if(n_status_typ3 > 0){
@@ -446,17 +385,7 @@ compile_JAGS.animal_rf <- function(data,
     JAGS_data$herd_id_pr6 <- test_data$herd_id[test_data$status_type == 6]
   }
 
-  write_JAGS_model(data)
-
-  JAGS_model_compiled <- rjags::jags.model(
-    file = "JAGS_model.txt",
-    data = JAGS_data,
-    n.chains = n_chains)
-
-  if(file.exists("JAGS_model.txt") & isFALSE(keep_model_file)) file.remove("JAGS_model.txt")
-
-  class(JAGS_model_compiled) <- c("jags", "animal_rf")
-
-  JAGS_model_compiled
+  JAGS_data
 
 }
+

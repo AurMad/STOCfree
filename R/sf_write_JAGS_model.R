@@ -3,9 +3,7 @@
 #' This function is for internal use.
 #'
 #' @return a text file with the JAGS model
-#' @export
 #'
-#' @examples
 write_JAGS_model <- function(data){
 
   UseMethod("write_JAGS_model")
@@ -20,9 +18,7 @@ write_JAGS_model.default <- function(data){
 
 }
 
-#####################################################################################
-###   Status = discrete
-#####################################################################################
+## JAGS model: herd level, no risk factor
 write_JAGS_model.herd <- function(data){
 
   test_data <- data$test_data
@@ -32,7 +28,7 @@ write_JAGS_model.herd <- function(data){
   n_status_typ5 <- nrow(test_data[test_data$status_type == 5,])
   n_status_typ6 <- nrow(test_data[test_data$status_type == 6,])
 
-  cat('model{
+model <- paste('model{
 ##############################################################################
 ###  Inference from historical data
 ##############################################################################
@@ -195,12 +191,13 @@ for(i6 in 1:n_status_typ6){
   tau1 ~ dbeta(tau1_beta_a, tau1_beta_b)
   tau2 ~ dbeta(tau2_beta_a, tau2_beta_b)
 
-}',
-    file =  "JAGS_model.txt")
 }
+')
+
+ }
 
 
-#' @export
+## JAGS model: herd level, with risk factors
 write_JAGS_model.herd_rf <- function(data){
 
   test_data <- data$test_data
@@ -210,7 +207,7 @@ write_JAGS_model.herd_rf <- function(data){
   n_status_typ5 <- nrow(test_data[test_data$status_type == 5,])
   n_status_typ6 <- nrow(test_data[test_data$status_type == 6,])
 
-cat('model{
+model <- paste('model{
 ##############################################################################
 ###  Inference from historical data
 ##############################################################################
@@ -385,12 +382,12 @@ for(i6 in 1:n_status_typ6){
 
   }
 
-}',
-      file =  "JAGS_model.txt")
+}')
+
 }
 
 
-#' @export
+## JAGS model: animal level, no risk factor
 write_JAGS_model.animal <- function(data){
 
   test_data <- data$test_data
@@ -413,7 +410,7 @@ write_JAGS_model.animal <- function(data){
   #   p(D+|d+) = 1 -> as soon as 1 animal infected, the herd is infected
   #   p(D+|d-) = (1 - pi_w)*pi_h / [(1 - pi_w)*pi_h + (1 - pi_h)
 
-cat('model{
+model <- paste('model{
 
 ##############################################################################
 ###  Inference from historical data
@@ -624,10 +621,11 @@ for(i6 in 1:n_status_typ6){
   tau2 ~ dbeta(tau2_beta_a, tau2_beta_b)
 
 
-}',
-      file =  "JAGS_model.txt")
+}')
+
 }
 
+## JAGS model: animal level, with risk factors
 write_JAGS_model.animal_rf <- function(data){
 
   test_data <- data$test_data
@@ -637,7 +635,7 @@ write_JAGS_model.animal_rf <- function(data){
   n_status_typ5 <- nrow(test_data[test_data$status_type == 5,])
   n_status_typ6 <- nrow(test_data[test_data$status_type == 6,])
 
-  cat('model{
+model <- paste('model{
   # Formula for the prediction of posterior probability of infection:
   #   D+: herd is infected
   #   d+: animal is infected
@@ -876,6 +874,6 @@ if(n_status_typ4 == 0){''} else {'
 
  }
 
-}',
-      file =  "JAGS_model.txt")
+}')
+
 }

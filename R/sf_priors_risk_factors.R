@@ -5,7 +5,6 @@
 #' @return Displays a table with the list of risk factors considered as well as the associated priors
 #' @export
 #'
-#' @examples
 show_rf <- function(x = STOCfree_data()){
 
   if(attr(x, "number of risk factors") == 0) stop("No risk factor defined")
@@ -24,7 +23,6 @@ show_rf <- function(x = STOCfree_data()){
 #' @return
 #' @export
 #'
-#' @examples
 set_priors_rf <- function(x = STOCfree_data(),
                           risk_factor = character(),
                           modality = NULL,
@@ -107,7 +105,6 @@ set_priors_rf <- function(x = STOCfree_data(),
 #' @return
 #' @export
 #'
-#' @examples
 plot_priors_rf <- function(x = STOCfree_data(), n = 100000){
 
   if(attr(x, "number of risk factors") == 0) stop("No risk factor defined")

@@ -6,7 +6,6 @@
 #' @return
 #' @export
 #'
-#' @examples
 make_nwinf_data <- function(sfd,
                             time_of_inf = c("mid", "first", "last")){
 
@@ -91,7 +90,6 @@ make_nwinf_data <- function(sfd,
 #' @return
 #' @export
 #'
-#' @examples
 add_risk_factor <- function(nwinf = nwinf_data(),
                             rf_data,
                             rf_col = character(),
@@ -191,7 +189,6 @@ add_risk_factor <- function(nwinf = nwinf_data(),
 #' @return a data.frame with a model AIC for each combination of lag1 (start of interval) and lag2 (end of interval)
 #' @export
 #'
-#' @examples
 logit_nwinf_lagged <- function(sf_data,
                              rf_data,
                              rf_date_col = character(),
@@ -356,7 +353,6 @@ logit_nwinf_lagged <- function(sf_data,
 #' @return results of a logistic regression model performed with the glm function
 #' @export
 #'
-#' @examples
 logit_nwinf <- function(nwinf = nwinf_data(),
                       risk_factors = character){
 

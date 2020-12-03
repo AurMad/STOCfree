@@ -12,15 +12,14 @@
 #' @param risk_date_col name of the column with date when the risk factors apply
 #' @param risk_factor_col name of the column(s) with risk factor values
 #' @param risk_factor_type risk factor type. Must be either continuous or categorical
-#' @param lag1
-#' @param lag2
-#' @param FUN
-#' @param time_interval
+#' @param lag1 start of the time interval for risk factor aggregation
+#' @param lag2 end of the time interval for risk factor aggregation
+#' @param FUN function used when aggregating the data. By default sum() is used, the values are added.
+#' @param time_interval function used for risk factor aggregation. By default sum() is used, the values are added.
 #'
 #' @return A list of class STOCfree_data. A specific sub-class is defined based on the input.
 #' @export
 #'
-#' @examples
 STOCfree_data <- function(test_data = data.frame(),
                           test_herd_col = NULL,
                           test_date_col = NULL,
@@ -363,18 +362,17 @@ STOCfree_data <- function(test_data = data.frame(),
 #'
 #' @param sfd STOC free data
 #' @param risk_factor_data a data.frame with a risk factor
-#' @param risk_herd_col
-#' @param risk_date_col
-#' @param risk_factor_col
-#' @param risk_factor_type
-#' @param lag1
-#' @param lag2
-#' @param FUN function used between lag1 and lag2. The default is a sum.
+#' @param risk_herd_col name of the column with herd / farm identifiers
+#' @param risk_date_col name of the column with date when the risk factors apply
+#' @param risk_factor_col name of the column(s) with risk factor values
+#' @param risk_factor_type risk factor type. Must be either continuous or categorical
+#' @param lag1 start of the time interval for risk factor aggregation
+#' @param lag2 end of the time interval for risk factor aggregation
+#' @param FUN function used for risk factor aggregation. By default sum() is used, the values are added.
 #'
 #' @return
 #' @export
 #'
-#' @examples
 sf_add_risk_factor <- function(sfd,
                                risk_factor_data,
                                risk_herd_col = NULL,
@@ -649,7 +647,6 @@ sf_add_risk_factor <- function(sfd,
 #' @return
 #' @export
 #'
-#' @examples
 sf_remove_risk_factor <- function(sfd,
                                risk_factor = character()){
 
@@ -661,14 +658,9 @@ sf_remove_risk_factor <- function(sfd,
 
  }
 
-#' Aggregate animal level data at the herd-month level
-#'
-#' @param test_data
-#'
-#' @return
-#' @export
-#'
-#' @examples
+
+# Aggregate animal level data at the herd-month level
+# Function called by STOCfree_data()
 make_animal_test <- function(test_data, test_res_col, test_N_anim){
 
   ## if no denominator is provided for the binomial distribution, the the number of animals tested is used

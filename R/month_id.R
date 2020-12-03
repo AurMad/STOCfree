@@ -48,7 +48,7 @@ make_month_id <- function(start = character(),
 #'
 #' data.frame(date = seq_dates,
 #'  lagged_date = date_from_lag(
-#'   date = sqt,
+#'   date = seq_dates,
 #'   time_lag = -2))
 date_from_lag <- function(date = character(), time_lag = integer()){
 

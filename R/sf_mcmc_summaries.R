@@ -8,7 +8,6 @@
 #' @return this function returns the quantiles supplied with the probs argument for the different parameters of the STOC free model.
 #' @export
 #'
-#' @examples
 param_summary <- function(x = data.frame(),
                           parameters = c("Se", "Sp", "tau", "pi_within", "theta"),
                           probs = c(.5, .025, .975),
@@ -58,7 +57,6 @@ param_summary <- function(x = data.frame(),
 #' @return for each herd, the quantile supplied is computed from the MCMC samples for the predicted probabilities of infection. So, if a value of 0.5 is supplied for quantile, the median probability of infection is computed. The cut_off argument is then used to categorise each herd as status positive or status negative.
 #' @export
 #'
-#' @examples
 herd_summary <- function(x = data.frame(),
                          sfd,
                          quantile = .5,

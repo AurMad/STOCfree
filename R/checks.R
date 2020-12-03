@@ -8,7 +8,6 @@
 #' @return
 #' @export
 #'
-#' @examples
 extract_herd_from_status_id <- function(sfd,
                                         status_id = integer()){
 
