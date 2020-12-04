@@ -50,7 +50,7 @@ STOCfree_model <- function(STOCfree_data,
   if(save_output == TRUE){
 
     ## making the output tidy with tidybayes
-    tidy_output <- STOCfree_tidy_output(JAGS_samples)
+    tidy_output <- STOCfree_tidy_output(JAGS_samples, STOCfree_data = STOCfree_data)
 
     ## saving parameter values
     write.csv(tidy_output$parameters, file = paste0(STOCfree_path, "/parameters.csv"),

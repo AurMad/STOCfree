@@ -4,10 +4,12 @@
 \alias{extract_STOCfree_pred}
 \title{Extracting draws from the posterior distributions of predicted probabilities of infection}
 \usage{
-extract_STOCfree_pred(STOCfree_model_output)
+extract_STOCfree_pred(STOCfree_model_output, STOCfree_data = NULL)
 }
 \arguments{
 \item{STOCfree_model_output}{output from a call to STOCfree_model()}
+
+\item{STOCfree_data}{if a STOCfree_data is supplied, herd ids will be replaced by the original herd identifiers}
 }
 \value{
 

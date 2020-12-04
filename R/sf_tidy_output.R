@@ -1,15 +1,23 @@
 # Function that generates output in the tidy format
 # from run.jags output
-STOCfree_tidy_output <- function(STOCfree_model_output){
+STOCfree_tidy_output <- function(STOCfree_model_output,
+                                 STOCfree_data){
 
   samples <- STOCfree_model_output$mcmc
 
   ## tidying the results for predicted probabilities
   predictions <- tidybayes::spread_draws(samples,
-                                         predicted_proba[herd_id]) %>%
-    select(.chain, .iteration, .draw, herd_id, predicted_proba)
+                                         predicted_proba[herd_id])
 
-
+  predictions <- predictions[, c("herd_id", ".chain", ".iteration", ".draw", "predicted_proba")]
+  
+  if(!is.null(STOCfree_data)){
+    
+    predictions <- merge(predictions, STOCfree_data$herd_id_corresp, all.x = TRUE)
+    predictions <- predictions[, c(6, 2:5)]
+    
+  }
+  
   ## tidying the results for model parameters
   n_tests <- length(grep("Se", colnames(samples[[1]])))
   herd_lev <- ifelse("pi_within" %in% colnames(samples[[1]]), 0, 1)
@@ -145,20 +153,29 @@ extract_STOCfree_param <- function(STOCfree_model_output){
 #' Extracting draws from the posterior distributions of predicted probabilities of infection
 #'
 #' @param STOCfree_model_output output from a call to STOCfree_model()
+#' @param STOCfree_data if a STOCfree_data is supplied, herd ids will be replaced by the original herd identifiers
 #'
 #' @return
 #' @export
 #'
 #' @examples
-extract_STOCfree_pred <- function(STOCfree_model_output){
+extract_STOCfree_pred <- function(STOCfree_model_output, STOCfree_data = NULL){
 
   ## extracting MCMC draws from the STOCfree_model
   samples <- STOCfree_model_output$mcmc
 
   ## tidying the results for predicted probabilities
   predictions <- tidybayes::spread_draws(samples,
-                                         predicted_proba[herd_id]) %>%
-    select(.chain, .iteration, .draw, herd_id, predicted_proba)
+                                         predicted_proba[herd_id])
+
+  predictions <- predictions[, c("herd_id", ".chain", ".iteration", ".draw", "predicted_proba")]
+
+  if(!is.null(STOCfree_data)){
+
+    predictions <- merge(predictions, STOCfree_data$herd_id_corresp, all.x = TRUE)
+    predictions <- predictions[, c(6, 2:5)]
+    
+  }
 
 
 }
