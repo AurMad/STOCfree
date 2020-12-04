@@ -10,14 +10,14 @@ STOCfree_tidy_output <- function(STOCfree_model_output,
                                          predicted_proba[herd_id])
 
   predictions <- predictions[, c("herd_id", ".chain", ".iteration", ".draw", "predicted_proba")]
-  
+
   if(!is.null(STOCfree_data)){
-    
+
     predictions <- merge(predictions, STOCfree_data$herd_id_corresp, all.x = TRUE)
     predictions <- predictions[, c(6, 2:5)]
-    
+
   }
-  
+
   ## tidying the results for model parameters
   n_tests <- length(grep("Se", colnames(samples[[1]])))
   herd_lev <- ifelse("pi_within" %in% colnames(samples[[1]]), 0, 1)
@@ -157,8 +157,6 @@ extract_STOCfree_param <- function(STOCfree_model_output){
 #'
 #' @return
 #' @export
-#'
-#' @examples
 extract_STOCfree_pred <- function(STOCfree_model_output, STOCfree_data = NULL){
 
   ## extracting MCMC draws from the STOCfree_model
@@ -174,7 +172,7 @@ extract_STOCfree_pred <- function(STOCfree_model_output, STOCfree_data = NULL){
 
     predictions <- merge(predictions, STOCfree_data$herd_id_corresp, all.x = TRUE)
     predictions <- predictions[, c(6, 2:5)]
-    
+
   }
 
 
