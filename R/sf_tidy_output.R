@@ -6,8 +6,8 @@ STOCfree_tidy_output <- function(STOCfree_model_output){
 
   ## tidying the results for predicted probabilities
   predictions <- tidybayes::spread_draws(samples,
-                                         predicted_proba[herd_id],
-                                         predicted_status[herd_id])
+                                         predicted_proba[herd_id]) %>%
+    select(.chain, .iteration, .draw, herd_id, predicted_proba)
 
 
   ## tidying the results for model parameters
@@ -92,6 +92,74 @@ read_STOCfree_pred <- function(out_path = "STOCfree_files"){
   pred <- read.csv(nm)
 
   return(pred)
+
+}
+
+
+#' Extracting draws from the posterior distributions of model parameters
+#'
+#' @param STOCfree_model_output output from a call to STOCfree_model()
+#'
+#' @return
+#' @export
+extract_STOCfree_param <- function(STOCfree_model_output){
+
+  ## extracting MCMC draws from the STOCfree_model
+  samples <- STOCfree_model_output$mcmc
+
+  ## tidying the results for model parameters
+  n_tests <- length(grep("Se", colnames(samples[[1]])))
+  herd_lev <- ifelse("pi_within" %in% colnames(samples[[1]]), 0, 1)
+
+  if(herd_lev == 1 & n_tests == 1){
+
+    parameters <- tidybayes::spread_draws(samples, Se, Sp, tau1, tau2)
+
+  }
+
+  if(herd_lev == 1 & n_tests > 1){
+
+    parameters <- tidybayes::spread_draws(samples, Se[..], Sp[..], tau1, tau2)
+
+  }
+
+  if(herd_lev == 0 & n_tests == 1){
+
+    parameters <- tidybayes::spread_draws(samples, Se, Sp, tau1, tau2, pi_within)
+
+  }
+
+  if(herd_lev == 0 & n_tests > 1){
+
+    parameters <- tidybayes::spread_draws(samples, Se[..], Sp[..], tau1, tau2, pi_within)
+
+  }
+
+
+  return(parameters)
+
+}
+
+
+
+#' Extracting draws from the posterior distributions of predicted probabilities of infection
+#'
+#' @param STOCfree_model_output output from a call to STOCfree_model()
+#'
+#' @return
+#' @export
+#'
+#' @examples
+extract_STOCfree_pred <- function(STOCfree_model_output){
+
+  ## extracting MCMC draws from the STOCfree_model
+  samples <- STOCfree_model_output$mcmc
+
+  ## tidying the results for predicted probabilities
+  predictions <- tidybayes::spread_draws(samples,
+                                         predicted_proba[herd_id]) %>%
+    select(.chain, .iteration, .draw, herd_id, predicted_proba)
+
 
 }
 

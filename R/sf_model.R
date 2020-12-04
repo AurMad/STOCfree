@@ -72,7 +72,7 @@ JAGS_monitor <- function(STOCfree_data){
 
   ## variables to monitor in JAGS
   parameters_to_monitor  <- c("Se", "Sp", "tau2")
-  predictions_to_monitor <- c("predicted_proba", "predicted_status")
+  predictions_to_monitor <- c("predicted_proba")
 
   if(attributes(sfd)$`number of risk factors` == 0) parameters_to_monitor <- c(parameters_to_monitor, "tau1")
   if(attributes(sfd)$`number of risk factors` > 0)  parameters_to_monitor <- c(parameters_to_monitor, "theta")
