@@ -12,6 +12,7 @@
 #' @param risk_date_col name of the column with date when the risk factors apply
 #' @param risk_factor_col name of the column(s) with risk factor values
 #' @param risk_factor_type risk factor type. Must be either continuous or categorical
+#' @param status_dynamics_scale scale on which priors for status dynamics are defined. The default is 'proba' and uses Beta priors. If 'logit' is used as an argument, hte prior distributions will be normal distributions on the logit scale.
 #' @param lag1 start of the time interval for risk factor aggregation
 #' @param lag2 end of the time interval for risk factor aggregation
 #' @param FUN function used when aggregating the data. By default sum() is used, the values are added.
@@ -32,10 +33,12 @@ STOCfree_data <- function(test_data = data.frame(),
                           risk_date_col = NULL,
                           risk_factor_col = NULL,
                           risk_factor_type = c("continuous", "categorical"),
+                          status_dynamics_scale = "proba",
                           lag1 = 0,
                           lag2 = 0,
                           time_interval = c("month", "year", "week"),
                           FUN = sum){
+
 
   time_interval <- match.arg(time_interval)
   time_in <- as.character(factor(time_interval,
@@ -282,29 +285,9 @@ STOCfree_data <- function(test_data = data.frame(),
 
 
   ## Priors for infection dynamics
-  ## all possible possibilities are listed and the unecessary ones removed
-  inf_dyn_priors <- c(
-    pi1_a = NA,
-    pi1_b = NA,
-    pi_within_a = NA,
-    pi_within_b = NA,
-    tau1_a = NA,
-    tau1_b = NA,
-    tau2_a = NA,
-    tau2_b = NA
-  )
-
-  if(test_level == "herd"){
-
-    inf_dyn_priors <- inf_dyn_priors[-grep("pi_within", names(inf_dyn_priors))]
-
-  }
-
-  if(n_risk_factors > 0){
-
-    inf_dyn_priors <- inf_dyn_priors[-grep("tau1", names(inf_dyn_priors))]
-
-  }
+  ## all possibilities are listed and the unnecessary ones removed
+  inf_dyn_priors <- make_dyn_prior_table(test_level = test_level,
+                                   status_dynamics_scale = status_dynamics_scale)
 
   ## Variable names - for later use
   var_names <- c(test_herd_col = test_herd_col,
@@ -327,11 +310,14 @@ STOCfree_data <- function(test_data = data.frame(),
   )
 
   attr(sfd, "level")  <- test_level
+  attr(sfd, "status dynamics scale")  <- status_dynamics_scale
   attr(sfd, "number of herds")  <- n_herds
   attr(sfd, "number of tests")  <- n_tests
   attr(sfd, "month first test") <- month_first
   attr(sfd, "month last test")  <- month_last
   attr(sfd, "number of risk factors")  <- n_risk_factors
+
+  if(test_level == "herd" & n_risk_factors == 0 & status_dynamics_scale == 'logit') test_level <- "herd_dynLogit"
 
   class(sfd) <- c(paste0(test_level,
                          ifelse(n_risk_factors == 0, "", "_rf")),
@@ -356,6 +342,66 @@ STOCfree_data <- function(test_data = data.frame(),
   }
 
 
+## this function creates the table containing the parameters related to status dynamics
+## it is called by STOCfree_data()
+make_dyn_prior_table <- function(test_level, status_dynamics_scale){
+
+  inf_dyn_priors <- NULL
+
+  if(test_level == "herd" & status_dynamics_scale == "proba"){
+
+    inf_dyn_priors <- c(
+      pi1_a = NA,
+      pi1_b = NA,
+      tau1_a = NA,
+      tau1_b = NA,
+      tau2_a = NA,
+      tau2_b = NA
+    )
+    }
+
+  if(test_level == "herd" & status_dynamics_scale == "logit"){
+
+    inf_dyn_priors <- c(
+      logit_pi1_mean = NA,
+      logit_pi1_sd = NA,
+      logit_tau1_mean = NA,
+      logit_tau1_sd = NA,
+      logit_tau2_mean = NA,
+      logit_tau2_sd = NA
+    )
+  }
+
+  if(test_level == "animal" & status_dynamics_scale == "proba"){
+
+    inf_dyn_priors <- c(
+      pi1_a = NA,
+      pi1_b = NA,
+      pi_within_a = NA,
+      pi_within_b = NA,
+      tau1_a = NA,
+      tau1_b = NA,
+      tau2_a = NA,
+      tau2_b = NA
+    )
+  }
+
+  if(test_level == "animal" & status_dynamics_scale == "logit"){
+
+    inf_dyn_priors <- c(
+      logit_pi1_mean = NA,
+      logit_pi1_sd = NA,
+      logit_pi_within_mean = NA,
+      logit_pi_within_sd = NA,
+      logit_tau1_mean = NA,
+      logit_tau1_sd = NA,
+      logit_tau2_mean = NA,
+      logit_tau2_sd = NA
+    )
+  }
+
+  return(inf_dyn_priors)
+}
 
 
 #' Add a risk factor to STOCfree_data
@@ -707,5 +753,18 @@ make_animal_test <- function(test_data, test_res_col, test_N_anim){
   }
 
 
+## function that checks that an object is of the STOCfree_data class
+STOCfree_data_check <- function(data, data_name){
 
+  if(data_name == ""){
 
+    stop(paste("Argument data is missing with no default."))
+
+  }
+
+  if(!"STOCfree_data" %in% class(data)){
+
+     stop(paste0(data_name, " is not a STOCfree_data object."))
+   }
+
+ }

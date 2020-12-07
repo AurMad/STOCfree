@@ -17,6 +17,7 @@ STOCfree_data(
   risk_date_col = NULL,
   risk_factor_col = NULL,
   risk_factor_type = c("continuous", "categorical"),
+  status_dynamics_scale = "proba",
   lag1 = 0,
   lag2 = 0,
   time_interval = c("month", "year", "week"),
@@ -47,6 +48,8 @@ STOCfree_data(
 \item{risk_factor_col}{name of the column(s) with risk factor values}
 
 \item{risk_factor_type}{risk factor type. Must be either continuous or categorical}
+
+\item{status_dynamics_scale}{scale on which priors for status dynamics are defined. The default is 'proba' and uses Beta priors. If 'logit' is used as an argument, hte prior distributions will be normal distributions on the logit scale.}
 
 \item{lag1}{start of the time interval for risk factor aggregation}
 

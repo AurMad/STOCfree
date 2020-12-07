@@ -26,6 +26,14 @@ STOCfree_model <- function(STOCfree_data,
   ## folder in which the different files are saved
   STOCfree_path <- STOCfree_files(out_path)
 
+  ## model file saved as a text file
+  if(save_model == TRUE){
+
+    cat(write_JAGS_model(STOCfree_data),
+        file = paste0(STOCfree_path ,"/model.txt"))
+
+  }
+
   ## running the JAGS model
   JAGS_samples <- runjags::run.jags(
     model = write_JAGS_model(STOCfree_data),
@@ -37,14 +45,6 @@ STOCfree_model <- function(STOCfree_data,
     thin = n_thin,
     method = method,
     ...)
-
-  ## model file saved as a text file
-  if(save_model == TRUE){
-
-    cat(write_JAGS_model(STOCfree_data),
-        file = paste0(STOCfree_path ,"/model.txt"))
-
-  }
 
   ## model results saved in tidy format
   if(save_output == TRUE){

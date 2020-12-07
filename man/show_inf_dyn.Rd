@@ -2,9 +2,9 @@
 % Please edit documentation in R/sf_priors_inf_dyn.R
 \name{show_inf_dyn}
 \alias{show_inf_dyn}
-\title{Shows the parameters asssociated with priors related to infection dynamics}
+\title{Shows the parameters associated with priors related to infection dynamics}
 \usage{
-show_inf_dyn(x = STOCfree_data())
+show_inf_dyn(data)
 }
 \arguments{
 \item{x}{a STOC_free data object}
@@ -13,5 +13,5 @@ show_inf_dyn(x = STOCfree_data())
 a table with the alpha and beta parameters of the Beta distributions associated with the prior probabilities of infection on the first test and the probability of remaining infected between consecutive tests
 }
 \description{
-Shows the parameters asssociated with priors related to infection dynamics
+Shows the parameters associated with priors related to infection dynamics
 }

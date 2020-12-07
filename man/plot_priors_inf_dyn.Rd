@@ -4,7 +4,7 @@
 \alias{plot_priors_inf_dyn}
 \title{Plots the prior distributions for the parameters related to infection dynamics}
 \usage{
-plot_priors_inf_dyn(data = STOCfree_data())
+plot_priors_inf_dyn(data)
 }
 \arguments{
 \item{data}{a STOCfree_data object}

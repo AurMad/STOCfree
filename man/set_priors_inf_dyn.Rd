@@ -2,18 +2,26 @@
 % Please edit documentation in R/sf_priors_inf_dyn.R
 \name{set_priors_inf_dyn}
 \alias{set_priors_inf_dyn}
-\title{Sets the parameters asssociated with priors related to infection dynamics}
+\title{Sets the parameters associated with priors related to infection dynamics}
 \usage{
 set_priors_inf_dyn(
-  data = STOCfree_data(),
-  pi1_a = 1,
-  pi1_b = 1,
-  pi_within_a = 1,
-  pi_within_b = 1,
-  tau1_a = 1,
-  tau1_b = 1,
-  tau2_a = 1,
-  tau2_b = 1
+  data = NULL,
+  pi1_a = NULL,
+  pi1_b = NULL,
+  logit_pi1_mean = NULL,
+  logit_pi1_sd = NULL,
+  tau1_a = NULL,
+  tau1_b = NULL,
+  logit_tau1_mean = NULL,
+  logit_tau1_sd = NULL,
+  tau2_a = NULL,
+  tau2_b = NULL,
+  logit_tau2_mean = NULL,
+  logit_tau2_sd = NULL,
+  pi_within_a = NULL,
+  pi_within_b = NULL,
+  logit_pi_within_mean = NULL,
+  logit_pi_within_sd = NULL
 )
 }
 \arguments{
@@ -31,5 +39,5 @@ set_priors_inf_dyn(
 
 }
 \description{
-Sets the parameters asssociated with priors related to infection dynamics
+Sets the parameters associated with priors related to infection dynamics
 }
