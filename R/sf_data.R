@@ -317,9 +317,8 @@ STOCfree_data <- function(test_data = data.frame(),
   attr(sfd, "month last test")  <- month_last
   attr(sfd, "number of risk factors")  <- n_risk_factors
 
-  if(test_level == "herd" & n_risk_factors == 0 & status_dynamics_scale == 'logit') test_level <- "herd_dynLogit"
-
   class(sfd) <- c(paste0(test_level,
+                         ifelse(status_dynamics_scale == "logit", "_dynLogit", ""),
                          ifelse(n_risk_factors == 0, "", "_rf")),
                   "STOCfree_data")
 

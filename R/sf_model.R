@@ -19,6 +19,7 @@ STOCfree_model <- function(STOCfree_data,
                                 n_thin = 20,
                                 method = "parallel",
                                 save_model = TRUE,
+                                save_data = FALSE,
                                 save_output = TRUE,
                                 out_path = "STOCfree_files",
                                 ...){
@@ -34,11 +35,20 @@ STOCfree_model <- function(STOCfree_data,
 
   }
 
+  ## JAGS dataset created and saved if save_model = TRUE
+  STOCfree_JAGS_data <- STOCfree_JAGS_data(STOCfree_data)
+  if(save_data == TRUE){
+
+  save(STOCfree_JAGS_data,
+      file = paste0(STOCfree_path ,"/data.RData"))
+
+  }
+
   ## running the JAGS model
   JAGS_samples <- runjags::run.jags(
     model = write_JAGS_model(STOCfree_data),
     monitor = JAGS_monitor(STOCfree_data),
-    data = STOCfree_JAGS_data(STOCfree_data),
+    data = STOCfree_JAGS_data,
     n.chains = n_chains,
     burnin = n_burnin,
     sample = n_iter,

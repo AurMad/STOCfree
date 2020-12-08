@@ -4,8 +4,7 @@
 #'
 #' @return a table with the alpha and beta parameters of the Beta distributions associated with the prior probabilities of infection on the first test and the probability of remaining infected between consecutive tests
 #' @export
-#'
-show_inf_dyn <- function(data){
+show_priors_status_dyn <- function(data){
 
   ## checking that data is a STOCfree_data object
   data_nm <- deparse(substitute(data))
@@ -14,7 +13,7 @@ show_inf_dyn <- function(data){
   print(data$inf_dyn_priors)
 
   ## checking for missing and impossible parameter values
-  check_priors_inf_dyn(data = data, data_name = data_nm)
+  check_priors_status_dyn(data = data, data_name = data_nm)
 
 }
 
@@ -29,7 +28,7 @@ show_inf_dyn <- function(data){
 #'
 #' @return
 #' @export
-set_priors_inf_dyn <- function(data = NULL, pi1_a = NULL, pi1_b = NULL, logit_pi1_mean = NULL, logit_pi1_sd = NULL,
+set_priors_status_dyn <- function(data = NULL, pi1_a = NULL, pi1_b = NULL, logit_pi1_mean = NULL, logit_pi1_sd = NULL,
                                tau1_a = NULL, tau1_b = NULL, logit_tau1_mean = NULL, logit_tau1_sd = NULL,
                                tau2_a = NULL, tau2_b = NULL, logit_tau2_mean = NULL, logit_tau2_sd = NULL,
                                pi_within_a = NULL, pi_within_b = NULL, logit_pi_within_mean = NULL, logit_pi_within_sd = NULL){
@@ -54,7 +53,7 @@ set_priors_inf_dyn <- function(data = NULL, pi1_a = NULL, pi1_b = NULL, logit_pi
   data$inf_dyn_priors[args_used] <- par_val
 
   ## checking for missing and impossible parameter values
-  check_priors_inf_dyn(data = data, data_name = data_nm)
+  check_priors_status_dyn(data = data, data_name = data_nm)
 
   data
 
@@ -66,7 +65,7 @@ set_priors_inf_dyn <- function(data = NULL, pi1_a = NULL, pi1_b = NULL, logit_pi
 #'
 #' @return
 #' @export
-plot_priors_inf_dyn <- function(data){
+plot_priors_status_dyn <- function(data){
 
   ## checking that data is a STOCfree_data object
   data_nm <- deparse(substitute(data))
@@ -102,14 +101,14 @@ plot_priors_inf_dyn <- function(data){
 
 ## This function checks the missing prior paramaters
 ## as well as standard deviations that are equal or smaller than 0
-check_priors_inf_dyn <- function(data, data_name){
+check_priors_status_dyn <- function(data, data_name){
 
   ## Missing parameter values
   missing_param <- names(data$inf_dyn_priors[is.na(data$inf_dyn_priors)])
 
   if(length(missing_param) > 0){
 
-    message(paste0("Set prior distributions for status dynamics using:\n", data_name, " <- set_priors_inf_dyn(", paste(missing_param, collapse = " = , "), " = )"))
+    message(paste0("Set prior distributions for status dynamics using:\n", data_name, " <- set_priors_status_dyn(", data_name, ", ", paste(missing_param, collapse = " = , "), " = )"))
 
   }
 
@@ -120,7 +119,7 @@ check_priors_inf_dyn <- function(data, data_name){
 
   if(length(sd_par_neg) > 0){
 
-    warning(paste0("Standard deviations for prior distributions should be > 0. \n", data_name, " <- set_priors_inf_dyn(", paste(sd_par_neg, collapse = " = , "), " = )"))
+    warning(paste0("Standard deviations for prior distributions should be > 0. \n", data_name, " <- set_priors_status_dyn(", data_name, ", ", paste(sd_par_neg, collapse = " = , "), " = )"))
 
   }
 

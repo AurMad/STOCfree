@@ -12,6 +12,7 @@ STOCfree_model(
   n_thin = 20,
   method = "parallel",
   save_model = TRUE,
+  save_data = FALSE,
   save_output = TRUE,
   out_path = "STOCfree_files",
   ...

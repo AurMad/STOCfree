@@ -1231,7 +1231,7 @@ for(i6 in 1:n_status_typ6){
   }
 
   ## Prior for within herd prevalence in infected herds
-  logit_pi_within ~ dnorm(logit_pi_within_mean, logit_pi_within_sd)
+  logit_pi_within ~ dnorm(logit_pi_within_mean, logit_pi_within_prec)
   pi_within <- ilogit(logit_pi_within)
 
   ## Probability of not eliminating the infection
@@ -1740,7 +1740,7 @@ write_JAGS_model.animal_dynLogit_rf <- function(data){
   }
 
   ## Prior for within herd prevalence in infected herds
-  logit_pi_within ~ dnorm(logit_pi_within_mean, logit_pi_within_sd)
+  logit_pi_within ~ dnorm(logit_pi_within_mean, logit_pi_within_prec)
   pi_within <- ilogit(logit_pi_within)
 
   ## Probability of not eliminating the infection
