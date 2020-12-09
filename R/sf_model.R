@@ -81,13 +81,14 @@ STOCfree_model <- function(STOCfree_data,
 JAGS_monitor <- function(STOCfree_data){
 
   ## variables to monitor in JAGS
+  # final list of parameters to monitor
   parameters_to_monitor  <- c("Se", "Sp", "tau2")
   predictions_to_monitor <- c("predicted_proba")
 
-  if(attributes(sfd)$`number of risk factors` == 0) parameters_to_monitor <- c(parameters_to_monitor, "tau1")
-  if(attributes(sfd)$`number of risk factors` > 0)  parameters_to_monitor <- c(parameters_to_monitor, "theta")
+  if(attributes(STOCfree_data)$`number of risk factors` == 0) parameters_to_monitor <- c(parameters_to_monitor, "tau1")
+  if(attributes(STOCfree_data)$`number of risk factors` > 0)  parameters_to_monitor <- c(parameters_to_monitor, "theta")
 
-  if(attributes(sfd)$level == "animal") parameters_to_monitor <- c(parameters_to_monitor, "pi_within")
+  if(attributes(STOCfree_data)$level == "animal") parameters_to_monitor <- c(parameters_to_monitor, "pi_within")
 
 
   monitor <- c(parameters_to_monitor, predictions_to_monitor)
