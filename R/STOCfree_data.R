@@ -3,7 +3,7 @@
 #' @param test_data a data.frame containing test results
 #' @param test_herd_col name of the column with herd / farm identifiers
 #' @param test_date_col name of the column with date of test
-#' @param test_res_col name of the column with test results
+#' @param test_res_col name of the column with test results. Test results should be codes as 0 for negative results and 1 for positive results.
 #' @param test_name_col when several tests are used, name of the column containing the test names
 #' @param test_level level at which the tests are performed. Must be either herd of animal
 #' @param test_N_anim name of the column with the number of animals to use as the denominator in the animal level model.
