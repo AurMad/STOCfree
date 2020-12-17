@@ -70,6 +70,10 @@ STOCfree_model <- function(STOCfree_data,
     write.csv(tidy_output$predictions, file = paste0(STOCfree_path , "/predictions.csv"),
               row.names = FALSE)
 
+    ## saving monthly prevalences
+    write.csv(tidy_output$month_prev, file = paste0(STOCfree_path , "/month_prev.csv"),
+              row.names = FALSE)
+
   }
 
   return(JAGS_samples)
@@ -83,7 +87,6 @@ JAGS_monitor <- function(STOCfree_data){
   ## variables to monitor in JAGS
   # final list of parameters to monitor
   parameters_to_monitor  <- c("Se", "Sp", "tau2")
-  predictions_to_monitor <- c("predicted_proba")
 
   if(attributes(STOCfree_data)$`number of risk factors` == 0) parameters_to_monitor <- c(parameters_to_monitor, "tau1")
   if(attributes(STOCfree_data)$`number of risk factors` > 0)  parameters_to_monitor <- c(parameters_to_monitor, "theta")
@@ -91,7 +94,7 @@ JAGS_monitor <- function(STOCfree_data){
   if(attributes(STOCfree_data)$level == "animal") parameters_to_monitor <- c(parameters_to_monitor, "pi_within")
 
 
-  monitor <- c(parameters_to_monitor, predictions_to_monitor)
+  monitor <- c(parameters_to_monitor, "predicted_proba", "month_prev")
 
   return(monitor)
 

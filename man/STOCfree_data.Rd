@@ -31,7 +31,7 @@ STOCfree_data(
 
 \item{test_date_col}{name of the column with date of test}
 
-\item{test_res_col}{name of the column with test results}
+\item{test_res_col}{name of the column with test results. Test results should be codes as 0 for negative results and 1 for positive results.}
 
 \item{test_name_col}{when several tests are used, name of the column containing the test names}
 

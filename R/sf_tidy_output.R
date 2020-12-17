@@ -46,11 +46,42 @@ STOCfree_tidy_output <- function(STOCfree_model_output,
 
   }
 
+  ## tidying the results for monthly prevalences
+  ## model output made tidy
+  month_prev <- tidybayes::spread_draws(samples,
+                                        month_prev[..])
+  ## reconstructing the list of all months
+  months_all <- data.frame(
+    date = seq(as.Date(paste0(attr(STOCfree_data, "month first test"), "-01")),
+               as.Date(paste0(attr(STOCfree_data, "month last test"), "-01")),
+               by = "1 month"),
+    month_abb = NA,
+    tidybayes_names = NA
+  )
+
+  months_all <- months_all[-nrow(months_all), ]
+  ## month names abbreviated to get meaningful column names
+  months_all$month_abb <- format(months_all$date, "%b_%Y")
+
+  ## month names in the month_prev dataset
+  months_all$tidybayes_names <- paste0("month_prev.", 1:nrow(months_all))
+
+  ## columns reordered
+  cln <- match(months_all$tidybayes_names, colnames(month_prev))
+  month_prev <- month_prev[, c(1:3, cln)]
+
+  ## column names changed
+  cln1 <- match(months_all$tidybayes_names, colnames(month_prev))
+  colnames(month_prev)[cln1] <- months_all$month_abb
+
   list(
     parameters = parameters,
-    predictions = predictions)
+    predictions = predictions,
+    month_prev = month_prev)
 
 }
+
+
 
 ## Folder where models are saved
 STOCfree_files <- function(out_path = out_path){
@@ -177,4 +208,51 @@ extract_STOCfree_pred <- function(STOCfree_model_output, STOCfree_data = NULL){
 
 
 }
+
+
+
+#' Extracting draws from the posterior distributions for monthly prevalences
+#'
+#' @param STOCfree_model_output output from a call to STOCfree_model()
+#'
+#' @return
+#' @export
+extract_STOCfree_prevalences <- function(STOCfree_model_output, STOCfree_data = NULL){
+
+  ## extracting MCMC draws from the STOCfree_model
+  samples <- STOCfree_model_output$mcmc
+
+  ## tidying the results for monthly prevalences
+  ## model output made tidy
+  month_prev <- tidybayes::spread_draws(samples,
+                                        month_prev[..])
+  ## reconstructing the list of all months
+  months_all <- data.frame(
+    date = seq(as.Date(paste0(attr(STOCfree_data, "month first test"), "-01")),
+               as.Date(paste0(attr(STOCfree_data, "month last test"), "-01")),
+               by = "1 month"),
+    month_abb = NA,
+    tidybayes_names = NA
+  )
+
+  months_all <- months_all[-nrow(months_all), ]
+
+  ## month names abbreviated to get meaningful column names
+  months_all$month_abb <- format(months_all$date, "%b_%Y")
+
+  ## month names in the month_prev dataset
+  months_all$tidybayes_names <- paste0("month_prev.", 1:nrow(months_all))
+
+  ## columns reordered
+  cln <- match(months_all$tidybayes_names, colnames(month_prev))
+  month_prev <- month_prev[, c(1:3, cln)]
+
+  ## column names changed
+  cln1 <- match(months_all$tidybayes_names, colnames(month_prev))
+  colnames(month_prev)[cln1] <- months_all$month_abb
+
+  return(month_prev)
+
+}
+
 

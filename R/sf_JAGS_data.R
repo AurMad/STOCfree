@@ -22,8 +22,25 @@ STOCfree_JAGS_data.default <- function(STOCfree_data){
 STOCfree_JAGS_data.herd <- function(STOCfree_data){
 
   n_herds <- attr(STOCfree_data, "number of herds")
-  month_max <- max(STOCfree_data$test_data$month_id)
 
+  ## data used to record monthly prevalences
+  ## between first and penultimate month
+  month_max  <- max(STOCfree_data$test_data$month_id) - 1
+  month_N <- tapply(STOCfree_data$risk_factor_data$month_id, STOCfree_data$risk_factor_data$month_id, length)
+  month_N <- month_N[-length(month_N)]
+
+  # this matrix is filled with the status ids corresponding with each month
+  month_mat <- matrix(rep(NA, length(month_N) * max(month_N)),
+                      ncol = length(month_N))
+
+  for(i in 1:ncol(month_mat)){
+
+    this_month <- STOCfree_data$risk_factor_data$status_id[STOCfree_data$risk_factor_data$month_id == i]
+    month_mat[1:length(this_month), i] <- this_month
+
+  }
+
+  ## test data
   test_data <- STOCfree_data$test_data
   ## no test
   status_no_test <- STOCfree_data$risk_factor_data$status_id
@@ -40,6 +57,9 @@ STOCfree_JAGS_data.herd <- function(STOCfree_data){
 
   ## Data used by JAGS
   JAGS_data <- list(
+    month_max = month_max,
+    month_N = as.integer(month_N),
+    month_mat = month_mat,
     ## First test in a herd - status type = 1
     n_status_typ1 = nrow(test_data[test_data$status_type == 1,]),
     status_typ1 = test_data$status_id[test_data$status_type == 1],
@@ -110,8 +130,24 @@ STOCfree_JAGS_data.herd <- function(STOCfree_data){
 STOCfree_JAGS_data.herd_dynLogit <- function(STOCfree_data){
 
   n_herds <- attr(STOCfree_data, "number of herds")
-  month_max <- max(STOCfree_data$test_data$month_id)
+  ## data used to record monthly prevalences
+  ## between first and penultimate month
+  month_max  <- max(STOCfree_data$test_data$month_id) - 1
+  month_N <- tapply(STOCfree_data$risk_factor_data$month_id, STOCfree_data$risk_factor_data$month_id, length)
+  month_N <- month_N[-length(month_N)]
 
+  # this matrix is filled with the status ids corresponding with each month
+  month_mat <- matrix(rep(NA, length(month_N) * max(month_N)),
+                      ncol = length(month_N))
+
+  for(i in 1:ncol(month_mat)){
+
+    this_month <- STOCfree_data$risk_factor_data$status_id[STOCfree_data$risk_factor_data$month_id == i]
+    month_mat[1:length(this_month), i] <- this_month
+
+  }
+
+  ## test data
   test_data <- STOCfree_data$test_data
   ## no test
   status_no_test <- STOCfree_data$risk_factor_data$status_id
@@ -128,6 +164,9 @@ STOCfree_JAGS_data.herd_dynLogit <- function(STOCfree_data){
 
   ## Data used by JAGS
   JAGS_data <- list(
+    month_max = month_max,
+    month_N = as.integer(month_N),
+    month_mat = month_mat,
     ## First test in a herd - status type = 1
     n_status_typ1 = nrow(test_data[test_data$status_type == 1,]),
     status_typ1 = test_data$status_id[test_data$status_type == 1],
@@ -196,8 +235,25 @@ STOCfree_JAGS_data.herd_dynLogit <- function(STOCfree_data){
 STOCfree_JAGS_data.herd_rf <- function(STOCfree_data){
 
   n_herds <- attr(STOCfree_data, "number of herds")
-  month_max <- max(STOCfree_data$test_data$month_id)
 
+  ## data used to record monthly prevalences
+  ## between first and penultimate month
+  month_max  <- max(STOCfree_data$test_data$month_id) - 1
+  month_N <- tapply(STOCfree_data$risk_factor_data$month_id, STOCfree_data$risk_factor_data$month_id, length)
+  month_N <- month_N[-length(month_N)]
+
+  # this matrix is filled with the status ids corresponding with each month
+  month_mat <- matrix(rep(NA, length(month_N) * max(month_N)),
+                      ncol = length(month_N))
+
+  for(i in 1:ncol(month_mat)){
+
+    this_month <- STOCfree_data$risk_factor_data$status_id[STOCfree_data$risk_factor_data$month_id == i]
+    month_mat[1:length(this_month), i] <- this_month
+
+  }
+
+  ## test data
   test_data <- data$test_data
   ## no test
   status_no_test <- STOCfree_data$risk_factor_data$status_id
@@ -219,6 +275,9 @@ STOCfree_JAGS_data.herd_rf <- function(STOCfree_data){
 
   ## Data used by JAGS
   JAGS_data <- list(
+    month_max = month_max,
+    month_N = as.integer(month_N),
+    month_mat = month_mat,
     ## First test in a herd - status type = 1
     n_status_typ1 = nrow(test_data[test_data$status_type == 1,]),
     status_typ1 = test_data$status_id[test_data$status_type == 1],
@@ -290,8 +349,25 @@ STOCfree_JAGS_data.herd_rf <- function(STOCfree_data){
 STOCfree_JAGS_data.herd_dynLogit_rf <- function(STOCfree_data){
 
   n_herds <- attr(STOCfree_data, "number of herds")
-  month_max <- max(STOCfree_data$test_data$month_id)
 
+  ## data used to record monthly prevalences
+  ## between first and penultimate month
+  month_max  <- max(STOCfree_data$test_data$month_id) - 1
+  month_N <- tapply(STOCfree_data$risk_factor_data$month_id, STOCfree_data$risk_factor_data$month_id, length)
+  month_N <- month_N[-length(month_N)]
+
+  # this matrix is filled with the status ids corresponding with each month
+  month_mat <- matrix(rep(NA, length(month_N) * max(month_N)),
+                      ncol = length(month_N))
+
+  for(i in 1:ncol(month_mat)){
+
+    this_month <- STOCfree_data$risk_factor_data$status_id[STOCfree_data$risk_factor_data$month_id == i]
+    month_mat[1:length(this_month), i] <- this_month
+
+  }
+
+  ## test data
   test_data <- data$test_data
   ## no test
   status_no_test <- STOCfree_data$risk_factor_data$status_id
@@ -313,6 +389,9 @@ STOCfree_JAGS_data.herd_dynLogit_rf <- function(STOCfree_data){
 
   ## Data used by JAGS
   JAGS_data <- list(
+    month_max = month_max,
+    month_N = as.integer(month_N),
+    month_mat = month_mat,
     ## First test in a herd - status type = 1
     n_status_typ1 = nrow(test_data[test_data$status_type == 1,]),
     status_typ1 = test_data$status_id[test_data$status_type == 1],
@@ -384,8 +463,25 @@ STOCfree_JAGS_data.herd_dynLogit_rf <- function(STOCfree_data){
 STOCfree_JAGS_data.animal <- function(STOCfree_data){
 
   n_herds <- attr(STOCfree_data, "number of herds")
-  month_max <- max(STOCfree_data$test_data$month_id)
 
+  ## data used to record monthly prevalences
+  ## between first and penultimate month
+  month_max  <- max(STOCfree_data$test_data$month_id) - 1
+  month_N <- tapply(STOCfree_data$risk_factor_data$month_id, STOCfree_data$risk_factor_data$month_id, length)
+  month_N <- month_N[-length(month_N)]
+
+  # this matrix is filled with the status ids corresponding with each month
+  month_mat <- matrix(rep(NA, length(month_N) * max(month_N)),
+                      ncol = length(month_N))
+
+  for(i in 1:ncol(month_mat)){
+
+    this_month <- STOCfree_data$risk_factor_data$status_id[STOCfree_data$risk_factor_data$month_id == i]
+    month_mat[1:length(this_month), i] <- this_month
+
+  }
+
+  ## test data
   test_data <- STOCfree_data$test_data
   ## no test
   status_no_test <- STOCfree_data$risk_factor_data$status_id
@@ -402,6 +498,9 @@ STOCfree_JAGS_data.animal <- function(STOCfree_data){
 
   ## Data used by JAGS
   JAGS_data <- list(
+    month_max = month_max,
+    month_N = as.integer(month_N),
+    month_mat = month_mat,
     ## First test in a herd - status type = 1
     n_status_typ1 = nrow(test_data[test_data$status_type == 1,]),
     status_typ1 = test_data$status_id[test_data$status_type == 1],
@@ -478,8 +577,25 @@ STOCfree_JAGS_data.animal <- function(STOCfree_data){
 STOCfree_JAGS_data.animal_dynLogit <- function(STOCfree_data){
 
   n_herds <- attr(STOCfree_data, "number of herds")
-  month_max <- max(STOCfree_data$test_data$month_id)
 
+  ## data used to record monthly prevalences
+  ## between first and penultimate month
+  month_max  <- max(STOCfree_data$test_data$month_id) - 1
+  month_N <- tapply(STOCfree_data$risk_factor_data$month_id, STOCfree_data$risk_factor_data$month_id, length)
+  month_N <- month_N[-length(month_N)]
+
+  # this matrix is filled with the status ids corresponding with each month
+  month_mat <- matrix(rep(NA, length(month_N) * max(month_N)),
+                      ncol = length(month_N))
+
+  for(i in 1:ncol(month_mat)){
+
+    this_month <- STOCfree_data$risk_factor_data$status_id[STOCfree_data$risk_factor_data$month_id == i]
+    month_mat[1:length(this_month), i] <- this_month
+
+  }
+
+  ## test data
   test_data <- STOCfree_data$test_data
   ## no test
   status_no_test <- STOCfree_data$risk_factor_data$status_id
@@ -496,6 +612,9 @@ STOCfree_JAGS_data.animal_dynLogit <- function(STOCfree_data){
 
   ## Data used by JAGS
   JAGS_data <- list(
+    month_max = month_max,
+    month_N = as.integer(month_N),
+    month_mat = month_mat,
     ## First test in a herd - status type = 1
     n_status_typ1 = nrow(test_data[test_data$status_type == 1,]),
     status_typ1 = test_data$status_id[test_data$status_type == 1],
@@ -571,8 +690,25 @@ STOCfree_JAGS_data.animal_dynLogit <- function(STOCfree_data){
 STOCfree_JAGS_data.animal_rf <- function(STOCfree_data){
 
   n_herds <- attr(STOCfree_data, "number of herds")
-  month_max <- max(STOCfree_data$test_data$month_id)
 
+  ## data used to record monthly prevalences
+  ## between first and penultimate month
+  month_max  <- max(STOCfree_data$test_data$month_id) - 1
+  month_N <- tapply(STOCfree_data$risk_factor_data$month_id, STOCfree_data$risk_factor_data$month_id, length)
+  month_N <- month_N[-length(month_N)]
+
+  # this matrix is filled with the status ids corresponding with each month
+  month_mat <- matrix(rep(NA, length(month_N) * max(month_N)),
+                      ncol = length(month_N))
+
+  for(i in 1:ncol(month_mat)){
+
+    this_month <- STOCfree_data$risk_factor_data$status_id[STOCfree_data$risk_factor_data$month_id == i]
+    month_mat[1:length(this_month), i] <- this_month
+
+  }
+
+  ## test data
   test_data <- STOCfree_data$test_data
   ## no test
   status_no_test <- STOCfree_data$risk_factor_data$status_id
@@ -594,6 +730,9 @@ STOCfree_JAGS_data.animal_rf <- function(STOCfree_data){
 
   ## Data used by JAGS
   JAGS_data <- list(
+    month_max = month_max,
+    month_N = as.integer(month_N),
+    month_mat = month_mat,
     ## First test in a herd - status type = 1
     n_status_typ1 = nrow(test_data[test_data$status_type == 1,]),
     status_typ1 = test_data$status_id[test_data$status_type == 1],
@@ -673,8 +812,25 @@ STOCfree_JAGS_data.animal_rf <- function(STOCfree_data){
 STOCfree_JAGS_data.animal_dynLogit_rf <- function(STOCfree_data){
 
   n_herds <- attr(STOCfree_data, "number of herds")
-  month_max <- max(STOCfree_data$test_data$month_id)
 
+  ## data used to record monthly prevalences
+  ## between first and penultimate month
+  month_max  <- max(STOCfree_data$test_data$month_id) - 1
+  month_N <- tapply(STOCfree_data$risk_factor_data$month_id, STOCfree_data$risk_factor_data$month_id, length)
+  month_N <- month_N[-length(month_N)]
+
+  # this matrix is filled with the status ids corresponding with each month
+  month_mat <- matrix(rep(NA, length(month_N) * max(month_N)),
+                      ncol = length(month_N))
+
+  for(i in 1:ncol(month_mat)){
+
+    this_month <- STOCfree_data$risk_factor_data$status_id[STOCfree_data$risk_factor_data$month_id == i]
+    month_mat[1:length(this_month), i] <- this_month
+
+  }
+
+  ## test data
   test_data <- STOCfree_data$test_data
   ## no test
   status_no_test <- STOCfree_data$risk_factor_data$status_id
@@ -696,6 +852,9 @@ STOCfree_JAGS_data.animal_dynLogit_rf <- function(STOCfree_data){
 
   ## Data used by JAGS
   JAGS_data <- list(
+    month_max = month_max,
+    month_N = as.integer(month_N),
+    month_mat = month_mat,
     ## First test in a herd - status type = 1
     n_status_typ1 = nrow(test_data[test_data$status_type == 1,]),
     status_typ1 = test_data$status_id[test_data$status_type == 1],
