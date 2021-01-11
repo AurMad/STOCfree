@@ -7,20 +7,19 @@
 #' @param test_name_col when several tests are used, name of the column containing the test names
 #' @param test_level level at which the tests are performed. Must be either herd of animal
 #' @param test_N_anim name of the column with the number of animals to use as the denominator in the animal level model.
+#' @param status_dynamics_scale scale on which priors for status dynamics are defined. The default is 'proba' and uses Beta priors. If 'logit' is used as an argument, the prior distributions will be normal distributions on the logit scale.
+#' @param time_interval function used for risk factor aggregation. By default sum() is used, the values are added.
 #' @param risk_factor_data a data.frame containing the risk factors
 #' @param risk_herd_col name of the column with herd / farm identifiers
 #' @param risk_date_col name of the column with date when the risk factors apply
 #' @param risk_factor_col name of the column(s) with risk factor values
 #' @param risk_factor_type risk factor type. Must be either continuous or categorical
-#' @param status_dynamics_scale scale on which priors for status dynamics are defined. The default is 'proba' and uses Beta priors. If 'logit' is used as an argument, hte prior distributions will be normal distributions on the logit scale.
 #' @param lag1 start of the time interval for risk factor aggregation
 #' @param lag2 end of the time interval for risk factor aggregation
 #' @param FUN function used when aggregating the data. By default sum() is used, the values are added.
-#' @param time_interval function used for risk factor aggregation. By default sum() is used, the values are added.
 #'
 #' @return A list of class STOCfree_data. A specific sub-class is defined based on the input.
 #' @export
-#'
 STOCfree_data <- function(test_data = data.frame(),
                           test_herd_col = NULL,
                           test_date_col = NULL,
@@ -28,12 +27,12 @@ STOCfree_data <- function(test_data = data.frame(),
                           test_name_col = NULL,
                           test_level = c("herd", "animal"),
                           test_N_anim = NULL,
+                          status_dynamics_scale = c("proba", "logit"),
                           risk_factor_data = NULL,
                           risk_herd_col = NULL,
                           risk_date_col = NULL,
                           risk_factor_col = NULL,
                           risk_factor_type = c("continuous", "categorical"),
-                          status_dynamics_scale = "proba",
                           lag1 = 0,
                           lag2 = 0,
                           time_interval = c("month", "year", "week"),
