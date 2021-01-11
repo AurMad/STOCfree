@@ -77,7 +77,7 @@ read_STOCfree_pred <- function(out_path = "STOCfree_files"){
 print.STOCfree_pred <- function(x){
 
   cat("MCMC samples from STOC free model herd level predicted probabilities of infection\n\n")
-  cat("Number of herds: ", attr(x,"number of herds\n\n"))
+  cat("Number of herds:", attr(x,"number of herds"), "\n\n")
   cat("Herds:", unique(x[,1]))
 
   }
@@ -107,7 +107,7 @@ plot.STOCfree_pred <- function(x, herd = "all", type = "aggregated", legend = FA
   }
 
   ## one or a subset of herds plotted
-  if(length(herd) > 1 | herd != "all"){
+  if(length(herd) > 1 || herd != "all"){
 
     list_herds <- unique(x$herd)
 

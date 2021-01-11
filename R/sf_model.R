@@ -68,20 +68,13 @@ STOCfree_model <- function(STOCfree_data,
     write.csv(extract_STOCfree_param(JAGS_samples), file = paste0(STOCfree_path, "/parameters.csv"),
               row.names = FALSE)
 
-    # write.csv(tidy_output$parameters, file = paste0(STOCfree_path, "/parameters.csv"),
-    #           row.names = FALSE)
-
     ## saving predicted probabilities of latent status
     write.csv(extract_STOCfree_pred(JAGS_samples), file = paste0(STOCfree_path , "/predictions.csv"),
               row.names = FALSE)
-    # write.csv(tidy_output$predictions, file = paste0(STOCfree_path , "/predictions.csv"),
-    #           row.names = FALSE)
 
     ## saving monthly prevalences
     write.csv(extract_STOCfree_month_prev(JAGS_samples, STOCfree_data), file = paste0(STOCfree_path , "/month_prev.csv"),
               row.names = FALSE)
-    # write.csv(tidy_output$month_prev, file = paste0(STOCfree_path , "/month_prev.csv"),
-    #           row.names = FALSE)
 
   }
 
