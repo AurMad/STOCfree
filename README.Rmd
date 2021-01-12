@@ -110,13 +110,14 @@ The columns of the dataset correspond to:
 
 All the later analyses rely on the construction of a `STOCfree_data` object. As an example, a `STOCfree_data` object is constructed from the `herdBTM` dataset. To create this object, we use the `STOCfree_data()` function. Type `?STOCfree_data` in the console to see the list of arguments that can be used.
 
-```{r}
+```{r creation of STOCfree_data object}
 sfd <- STOCfree_data(test_data = herdBTM,
                      test_herd_col = "Farm",
                      test_date_col = "DateOfTest",
                      test_res_col = "TestResult",
                      test_name_col = "Test",
-                     test_level = "herd")
+                     test_level = "herd",
+                     status_dynamics_scale = "proba")
 ```
 
 In this example, the function will gather the test data from the `herdBTM` dataset, which must be a data.frame or a tibble. Herd identifiers are looked up in the `Farm` column of the `herdBTM` dataset, dates of test in the `DateOfTest` column...
@@ -124,7 +125,7 @@ In this example, the function will gather the test data from the `herdBTM` datas
 One argument worth mentioning is the `status_dynamics_scale` argument. By default, infection dynamics parameters, i.e. probabilities of infection on the first time step, acquiring and eliminating the infection between time steps, are modelled on the probability scale using Beta distributions (`status_dynamics_scale = "proba"`). Changing to `status_dynamics_scale = "logit"`, these probabilities are modelled on the logit scale and normal prior distributions are used. In order to illustrate this point, we create a second STOCfree_data object with dynamics parameters on the logit scale.
 
 
-```{r}
+```{r second STOCfree_data object with dynamics on logit scale}
 sfd1 <- STOCfree_data(test_data = herdBTM,
                      test_herd_col = "Farm",
                      test_date_col = "DateOfTest",
@@ -136,13 +137,13 @@ sfd1 <- STOCfree_data(test_data = herdBTM,
 
 The `STOCfree_data()` function returns an object of class `STOCfree_data`.
 
-```{r}
+```{r class of STOCfree_data objects}
 class(sfd)
 ```
 
 A `STOCfree_data` object is in fact a list of `data.frames`. Below we provide a brief explanation on the content of this list.
 
-```{r}
+```{r structure of STOCfree_data objects}
 str(sfd)
 ```
 
@@ -161,7 +162,7 @@ The list components are:
 
 The model accounts for the fact that the sensitivity and specificity of the different tests used can be below 1. Hypotheses about these parameters are included through the use of Beta distributions as priors for the different sensitivities and specificities. We can check the current values for the parameters associated with these distributions using the `show_tests()` function.
 
-```{r}
+```{r test characteristics}
 show_tests(sfd)
 ```
 
@@ -169,7 +170,7 @@ Column names ending with `_a` and `_b` contain the alpha and beta values for Bet
 
 As can be seen, no value has been defined yet. This can be done as follows:
 
-```{r}
+```{r prior distributions for test characteristic}
 sfd <- set_priors_tests(sfd,
                  test = "BTM_ODR",
                  Se_a = 5000,
@@ -187,13 +188,13 @@ sfd <- set_priors_tests(sfd,
 
 We can check that the priors have changed:
 
-```{r}
+```{r test characteristics 1}
 show_tests(sfd)
 ```
 
 The prior distributions can be plotted with the `plot_priors_tests()` function.
 
-```{r}
+```{r plot of prior distributions for test characteristics}
 plot_priors_tests(sfd)
 ```
 
@@ -208,12 +209,12 @@ These parameters are the probability of being status positive on the first time 
 
 For `STOCfree_data` objects constructed with the argument `status_dynamics_scale = "proba"`, the prior distributions for status dynamics are provided as Beta distributions on the probability scale. The `show_priors_status_dyn()` shows the current parameter values for these Beta distributions and gives the syntax the use to change them.
 
-```{r}
+```{r parameters of prior distributions for status dynamics on the probability scale}
 show_priors_status_dyn(sfd)
 ```
 Parameter values are provided for these prior distributions as follows:
 
-```{r}
+```{r setting parameters of prior distributions for status dynamics on the probability scale}
 sfd <- set_priors_status_dyn(sfd,
                    pi1_a = 1,
                    pi1_b = 1,
@@ -225,7 +226,7 @@ sfd <- set_priors_status_dyn(sfd,
 
 These distributions can be plotted.
 
-```{r}
+```{r plots of parameters of prior distributions for status dynamics on the probability scale}
 plot_priors_status_dyn(sfd)
 ```
 
@@ -233,29 +234,33 @@ plot_priors_status_dyn(sfd)
 
 To demonstrate how to set dynamics parameters on the logit scale, we use the `sfd1` object created above. As can be seen, the parameter values requested consist of means and standard deviations.
 
-```{r}
+```{r parameters of prior distributions for status dynamics on the logit scale}
 show_priors_status_dyn(sfd1)
 ```
 Values are provided.
 
-```{r}
+```{r setting parameters of prior distributions for status dynamics on the logit scale}
 sfd1 <- set_priors_status_dyn(sfd1, 
-                              logit_pi1_mean = -3, 
-                              logit_pi1_sd = 1, 
-                              logit_tau1_mean = -2, 
+                              logit_pi1_mean = 0, 
+                              logit_pi1_sd = 4, 
+                              logit_tau1_mean = -3, 
                               logit_tau1_sd = 1, 
-                              logit_tau2_mean = 2, 
+                              logit_tau2_mean = 3, 
                               logit_tau2_sd = 1)
 ```
 
-The `plot_priors_status_dyn()` needs to be updated to be able to plot this type of priors.
+These distributions can be plotted.
+
+```{r plots of parameters of prior distributions for status dynamics on the logit scale}
+plot_priors_status_dyn(sfd1)
+```
 
 
 # Running the STOC free model
 
 The STOC free model is run using the `STOCfree_model()` function. This function is a wrapper for the `run.jags()` function from the `runjags` package. The main argument is a `STOCfree_data` object as created above. By default, the models outputs are stored in a folder called 'STOCfree_files'.
 
-```{r STOCfree model}
+```{r running the STOCfree model}
 sfm <- STOCfree_model(sfd,
                       n_chains = 4,
                       n_burnin = 100,

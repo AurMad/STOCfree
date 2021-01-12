@@ -71,11 +71,18 @@ plot_priors_status_dyn <- function(data){
   data_nm <- deparse(substitute(data))
   STOCfree_data_check(data = data, data_name = data_nm)
 
+  ## scale on which dynamics is modelled
+  ## either "proba" or "logit"
+  dyn_scale <- attr(data, "status dynamics scale")
+
   priors <- data$inf_dyn_priors
   n_risk_factors <- attr(data, "number of risk factors")
   plot_n_rows <- ifelse(n_risk_factors == 0, 2, 1)
 
   par(mfrow = c(plot_n_rows, 2))
+
+  if(dyn_scale == "proba"){
+
   curve(dbeta(x, priors["pi1_a"], priors["pi1_b"]),
         from = 0, to = 1,
         main = "Probability of status positive\non the first test",
@@ -95,6 +102,31 @@ plot_priors_status_dyn <- function(data){
         main = "Probability of remaining\nstatus positive between to 2 months",
         xlab = "tau2",
         ylab = "Density")
+  }
+
+  if(dyn_scale == "logit"){
+
+    curve(dnorm_logit(x, priors["logit_pi1_mean"], priors["logit_pi1_sd"]),
+          from = 0, to = 1,
+          main = "Probability of status positive\non the first test",
+          xlab = "Probability",
+          ylab = "Density")
+    if(n_risk_factors == 0){
+
+      curve(dnorm_logit(x, priors["logit_tau1_mean"], priors["logit_tau1_sd"]),
+            from = 0, to = 1,
+            main = "Probability of becoming\nstatus positive between to 2 months",
+            xlab = "tau1",
+            ylab = "Density")
+
+    }
+    curve(dnorm_logit(x, priors["logit_tau2_mean"], priors["logit_tau2_sd"]),
+          from = 0, to = 1,
+          main = "Probability of remaining\nstatus positive between to 2 months",
+          xlab = "tau2",
+          ylab = "Density")
+  }
+
 
  }
 

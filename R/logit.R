@@ -9,7 +9,7 @@
 #'
 logit <- function(p){
 
-  if(p < 0 | p > 1) stop("p should be between 0 and 1")
+  if(length(p[p < 0]) > 0 | length(p[p > 1]) > 0) stop("p should be between 0 and 1")
 
   log(p / (1 - p))
 
@@ -22,9 +22,30 @@ logit <- function(p){
 #' @return a proportion
 #' @export
 #'
-#' @examples invlogit(logit(.5))
+#' @examples
+#' invlogit(0)
+#' invlogit(logit(.5)) == .5
 invlogit <- function(x){
 
   exp(x) / (1 + exp(x))
 
-  }
+}
+
+#' The normal distribution on the logit scale
+#'
+#' @param x vector of quantiles on the probability scale
+#' @param mean_logit vector of means on the logit scale
+#' @param sd_logit vector of standard deviations on the logit scale
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' curve(dnorm_logit(x, 0, 1))
+dnorm_logit <- function(x, mean_logit = .5, sd_logit = 1){
+
+  z <- dnorm(x = logit(x), mean = mean_logit, sd = sd_logit)
+
+  return(z)
+
+}

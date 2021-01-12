@@ -201,20 +201,9 @@ sfd <- STOCfree_data(test_data = herdBTM,
                      test_date_col = "DateOfTest",
                      test_res_col = "TestResult",
                      test_name_col = "Test",
-                     test_level = "herd")
+                     test_level = "herd",
+                     status_dynamics_scale = "proba")
 ```
-
-    ## Warning in if (test_level == "herd" & status_dynamics_scale == "proba") {: la
-    ## condition a une longueur > 1 et seul le premier élément est utilisé
-
-    ## Warning in if (test_level == "herd" & status_dynamics_scale == "logit") {: la
-    ## condition a une longueur > 1 et seul le premier élément est utilisé
-
-    ## Warning in if (test_level == "animal" & status_dynamics_scale == "proba") {: la
-    ## condition a une longueur > 1 et seul le premier élément est utilisé
-
-    ## Warning in if (test_level == "animal" & status_dynamics_scale == "logit") {: la
-    ## condition a une longueur > 1 et seul le premier élément est utilisé
 
 In this example, the function will gather the test data from the
 `herdBTM` dataset, which must be a data.frame or a tibble. Herd
@@ -248,7 +237,7 @@ The `STOCfree_data()` function returns an object of class
 class(sfd)
 ```
 
-    ## [1] "herd"          "herd_dynLogit" "STOCfree_data"
+    ## [1] "herd"          "STOCfree_data"
 
 A `STOCfree_data` object is in fact a list of `data.frames`. Below we
 provide a brief explanation on the content of this list.
@@ -293,13 +282,13 @@ str(sfd)
     ##  $ inf_dyn_priors  : Named logi [1:6] NA NA NA NA NA NA
     ##   ..- attr(*, "names")= chr [1:6] "pi1_a" "pi1_b" "tau1_a" "tau1_b" ...
     ##  - attr(*, "level")= chr "herd"
-    ##  - attr(*, "status dynamics scale")= chr [1:2] "proba" "logit"
+    ##  - attr(*, "status dynamics scale")= chr "proba"
     ##  - attr(*, "number of herds")= int 100
     ##  - attr(*, "number of tests")= int 2
     ##  - attr(*, "month first test")= chr "2014-02"
     ##  - attr(*, "month last test")= chr "2016-10"
     ##  - attr(*, "number of risk factors")= num 0
-    ##  - attr(*, "class")= chr [1:3] "herd" "herd_dynLogit" "STOCfree_data"
+    ##  - attr(*, "class")= chr [1:2] "herd" "STOCfree_data"
 
 The list components are:
 
@@ -382,7 +371,7 @@ function.
 plot_priors_tests(sfd)
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
+![](README_files/figure-gfm/plot%20of%20prior%20distributions%20for%20test%20characteristics-1.png)<!-- -->
 
 In order to help selecting appropriate parameter values for the Beta
 distributions, we have designed a Shiny app which is available from
@@ -434,7 +423,7 @@ These distributions can be plotted.
 plot_priors_status_dyn(sfd)
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
+![](README_files/figure-gfm/plots%20of%20parameters%20of%20prior%20distributions%20for%20status%20dynamics%20on%20the%20probability%20scale-1.png)<!-- -->
 
 ## Logit scale
 
@@ -458,16 +447,21 @@ Values are provided.
 
 ``` r
 sfd1 <- set_priors_status_dyn(sfd1, 
-                              logit_pi1_mean = -3, 
-                              logit_pi1_sd = 1, 
-                              logit_tau1_mean = -2, 
+                              logit_pi1_mean = 0, 
+                              logit_pi1_sd = 4, 
+                              logit_tau1_mean = -3, 
                               logit_tau1_sd = 1, 
-                              logit_tau2_mean = 2, 
+                              logit_tau2_mean = 3, 
                               logit_tau2_sd = 1)
 ```
 
-The `plot_priors_status_dyn()` needs to be updated to be able to plot
-this type of priors.
+These distributions can be plotted.
+
+``` r
+plot_priors_status_dyn(sfd1)
+```
+
+![](README_files/figure-gfm/plots%20of%20parameters%20of%20prior%20distributions%20for%20status%20dynamics%20on%20the%20logit%20scale-1.png)<!-- -->
 
 # Running the STOC free model
 
@@ -495,7 +489,7 @@ sfm <- STOCfree_model(sfd,
     ## Calling 4 simulations using the parallel method...
     ## Following the progress of chain 1 (the program will wait for all chains
     ## to finish before continuing):
-    ## Welcome to JAGS 4.3.0 on Mon Jan 11 19:14:19 2021
+    ## Welcome to JAGS 4.3.0 on Tue Jan 12 11:40:43 2021
     ## JAGS is free software and comes with ABSOLUTELY NO WARRANTY
     ## Loading module: basemod: ok
     ## Loading module: bugs: ok
@@ -521,7 +515,6 @@ sfm <- STOCfree_model(sfd,
     ## ************************************************** 100%
     ## . . . . Updating 0
     ## . Deleting model
-    ## . 
     ## All chains have finished
     ## Simulation complete.  Reading coda files...
     ## Coda files loaded successfully
@@ -580,7 +573,7 @@ Traceplots can be generated to check convergence visually.
 plot(param, parameter = "Se.1", type = "traceplot")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-24-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
 
 Density plots can be generated.
 
@@ -588,7 +581,7 @@ Density plots can be generated.
 plot(param, parameter = "Se.1", type = "density")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-25-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
 
 ### Predicted probabilities of infection
 
@@ -613,7 +606,9 @@ print(pred)
 
     ## MCMC samples from STOC free model herd level predicted probabilities of infection
     ## 
-    ## Number of herds: Herds: FR001 FR002 FR003 FR004 FR005 FR006 FR007 FR008 FR009 FR010 FR011 FR012 FR013 FR014 FR015 FR016 FR017 FR018 FR019 FR020 FR021 FR022 FR023 FR024 FR025 FR026 FR027 FR028 FR029 FR030 FR031 FR032 FR033 FR034 FR035 FR036 FR037 FR038 FR039 FR040 FR041 FR042 FR043 FR044 FR045 FR046 FR047 FR048 FR049 FR050 FR051 FR052 FR053 FR054 FR055 FR056 FR057 FR058 FR059 FR060 FR061 FR062 FR063 FR064 FR065 FR066 FR067 FR068 FR069 FR070 FR071 FR072 FR073 FR074 FR075 FR076 FR077 FR078 FR079 FR080 FR081 FR082 FR083 FR084 FR085 FR086 FR087 FR088 FR089 FR090 FR091 FR092 FR093 FR094 FR095 FR096 FR097 FR098 FR099 FR100
+    ## Number of herds: 100 
+    ## 
+    ## Herds: FR001 FR002 FR003 FR004 FR005 FR006 FR007 FR008 FR009 FR010 FR011 FR012 FR013 FR014 FR015 FR016 FR017 FR018 FR019 FR020 FR021 FR022 FR023 FR024 FR025 FR026 FR027 FR028 FR029 FR030 FR031 FR032 FR033 FR034 FR035 FR036 FR037 FR038 FR039 FR040 FR041 FR042 FR043 FR044 FR045 FR046 FR047 FR048 FR049 FR050 FR051 FR052 FR053 FR054 FR055 FR056 FR057 FR058 FR059 FR060 FR061 FR062 FR063 FR064 FR065 FR066 FR067 FR068 FR069 FR070 FR071 FR072 FR073 FR074 FR075 FR076 FR077 FR078 FR079 FR080 FR081 FR082 FR083 FR084 FR085 FR086 FR087 FR088 FR089 FR090 FR091 FR092 FR093 FR094 FR095 FR096 FR097 FR098 FR099 FR100
 
 Calling plot on these predicted probabilities will plot the density of
 predicted probabilities for all herds across all iterations.
@@ -622,7 +617,7 @@ predicted probabilities for all herds across all iterations.
 plot(pred)
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-29-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
 
 It is also possible to plot the predicted probabilities of infection for
 specific herds:
@@ -631,10 +626,7 @@ specific herds:
 plot(pred, herd = c("FR001", "FR002"), type = "individual", legend = TRUE)
 ```
 
-    ## Warning in if (length(herd) > 1 | herd != "all") {: la condition a une longueur
-    ## > 1 et seul le premier élément est utilisé
-
-![](README_files/figure-gfm/unnamed-chunk-30-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
 
 ### Monthly prevalences
 
@@ -658,7 +650,7 @@ infection prevalences.
 plot(prev)
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-33-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->
 
 # Inclusion of risk factors
 
@@ -765,7 +757,7 @@ ggplot(data = nAnim_lagged, aes(x = lag2, y = lag1, fill = AIC)) +
   ggtitle("Number of animals purchased")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-37-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-24-1.png)<!-- -->
 
 When the function is used to evaluate several candidate variables, all
 these variables can be incldued in a multivariate logistic model. For
@@ -913,7 +905,7 @@ the density below 0.2.
 plot_priors_rf(sfd)
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-47-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-34-1.png)<!-- -->
 
 ## Running the Bayesian model
 

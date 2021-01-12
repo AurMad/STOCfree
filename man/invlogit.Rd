@@ -16,5 +16,6 @@ a proportion
 Inverse logit function
 }
 \examples{
-invlogit(logit(.5))
+invlogit(0)
+invlogit(logit(.5)) == .5
 }
