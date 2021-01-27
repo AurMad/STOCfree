@@ -43,7 +43,7 @@ extract_STOCfree_param <- function(x){
   samples <- x$mcmc
 
   ## tidying the results for model parameters
-  n_tests <- length(grep("Se", colnames(samples[[1]])))
+  n_tests  <- length(grep("Se", colnames(samples[[1]])))
   herd_lev <- ifelse("pi_within" %in% colnames(samples[[1]]), 0, 1)
 
   if(herd_lev == 1 & n_tests == 1){
@@ -124,7 +124,7 @@ plot.STOCfree_param <- function(x,
 
   ## list of parameters
   ls_param <- colnames(x)[4:length(x)]
-  ## chacking if paramter in list of parameters
+  ## checking if parameter in list of parameters
   if(is.null(parameter) | ! parameter %in% ls_param){
 
     stop(paste("Please provide the name of a parameter to plot from: ",
@@ -160,6 +160,41 @@ plot.STOCfree_param <- function(x,
   }
 
   sfp
+
+}
+
+
+#' Effective sample sizes of STOC free model parameters
+#'
+#' @param x estimated model parameters
+#'
+#' @return
+#' @export
+ess_STOCfree_param <- function(x){
+
+  ## checking class
+  if(! "STOCfree_param" %in% class(x)) stop("Input should be of class 'STOCfree_param'")
+
+  ## number of chains
+  n_chains <- max(x$.chain)
+
+  ## creating empty list
+  mcmc <- list()
+
+  ## populating object
+  for(i in 1:n_chains){
+
+    mcmc[[i]] <- as.matrix(x[x$.chain == i, -(1:3)])
+
+  }
+
+  ## adding class to mcmc object in order to be able to pass it to the effectiveSize function
+  class(mcmc) <- "mcmc.list"
+
+  ## effective sample sizes calculated using a function from the coda package
+  ess <- coda::effectiveSize(mcmc)
+
+  return(ess)
 
 }
 
