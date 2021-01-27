@@ -198,3 +198,38 @@ ess_STOCfree_param <- function(x){
 
 }
 
+
+## function that calculates summary statistics
+f_summary <- function(x, quantiles){
+
+  z <- c(mean = mean(x),
+         sd = sd(x),
+         median = median(x),
+         quantile(x, quantiles))
+
+  return(z)
+
+}
+
+
+#' summary method for the STOCfree_param class
+#'
+#' @param x
+#' @param quantiles
+#'
+#' @return
+#' @export
+summary.STOCfree_param <- function(x, quantiles = c(.025, .975)){
+
+  z <- t(apply(x[,-(1:3)], 2, f_summary, quantiles = quantiles))
+
+  ess <- ess_STOCfree_param(x)
+
+  z <- as.data.frame(
+    cbind(z, ess = ess[match(names(ess), rownames(z))]))
+
+  return(z)
+
+  }
+
+

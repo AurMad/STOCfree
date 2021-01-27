@@ -7,7 +7,7 @@
 ess_STOCfree_param(x)
 }
 \arguments{
-\item{x}{}
+\item{x}{estimated model parameters}
 }
 \value{
 
