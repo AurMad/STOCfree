@@ -6,7 +6,7 @@ validate_STOCfree_pred <- function(x){
   if(!is.data.frame(x)) stop("x should be a data.frame")
 
   ## checking column names
-  if(!all.equal(match(c("herd", ".chain", ".iteration", ".draw", "predicted_proba"), colnames(x)), 1:5)) stop("wrong type of input")
+  if(!all.equal(match(c(".chain", ".iteration", ".draw", "predicted_proba"), colnames(x)), 2:5)) stop("wrong type of input")
 
   }
 
