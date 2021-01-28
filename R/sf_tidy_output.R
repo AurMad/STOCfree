@@ -23,7 +23,6 @@ STOCfree_tidy_output <- function(STOCfree_model_output,
   herd_lev <- ifelse("pi_within" %in% colnames(samples[[1]]), 0, 1)
   rf       <- ifelse(length(grep("theta", colnames(samples[[1]]))) > 0, 1, 0)
 
-  print(colnames(samples[[1]]))
   ## no risk factors
   if(herd_lev == 1 & n_tests == 1 & rf == 0){
 
