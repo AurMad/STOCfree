@@ -22,9 +22,9 @@ new_STOCfree_pred <- function(x){
 
   }
 
-#' Title
+#' Extracting MCMC samples for the predicted probabilities of being latent status positive from the results of a STOC free model
 #'
-#' @param x
+#' @param x results returned by the STOC free model
 #'
 #' @return
 #' @export
@@ -52,9 +52,9 @@ extract_STOCfree_pred <- function(x){
   }
 
 
-#' Title
+#' Importing MCMC samples for the predicted probabilities of being latent status positive
 #'
-#' @param out_path
+#' @param out_path path to the folder where the results are stored
 #'
 #' @return
 #' @export
@@ -68,9 +68,9 @@ read_STOCfree_pred <- function(out_path = "STOCfree_files"){
   }
 
 
-#' Title
+#' print method for predicted probabilities of status positive
 #'
-#' @param x
+#' @param x an object of class STOCfree_pred
 #'
 #' @return
 #' @export
@@ -82,11 +82,11 @@ print.STOCfree_pred <- function(x){
 
   }
 
-#' Title
+#' plot method for predicted probabilities of status positive
 #'
-#' @param x
-#' @param herd
-#' @param type
+#' @param x an object of class STOCfree_pred
+#' @param herd either one or several herd ids or 'all'. all' will display the probabilities for all herds
+#' @param type if 'aggregated' a single density plot will be displayed for all herds. If 'individual', lines of different colors are displayed for the different herds.
 #'
 #' @return
 #' @export

@@ -673,9 +673,15 @@ sf_add_risk_factor <- function(sfd,
   test_level <- attr(sfd, "level")
   n_tests <- attr(sfd, "number of tests")
 
-  class(sfd) <- c(paste0(test_level,
-                         "_rf"),
-                  "STOCfree_data")
+  if(length(grep("_rf", class(sfd)[1])) == 0){
+
+    class(sfd)[1] <- paste0(class(sfd)[1],
+                            "_rf")
+
+  }
+  # class(sfd) <- c(paste0(test_level,
+  #                        "_rf"),
+  #                 "STOCfree_data")
 
 
   sfd

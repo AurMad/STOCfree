@@ -2,16 +2,16 @@
 % Please edit documentation in R/sf_param.R
 \name{read_STOCfree_param}
 \alias{read_STOCfree_param}
-\title{Importing MCMC samples from the results of a STOC free model}
+\title{Importing MCMC samples for model parameters from the results of a STOC free model}
 \usage{
 read_STOCfree_param(out_path = "STOCfree_files")
 }
 \arguments{
-\item{out_path}{}
+\item{out_path}{folder in which the model, data and result files will be stored}
 }
 \value{
 
 }
 \description{
-Importing MCMC samples from the results of a STOC free model
+Importing MCMC samples for model parameters from the results of a STOC free model
 }

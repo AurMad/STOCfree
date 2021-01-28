@@ -2,16 +2,16 @@
 % Please edit documentation in R/sf_pred.R
 \name{print.STOCfree_pred}
 \alias{print.STOCfree_pred}
-\title{Title}
+\title{print method for predicted probabilities of status positive}
 \usage{
 \method{print}{STOCfree_pred}(x)
 }
 \arguments{
-\item{x}{}
+\item{x}{an object of class STOCfree_pred}
 }
 \value{
 
 }
 \description{
-Title
+print method for predicted probabilities of status positive
 }

@@ -19,30 +19,58 @@ STOCfree_tidy_output <- function(STOCfree_model_output,
   }
 
   ## tidying the results for model parameters
-  n_tests <- length(grep("Se", colnames(samples[[1]])))
+  n_tests  <- length(grep("Se", colnames(samples[[1]])))
   herd_lev <- ifelse("pi_within" %in% colnames(samples[[1]]), 0, 1)
+  rf       <- ifelse(length(grep("theta", colnames(samples[[1]]))) > 0, 1, 0)
 
-  if(herd_lev == 1 & n_tests == 1){
+  print(colnames(samples[[1]]))
+  ## no risk factors
+  if(herd_lev == 1 & n_tests == 1 & rf == 0){
 
     parameters <- tidybayes::spread_draws(samples, Se, Sp, tau1, tau2)
 
   }
 
-  if(herd_lev == 1 & n_tests > 1){
+  if(herd_lev == 1 & n_tests > 1 & rf == 0){
 
     parameters <- tidybayes::spread_draws(samples, Se[..], Sp[..], tau1, tau2)
 
   }
 
-  if(herd_lev == 0 & n_tests == 1){
+  if(herd_lev == 0 & n_tests == 1 & rf == 0){
 
     parameters <- tidybayes::spread_draws(samples, Se, Sp, tau1, tau2, pi_within)
 
   }
 
-  if(herd_lev == 0 & n_tests > 1){
+  if(herd_lev == 0 & n_tests > 1 & rf == 0){
 
     parameters <- tidybayes::spread_draws(samples, Se[..], Sp[..], tau1, tau2, pi_within)
+
+  }
+
+  ## with risk factors
+  if(herd_lev == 1 & n_tests == 1 & rf == 1){
+
+    parameters <- tidybayes::spread_draws(samples, Se, Sp, theta[..], tau2)
+
+  }
+
+  if(herd_lev == 1 & n_tests > 1 & rf == 1){
+
+    parameters <- tidybayes::spread_draws(samples, Se[..], Sp[..], theta[..], tau2)
+
+  }
+
+  if(herd_lev == 0 & n_tests == 1 & rf == 1){
+
+    parameters <- tidybayes::spread_draws(samples, Se, Sp, theta[..], tau2, pi_within)
+
+  }
+
+  if(herd_lev == 0 & n_tests > 1 & rf == 1){
+
+    parameters <- tidybayes::spread_draws(samples, Se[..], Sp[..], theta[..], tau2, pi_within)
 
   }
 

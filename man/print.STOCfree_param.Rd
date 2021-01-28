@@ -2,16 +2,16 @@
 % Please edit documentation in R/sf_param.R
 \name{print.STOCfree_param}
 \alias{print.STOCfree_param}
-\title{Title}
+\title{print method for STOCfree parameters}
 \usage{
 \method{print}{STOCfree_param}(x)
 }
 \arguments{
-\item{x}{}
+\item{x}{an object of class STOCfree_param created with extract_STOCfree_param() or read_STOCfree_param()}
 }
 \value{
 
 }
 \description{
-Title
+print method for STOCfree parameters
 }

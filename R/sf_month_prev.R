@@ -126,7 +126,8 @@ plot.STOCfree_month_prev <- function(month_prev){
 
   ggplot2::ggplot(mnth, ggplot2::aes(x = factor(date), y = Prevalence)) +
     ggplot2::geom_boxplot() +
-    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, vjust = 0.5, hjust=1))
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, vjust = 0.5, hjust=1)) +
+    ggplot2::xlab("")
 
 }
 

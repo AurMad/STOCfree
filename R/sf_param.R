@@ -45,41 +45,68 @@ extract_STOCfree_param <- function(x){
   ## tidying the results for model parameters
   n_tests  <- length(grep("Se", colnames(samples[[1]])))
   herd_lev <- ifelse("pi_within" %in% colnames(samples[[1]]), 0, 1)
+  rf       <- ifelse(length(grep("theta", colnames(samples[[1]]))) > 0, 1, 0)
 
-  if(herd_lev == 1 & n_tests == 1){
+  ## no risk factors
+  if(herd_lev == 1 & n_tests == 1 & rf == 0){
 
-    param <- tidybayes::spread_draws(samples, Se, Sp, tau1, tau2)
-
-  }
-
-  if(herd_lev == 1 & n_tests > 1){
-
-    param <- tidybayes::spread_draws(samples, Se[..], Sp[..], tau1, tau2)
+    parameters <- tidybayes::spread_draws(samples, Se, Sp, tau1, tau2)
 
   }
 
-  if(herd_lev == 0 & n_tests == 1){
+  if(herd_lev == 1 & n_tests > 1 & rf == 0){
 
-    param <- tidybayes::spread_draws(samples, Se, Sp, tau1, tau2, pi_within)
-
-  }
-
-  if(herd_lev == 0 & n_tests > 1){
-
-    param <- tidybayes::spread_draws(samples, Se[..], Sp[..], tau1, tau2, pi_within)
+    parameters <- tidybayes::spread_draws(samples, Se[..], Sp[..], tau1, tau2)
 
   }
 
-  param <- new_STOCfree_param(param)
+  if(herd_lev == 0 & n_tests == 1 & rf == 0){
 
-  return(param)
+    parameters <- tidybayes::spread_draws(samples, Se, Sp, tau1, tau2, pi_within)
+
+  }
+
+  if(herd_lev == 0 & n_tests > 1 & rf == 0){
+
+    parameters <- tidybayes::spread_draws(samples, Se[..], Sp[..], tau1, tau2, pi_within)
+
+  }
+
+  ## with risk factors
+  if(herd_lev == 1 & n_tests == 1 & rf == 1){
+
+    parameters <- tidybayes::spread_draws(samples, Se, Sp, theta[..], tau2)
+
+  }
+
+  if(herd_lev == 1 & n_tests > 1 & rf == 1){
+
+    parameters <- tidybayes::spread_draws(samples, Se[..], Sp[..], theta[..], tau2)
+
+  }
+
+  if(herd_lev == 0 & n_tests == 1 & rf == 1){
+
+    parameters <- tidybayes::spread_draws(samples, Se, Sp, theta[..], tau2, pi_within)
+
+  }
+
+  if(herd_lev == 0 & n_tests > 1 & rf == 1){
+
+    parameters <- tidybayes::spread_draws(samples, Se[..], Sp[..], theta[..], tau2, pi_within)
+
+  }
+
+  parameters <- new_STOCfree_param(parameters)
+
+  return(parameters)
 
   }
 
 
-#' Importing MCMC samples from the results of a STOC free model
+#' Importing MCMC samples for model parameters from the results of a STOC free model
 #'
-#' @param out_path
+#' @param out_path folder in which the model, data and result files will be stored
 #'
 #' @return
 #' @export
@@ -93,9 +120,9 @@ read_STOCfree_param <- function(out_path = "STOCfree_files"){
   }
 
 
-#' Title
+#' print method for STOCfree parameters
 #'
-#' @param x
+#' @param x an object of class STOCfree_param created with extract_STOCfree_param() or read_STOCfree_param()
 #'
 #' @return
 #' @export
@@ -110,11 +137,11 @@ print.STOCfree_param <- function(x){
   }
 
 
-#' Title
+#' plot method for STOCfree parameters
 #'
-#' @param x
-#' @param parameter
-#' @param type
+#' @param x an object of class STOCfree_param created with extract_STOCfree_param() or read_STOCfree_param()
+#' @param parameter parameter name
+#' @param type type of plot. Either 'traceplot' or 'density'
 #'
 #' @return
 #' @export
@@ -214,8 +241,8 @@ f_summary <- function(x, quantiles){
 
 #' summary method for the STOCfree_param class
 #'
-#' @param x
-#' @param quantiles
+#' @param x an object of class STOCfree_param created with extract_STOCfree_param() or read_STOCfree_param()
+#' @param quantiles quantiles of the posterior distributions to display. Default values are 0.025 and 0.975
 #'
 #' @return
 #' @export

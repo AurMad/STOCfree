@@ -2,16 +2,20 @@
 % Please edit documentation in R/sf_param.R
 \name{plot.STOCfree_param}
 \alias{plot.STOCfree_param}
-\title{Title}
+\title{plot method for STOCfree parameters}
 \usage{
 \method{plot}{STOCfree_param}(x, parameter = NULL, type = "density")
 }
 \arguments{
-\item{type}{}
+\item{x}{an object of class STOCfree_param created with extract_STOCfree_param() or read_STOCfree_param()}
+
+\item{parameter}{parameter name}
+
+\item{type}{type of plot. Either 'traceplot' or 'density'}
 }
 \value{
 
 }
 \description{
-Title
+plot method for STOCfree parameters
 }

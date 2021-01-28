@@ -254,7 +254,7 @@ STOCfree_JAGS_data.herd_rf <- function(STOCfree_data){
   }
 
   ## test data
-  test_data <- data$test_data
+  test_data <- STOCfree_data$test_data
   ## no test
   status_no_test <- STOCfree_data$risk_factor_data$status_id
   status_no_test <- sort(status_no_test[-which(status_no_test %in% test_data$status_id)])
@@ -368,7 +368,7 @@ STOCfree_JAGS_data.herd_dynLogit_rf <- function(STOCfree_data){
   }
 
   ## test data
-  test_data <- data$test_data
+  test_data <- STOCfree_data$test_data
   ## no test
   status_no_test <- STOCfree_data$risk_factor_data$status_id
   status_no_test <- sort(status_no_test[-which(status_no_test %in% test_data$status_id)])
@@ -387,7 +387,7 @@ STOCfree_JAGS_data.herd_dynLogit_rf <- function(STOCfree_data){
   ## Priors for test characteristics
   test_char <- STOCfree_data$test_perf_prior
 
-  ## Data used by JAGS
+  # Data used by JAGS
   JAGS_data <- list(
     month_max = month_max,
     month_N = as.integer(month_N),
@@ -610,7 +610,7 @@ STOCfree_JAGS_data.animal_dynLogit <- function(STOCfree_data){
   ## Priors for test characteristics
   test_char <- STOCfree_data$test_perf_prior
 
-  ## Data used by JAGS
+  # ## Data used by JAGS
   JAGS_data <- list(
     month_max = month_max,
     month_N = as.integer(month_N),

@@ -2,16 +2,20 @@
 % Please edit documentation in R/sf_pred.R
 \name{plot.STOCfree_pred}
 \alias{plot.STOCfree_pred}
-\title{Title}
+\title{plot method for predicted probabilities of status positive}
 \usage{
 \method{plot}{STOCfree_pred}(x, herd = "all", type = "aggregated", legend = FALSE)
 }
 \arguments{
-\item{type}{}
+\item{x}{an object of class STOCfree_pred}
+
+\item{herd}{either one or several herd ids or 'all'. all' will display the probabilities for all herds}
+
+\item{type}{if 'aggregated' a single density plot will be displayed for all herds. If 'individual', lines of different colors are displayed for the different herds.}
 }
 \value{
 
 }
 \description{
-Title
+plot method for predicted probabilities of status positive
 }

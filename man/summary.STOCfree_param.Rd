@@ -7,7 +7,9 @@
 \method{summary}{STOCfree_param}(x, quantiles = c(0.025, 0.975))
 }
 \arguments{
-\item{quantiles}{}
+\item{x}{an object of class STOCfree_param created with extract_STOCfree_param() or read_STOCfree_param()}
+
+\item{quantiles}{quantiles of the posterior distributions to display. Default values are 0.025 and 0.975}
 }
 \value{
 

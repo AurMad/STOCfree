@@ -2,16 +2,16 @@
 % Please edit documentation in R/sf_pred.R
 \name{read_STOCfree_pred}
 \alias{read_STOCfree_pred}
-\title{Title}
+\title{Importing MCMC samples for the predicted probabilities of being latent status positive}
 \usage{
 read_STOCfree_pred(out_path = "STOCfree_files")
 }
 \arguments{
-\item{out_path}{}
+\item{out_path}{path to the folder where the results are stored}
 }
 \value{
 
 }
 \description{
-Title
+Importing MCMC samples for the predicted probabilities of being latent status positive
 }

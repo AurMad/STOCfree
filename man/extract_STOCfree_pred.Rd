@@ -2,16 +2,16 @@
 % Please edit documentation in R/sf_pred.R
 \name{extract_STOCfree_pred}
 \alias{extract_STOCfree_pred}
-\title{Title}
+\title{Extracting MCMC samples for the predicted probabilities of being latent status positive from the results of a STOC free model}
 \usage{
 extract_STOCfree_pred(x)
 }
 \arguments{
-\item{x}{}
+\item{x}{results returned by the STOC free model}
 }
 \value{
 
 }
 \description{
-Title
+Extracting MCMC samples for the predicted probabilities of being latent status positive from the results of a STOC free model
 }
