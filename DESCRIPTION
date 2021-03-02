@@ -1,7 +1,7 @@
 Package: STOCfree
 Type: Package
 Title: STOC free model: prediction of probability of freedom from longitudinal data
-Version: 2.0
+Version: 2.1
 Authors@R: person("Aurélien", "Madouasse", email = "aurelien.madouasse@oniris-nantes.fr",
                   role = c("aut", "cre"))
 Maintainer: Aurélien Madouasse <aurelien.madouasse@oniris-nantes.fr>
@@ -12,9 +12,11 @@ LazyData: true
 Depends:
     R (>= 3.6)
 Imports:
+    cmdstanr,
     coda,
     dplyr,
     ggplot2,
+    posterior,
     runjags,
     tibble,
     tidybayes

@@ -28,7 +28,51 @@ new_STOCfree_pred <- function(x){
 #'
 #' @return
 #' @export
-extract_STOCfree_pred <- function(x){
+extract_STOCfree_pred <- function(x, STOCfree_data = NULL){
+
+  if("CmdStanMCMC" %in% class(x)){
+
+    ## extracting predicted probabilities from Stan output
+    predictions <- x$draws("pred")
+    ## formatting the output as a data.frame
+    predictions <- posterior::as_draws_df(predictions)
+    ## columns are reordered to match JAGS output
+    id_cols1 <- match(c(".chain", ".iteration", ".draw"),
+                      colnames(predictions))
+
+    id_cols2 <- (1:length(predictions))[-id_cols1]
+
+    predictions <- predictions[, c(id_cols1, id_cols2)]
+
+    ## data put in long format
+    predictions <- tidybayes::gather_variables(predictions)
+
+    ## columns renamed for consistency with JAGS output
+    colnames(predictions)[match(c(".variable", ".value"), colnames(predictions))] <- c("herd", "predicted_proba")
+
+    ## herd ids extracted
+    predictions$herd <- gsub("pred\\[", "", predictions$herd)
+    predictions$herd <- gsub("\\]", "", predictions$herd)
+
+    if(is.null(STOCfree_data)){
+
+      warning("No STOCfree_data object supplied. Internal herd ids will be used.")
+
+    } else {
+
+      herd_id_corresp <- STOCfree_data$herd_id_corresp
+
+      predictions$herd <- as.integer(predictions$herd)
+
+      predictions$herd <- herd_id_corresp[predictions$herd, 1]
+
+    }
+
+
+    ## columns reordered
+    predictions <- predictions[, c("herd", ".chain", ".iteration", ".draw", "predicted_proba")]
+
+  } else {
 
   samples <- x$mcmc
   herd_id_corresp <- x$herd_id_corresp
@@ -46,6 +90,8 @@ extract_STOCfree_pred <- function(x){
   colnames(predictions)[1] <- "herd"
 
   predictions <- new_STOCfree_pred(predictions)
+
+  }
 
   return(predictions)
 

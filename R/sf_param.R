@@ -39,6 +39,23 @@ new_STOCfree_param <- function(x){
 #' @export
 extract_STOCfree_param <- function(x){
 
+  if("CmdStanMCMC" %in% class(x)){ # if Stan model
+
+    ### extracting samples for parameters
+    param_list <- c("Se", "Sp", "pi1", "tau1", "tau2")
+
+    parameters <- x$draws(param_list)
+    parameters <- posterior::as_draws_df(parameters)
+
+    ## reordering columns for consistency with JAGS output
+    id_cols1 <- match(c(".chain", ".iteration", ".draw"),
+                      colnames(parameters))
+    id_cols2 <- (1:length(parameters))[-id_cols1]
+
+    parameters <- parameters[, c(id_cols1, id_cols2)]
+
+  } else { # if not Stan model
+
   ## extracting MCMC draws from the STOCfree_model
   samples <- x$mcmc
 
@@ -96,6 +113,8 @@ extract_STOCfree_param <- function(x){
     parameters <- tidybayes::spread_draws(samples, Se[..], Sp[..], theta[..], tau2, pi_within)
 
   }
+
+  } # end if JAGS model
 
   parameters <- new_STOCfree_param(parameters)
 

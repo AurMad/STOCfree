@@ -62,7 +62,7 @@ STOCfree_model <- function(STOCfree_data,
   if(save_output == TRUE){
 
     ## making the output tidy with tidybayes
-    tidy_output <- STOCfree_tidy_output(JAGS_samples, STOCfree_data = STOCfree_data)
+    # tidy_output <- STOCfree_tidy_output(JAGS_samples, STOCfree_data = STOCfree_data)
 
     ## saving parameter values
     write.csv(extract_STOCfree_param(JAGS_samples), file = paste0(STOCfree_path, "/parameters.csv"),
@@ -102,3 +102,53 @@ JAGS_monitor <- function(STOCfree_data){
 
 }
 
+
+#' Draws samples from the posterior distributions of model parameters using Stan
+#'
+#' @param STOCfree_data a STOC free data object
+#' @param save_output if TRUE, the JAGS model output is saved to out_path in a tidy format using the tidybayes package
+#' @param out_path folder where model code and output are saved. By default, a STOCfree_files folder is created in the working directory
+#'
+#' @details The code used is an adaptation of Damiano et al. (2017): https://github.com/luisdamiano/stancon18
+#'
+#' @return
+#' @export
+STOCfree_model_Stan <- function(STOCfree_data,
+                                n_chains = 4,
+                                n_iter = 1000,
+                                save_output = TRUE,
+                                out_path = "STOCfree_Stan_files"){
+
+  ## creating data object for Stan
+  sf_Stan_data <- STOCfree_Stan_data(STOCfree_data)
+
+  ## write the model
+  Stan_model <- cmdstanr::write_stan_file(Stan_code())
+  sf_Stan    <- cmdstanr::cmdstan_model(Stan_model)
+
+  ## sample
+  Stan_fit <- sf_Stan$sample(
+    data = sf_Stan_data,
+    chains = n_chains,
+    iter_sampling = n_iter
+    )
+
+  ## model results saved in tidy format
+  if(save_output == TRUE){
+
+    ## folder in which the different files are saved
+    STOCfree_path <- STOCfree_files(out_path)
+
+    ## saving parameter values
+    write.csv(extract_STOCfree_param(x = Stan_fit), file = paste0(STOCfree_path, "/parameters.csv"),
+              row.names = FALSE)
+
+    ## saving predicted probabilities of latent status
+    write.csv(extract_STOCfree_pred(x = Stan_fit, STOCfree_data),
+              file = paste0(STOCfree_path, "/predictions.csv"),
+              row.names = FALSE)
+  }
+
+ return(Stan_fit)
+
+}

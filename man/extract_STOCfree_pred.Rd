@@ -4,7 +4,7 @@
 \alias{extract_STOCfree_pred}
 \title{Extracting MCMC samples for the predicted probabilities of being latent status positive from the results of a STOC free model}
 \usage{
-extract_STOCfree_pred(x)
+extract_STOCfree_pred(x, STOCfree_data = NULL)
 }
 \arguments{
 \item{x}{results returned by the STOC free model}
