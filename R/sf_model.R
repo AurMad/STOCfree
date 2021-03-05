@@ -241,6 +241,11 @@ STOCfree_Stan <- function(STOCfree_data,
     write.csv(extract_STOCfree_pred(x = Stan_fit, STOCfree_data),
               file = paste0(STOCfree_path, "/predictions.csv"),
               row.names = FALSE)
+
+    ## saving monthly prevalences
+    write.csv(extract_STOCfree_month_prev(Stan_fit, STOCfree_data), file = paste0(STOCfree_path , "/month_prev.csv"),
+              row.names = FALSE)
+
   }
 
  return(Stan_fit)
