@@ -2,7 +2,7 @@
 % Please edit documentation in R/sf_model.R
 \name{STOCfree_model_Stan}
 \alias{STOCfree_model_Stan}
-\title{Draws samples from the posterior distributions of model parameters using Stan}
+\title{Stan implementation of the STOC free model - deprecated}
 \usage{
 STOCfree_model_Stan(
   STOCfree_data,
@@ -13,18 +13,11 @@ STOCfree_model_Stan(
 )
 }
 \arguments{
-\item{STOCfree_data}{a STOC free data object}
-
-\item{save_output}{if TRUE, the JAGS model output is saved to out_path in a tidy format using the tidybayes package}
-
-\item{out_path}{folder where model code and output are saved. By default, a STOCfree_files folder is created in the working directory}
+\item{out_path}{}
 }
 \value{
 
 }
 \description{
-Draws samples from the posterior distributions of model parameters using Stan
-}
-\details{
-The code used is an adaptation of Damiano et al. (2017): https://github.com/luisdamiano/stancon18
+Stan implementation of the STOC free model - deprecated
 }

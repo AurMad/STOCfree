@@ -2,7 +2,7 @@
 % Please edit documentation in R/sf_model.R
 \name{STOCfree_model}
 \alias{STOCfree_model}
-\title{Draws samples from the posterior distributions of model parameters}
+\title{JAGS implementation of the STOC free model - deprecated}
 \usage{
 STOCfree_model(
   STOCfree_data,
@@ -19,26 +19,11 @@ STOCfree_model(
 )
 }
 \arguments{
-\item{STOCfree_data}{a STOC free data object}
-
-\item{n_chains}{number of MCMC chains}
-
-\item{n_burnin}{number of burnin iterations}
-
-\item{n_iter}{number of iterations to monitor}
-
-\item{n_thin}{thinning interval for monitors}
-
-\item{method}{method to be passed to the runjags::run.jags() function. Default is parallel.}
-
-\item{save_model}{if TRUE, the JAGS model code is saved to out_path}
-
-\item{save_output}{if TRUE, the JAGS model output is saved to out_path in a tidy format using the tidybayes package}
-
-\item{out_path}{folder where model code and output are saved. By default, a STOCfree_files folder is created in the working directory}
-
 \item{...}{}
 }
+\value{
+
+}
 \description{
-Draws samples from the posterior distributions of model parameters
+JAGS implementation of the STOC free model - deprecated
 }
