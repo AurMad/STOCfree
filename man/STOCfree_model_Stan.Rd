@@ -9,7 +9,7 @@ STOCfree_model_Stan(
   n_chains = 4,
   n_iter = 1000,
   save_output = TRUE,
-  out_path = "STOCfree_Stan_files"
+  out_path = "STOCfree_files"
 )
 }
 \arguments{

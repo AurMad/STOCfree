@@ -58,13 +58,6 @@ new_STOCfree_month_prev <- function(x){
 #' @export
 extract_STOCfree_month_prev <- function(STOCfree_model_output, STOCfree_data = NULL){
 
-  ## extracting MCMC draws from the STOCfree_model
-  samples <- STOCfree_model_output$mcmc
-
-  ## tidying the results for monthly prevalences
-  ## model output made tidy
-  month_prev <- tidybayes::spread_draws(samples,
-                                        month_prev[..])
   ## reconstructing the list of all months
   months_all <- data.frame(
     date = seq(as.Date(paste0(attr(STOCfree_data, "month first test"), "-01")),
@@ -79,6 +72,31 @@ extract_STOCfree_month_prev <- function(STOCfree_model_output, STOCfree_data = N
   ## month names abbreviated to get meaningful column names
   months_all$month_abb <- format(months_all$date, "%b_%Y")
 
+
+  if("CmdStanMCMC" %in% class(STOCfree_model_output)){ # if Stan model
+
+    month_prev <- STOCfree_model_output$draws("month_prev")
+    month_prev <- posterior::as_draws_df(month_prev)
+
+    ## reordering columns for consistency with JAGS output
+    id_cols1 <- match(c(".chain", ".iteration", ".draw"),
+                      colnames(month_prev))
+    id_cols2 <- (1:length(month_prev))[-id_cols1]
+
+    month_prev <- month_prev[, c(id_cols1, id_cols2)]
+
+    colnames(month_prev)[4:length(month_prev)] <- months_all$month_abb
+
+  } else { # if not Stan model
+
+  ## extracting MCMC draws from the STOCfree_model
+  samples <- STOCfree_model_output$mcmc
+
+  ## tidying the results for monthly prevalences
+  ## model output made tidy
+  month_prev <- tidybayes::spread_draws(samples,
+                                        month_prev[..])
+
   ## month names in the month_prev dataset
   months_all$tidybayes_names <- paste0("month_prev.", 1:nrow(months_all))
 
@@ -89,6 +107,8 @@ extract_STOCfree_month_prev <- function(STOCfree_model_output, STOCfree_data = N
   ## column names changed
   cln1 <- match(months_all$tidybayes_names, colnames(month_prev))
   colnames(month_prev)[cln1] <- months_all$month_abb
+
+  }
 
   month_prev <- new_STOCfree_month_prev(month_prev)
 

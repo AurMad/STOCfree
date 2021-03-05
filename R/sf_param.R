@@ -42,7 +42,8 @@ extract_STOCfree_param <- function(x){
   if("CmdStanMCMC" %in% class(x)){ # if Stan model
 
     ### extracting samples for parameters
-    param_list <- c("Se", "Sp", "pi1", "tau1", "tau2")
+    param_list <- attributes(x$draws())$dimnames$variable
+    param_list <- param_list[grep("Se|Sp|pi|tau|theta", param_list)]
 
     parameters <- x$draws(param_list)
     parameters <- posterior::as_draws_df(parameters)

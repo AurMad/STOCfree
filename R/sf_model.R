@@ -61,9 +61,6 @@ STOCfree_model <- function(STOCfree_data,
   ## model results saved in tidy format
   if(save_output == TRUE){
 
-    ## making the output tidy with tidybayes
-    # tidy_output <- STOCfree_tidy_output(JAGS_samples, STOCfree_data = STOCfree_data)
-
     ## saving parameter values
     write.csv(extract_STOCfree_param(JAGS_samples), file = paste0(STOCfree_path, "/parameters.csv"),
               row.names = FALSE)
@@ -117,13 +114,13 @@ STOCfree_model_Stan <- function(STOCfree_data,
                                 n_chains = 4,
                                 n_iter = 1000,
                                 save_output = TRUE,
-                                out_path = "STOCfree_Stan_files"){
+                                out_path = "STOCfree_files"){
 
   ## creating data object for Stan
   sf_Stan_data <- STOCfree_Stan_data(STOCfree_data)
 
   ## write the model
-  Stan_model <- cmdstanr::write_stan_file(Stan_code())
+  Stan_model <- cmdstanr::write_stan_file(write_Stan_model(STOCfree_data))
   sf_Stan    <- cmdstanr::cmdstan_model(Stan_model)
 
   ## sample
