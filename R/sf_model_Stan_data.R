@@ -29,6 +29,8 @@ STOCfree_Stan_data.herd <- function(STOCfree_data){
     this_month <- STOCfree_data$risk_factor_data$status_id[STOCfree_data$risk_factor_data$month_id == i]
     month_mat[1:length(this_month), i] <- this_month
 
+    month_mat[is.na(month_mat[, i]), i] <- 0
+
   }
 
   ## number of tests used
@@ -158,6 +160,8 @@ STOCfree_Stan_data.herd_dynLogit <- function(STOCfree_data){
 
     this_month <- STOCfree_data$risk_factor_data$status_id[STOCfree_data$risk_factor_data$month_id == i]
     month_mat[1:length(this_month), i] <- this_month
+
+    month_mat[is.na(month_mat[, i]), i] <- 0
 
   }
 
@@ -290,6 +294,8 @@ STOCfree_Stan_data.herd_rf <- function(STOCfree_data){
 
     this_month <- STOCfree_data$risk_factor_data$status_id[STOCfree_data$risk_factor_data$month_id == i]
     month_mat[1:length(this_month), i] <- this_month
+
+    month_mat[is.na(month_mat[, i]), i] <- 0
 
   }
 
@@ -425,6 +431,8 @@ STOCfree_Stan_data.herd_dynLogit_rf <- function(STOCfree_data){
 
     this_month <- STOCfree_data$risk_factor_data$status_id[STOCfree_data$risk_factor_data$month_id == i]
     month_mat[1:length(this_month), i] <- this_month
+
+    month_mat[is.na(month_mat[, i]), i] <- 0
 
   }
 

@@ -215,8 +215,9 @@ STOCfree_Stan <- function(STOCfree_data,
   ## model file saved as a text file
   if(save_model == TRUE){
 
-    cat(sf_Stan$print(),
-        file = paste0(STOCfree_path ,"/model.txt"))
+    sink(paste0(STOCfree_path ,"/model.txt"))
+    sf_Stan$print()
+    sink()
 
   }
 
