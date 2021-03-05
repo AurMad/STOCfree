@@ -8,6 +8,8 @@ STOCfree_model_Stan(
   STOCfree_data,
   n_chains = 4,
   n_iter = 1000,
+  save_model = TRUE,
+  save_data = FALSE,
   save_output = TRUE,
   out_path = "STOCfree_files"
 )

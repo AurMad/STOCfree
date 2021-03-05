@@ -161,6 +161,8 @@ JAGS_monitor <- function(STOCfree_data){
 STOCfree_model_Stan <- function(STOCfree_data,
                                 n_chains = 4,
                                 n_iter = 1000,
+                                save_model = TRUE,
+                                save_data = FALSE,
                                 save_output = TRUE,
                                 out_path = "STOCfree_files"){
 
@@ -169,7 +171,7 @@ STOCfree_model_Stan <- function(STOCfree_data,
 
   STOCfree_Stan(STOCfree_data = STOCfree_data,
                 n_chains = n_chains,
-                n_iter = n_ite,
+                n_iter = n_iter,
                 save_output = save_output,
                 out_path = out_path)
 
@@ -188,15 +190,35 @@ STOCfree_model_Stan <- function(STOCfree_data,
 STOCfree_Stan <- function(STOCfree_data,
                                 n_chains = 4,
                                 n_iter = 1000,
+                                save_model = TRUE,
+                                save_data = FALSE,
                                 save_output = TRUE,
                                 out_path = "STOCfree_files"){
+
+  ## folder in which the different files are saved
+  STOCfree_path <- STOCfree_files(out_path)
 
   ## creating data object for Stan
   sf_Stan_data <- STOCfree_Stan_data(STOCfree_data)
 
+  if(save_data == TRUE){
+
+    save(sf_Stan_data,
+         file = paste0(STOCfree_path ,"/data.RData"))
+
+  }
+
   ## write the model
   Stan_model <- cmdstanr::write_stan_file(write_Stan_model(STOCfree_data))
   sf_Stan    <- cmdstanr::cmdstan_model(Stan_model)
+
+  ## model file saved as a text file
+  if(save_model == TRUE){
+
+    cat(sf_Stan$print(),
+        file = paste0(STOCfree_path ,"/model.txt"))
+
+  }
 
   ## sample
   Stan_fit <- sf_Stan$sample(
