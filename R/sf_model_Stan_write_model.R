@@ -51,9 +51,6 @@ write_Stan_model.herd <- function(data){
   real<lower = 0> tau1_beta_b;
   real<lower = 0> tau2_beta_a;
   real<lower = 0> tau2_beta_b;
-  int<lower = 1> n_month;
-  int<lower = 1> month_N[n_month];
-  int month_mat [n_herds, n_month];
 
 }
 parameters{
@@ -149,48 +146,15 @@ generated quantities{
   // variable in which predictions are stored
   real pred[n_herds];
 
-  // monthly prevalences
-  real<lower = 0> month_prev[n_month];
-
-
   // loop in which the probabilities of infection are predicted
   {
     matrix[n_herds, 2] alpha;
-  // predicted statuses on each month
-    matrix[N, 2] proba_pred_0;
-    real proba_pred[N];
-    int status_pred[N];
 
   // loop in which the probabilities of infection are predicted
     for(i in 1:n_herds){
       alpha[i] = softmax(logalpha[herds_T[i],]')';
-                         pred[i] = alpha[i, 2];
+      pred[i] = alpha[i, 2];
     }
-
-   // predicted porbabilities of status positive for each ehrd on each month
-    for(j in 1:N){
-
-     proba_pred_0[j] = softmax(logalpha[j,]')';
-     proba_pred[j] = proba_pred_0[j, 2];
-     status_pred[j] = bernoulli_rng(proba_pred[j]);
-
-    }
-
-  // estimation of monthly prevalences
-    for(i_month in 1:n_month){
-
-    month_prev[i_month] = 0;
-
-     for(ii_month in 1:month_N[i_month]){
-
-     month_prev[i_month] = month_prev[i_month] + status_pred[month_mat[ii_month, i_month]];
-
-     }
-
-     month_prev[i_month] =  month_prev[i_month] / month_N[i_month];
-
-  }
-
   }
 }"
 
@@ -215,9 +179,6 @@ generated quantities{
   real<lower = 0> tau1_beta_b;
   real<lower = 0> tau2_beta_a;
   real<lower = 0> tau2_beta_b;
-  int<lower = 1> n_month;
-  int<lower = 1> month_N[n_month];
-  int month_mat [n_herds, n_month];
 
 }
 parameters{
@@ -324,41 +285,12 @@ generated quantities{
   // loop in which the probabilities of infection are predicted
   {
     matrix[n_herds, 2] alpha;
-  // predicted statuses on each month
-    matrix[N, 2] proba_pred_0;
-    real proba_pred[N];
-    int status_pred[N];
 
   // loop in which the probabilities of infection are predicted
     for(i in 1:n_herds){
       alpha[i] = softmax(logalpha[herds_T[i],]')';
                          pred[i] = alpha[i, 2];
     }
-
-   // predicted porbabilities of status positive for each ehrd on each month
-    for(j in 1:N){
-
-     proba_pred_0[j] = softmax(logalpha[j,]')';
-     proba_pred[j] = proba_pred_0[j, 2];
-     status_pred[j] = bernoulli_rng(proba_pred[j]);
-
-    }
-
-  // estimation of monthly prevalences
-    for(i_month in 1:n_month){
-
-    month_prev[i_month] = 0;
-
-     for(ii_month in 1:month_N[i_month]){
-
-     month_prev[i_month] = month_prev[i_month] + status_pred[month_mat[ii_month, i_month]];
-
-     }
-
-     month_prev[i_month] =  month_prev[i_month] / month_N[i_month];
-
-  }
-
   }
 }"
 }
@@ -392,9 +324,6 @@ write_Stan_model.herd_dynLogit <- function(data){
   real logit_tau1_sd;
   real logit_tau2_mean;
   real logit_tau2_sd;
-  int<lower = 1> n_month;
-  int<lower = 1> month_N[n_month];
-  int month_mat [n_herds, n_month];
 
 }
 parameters{
@@ -490,47 +419,15 @@ generated quantities{
   // variable in which predictions are stored
   real pred[n_herds];
 
-  // monthly prevalences
-  real<lower = 0> month_prev[n_month];
-
-
   // loop in which the probabilities of infection are predicted
   {
     matrix[n_herds, 2] alpha;
-  // predicted statuses on each month
-    matrix[N, 2] proba_pred_0;
-    real proba_pred[N];
-    int status_pred[N];
 
   // loop in which the probabilities of infection are predicted
     for(i in 1:n_herds){
       alpha[i] = softmax(logalpha[herds_T[i],]')';
-                         pred[i] = alpha[i, 2];
+      pred[i] = alpha[i, 2];
     }
-
-   // predicted porbabilities of status positive for each ehrd on each month
-    for(j in 1:N){
-
-     proba_pred_0[j] = softmax(logalpha[j,]')';
-     proba_pred[j] = proba_pred_0[j, 2];
-     status_pred[j] = bernoulli_rng(proba_pred[j]);
-
-    }
-
-  // estimation of monthly prevalences
-    for(i_month in 1:n_month){
-
-    month_prev[i_month] = 0;
-
-     for(ii_month in 1:month_N[i_month]){
-
-     month_prev[i_month] = month_prev[i_month] + status_pred[month_mat[ii_month, i_month]];
-
-     }
-
-     month_prev[i_month] =  month_prev[i_month] / month_N[i_month];
-
-  }
 
   }
 }"
@@ -556,9 +453,6 @@ data{
   real logit_tau1_sd;
   real logit_tau2_mean;
   real logit_tau2_sd;
-  int<lower = 1> n_month;
-  int<lower = 1> month_N[n_month];
-  int month_mat [n_herds, n_month];
 
 }
 parameters{
@@ -658,48 +552,15 @@ generated quantities{
   // variable in which predictions are stored
   real pred[n_herds];
 
-  // monthly prevalences
-  real<lower = 0> month_prev[n_month];
-
-
   // loop in which the probabilities of infection are predicted
   {
     matrix[n_herds, 2] alpha;
-  // predicted statuses on each month
-    matrix[N, 2] proba_pred_0;
-    real proba_pred[N];
-    int status_pred[N];
 
   // loop in which the probabilities of infection are predicted
     for(i in 1:n_herds){
       alpha[i] = softmax(logalpha[herds_T[i],]')';
                          pred[i] = alpha[i, 2];
     }
-
-   // predicted porbabilities of status positive for each ehrd on each month
-    for(j in 1:N){
-
-     proba_pred_0[j] = softmax(logalpha[j,]')';
-     proba_pred[j] = proba_pred_0[j, 2];
-     status_pred[j] = bernoulli_rng(proba_pred[j]);
-
-    }
-
-  // estimation of monthly prevalences
-    for(i_month in 1:n_month){
-
-    month_prev[i_month] = 0;
-
-     for(ii_month in 1:month_N[i_month]){
-
-     month_prev[i_month] = month_prev[i_month] + status_pred[month_mat[ii_month, i_month]];
-
-     }
-
-     month_prev[i_month] =  month_prev[i_month] / month_N[i_month];
-
-  }
-
   }
 }"
 }
@@ -732,10 +593,6 @@ write_Stan_model.herd_rf <- function(data){
   real theta_norm_mean[n_risk_factors];
   real theta_norm_sd[n_risk_factors];
   matrix[N, n_risk_factors] risk_factors;
-  int<lower = 1> n_month;
-  int<lower = 1> month_N[n_month];
-  int month_mat [n_herds, n_month];
-
 }
 parameters{
 
@@ -847,47 +704,14 @@ generated quantities{
   // variable in which predictions are stored
   real pred[n_herds];
 
-  // monthly prevalences
-  real<lower = 0> month_prev[n_month];
-
-
   {
     matrix[n_herds, 2] alpha;
-  // predicted statuses on each month
-    matrix[N, 2] proba_pred_0;
-    real proba_pred[N];
-    int status_pred[N];
 
   // loop in which the probabilities of infection are predicted
     for(i in 1:n_herds){
       alpha[i] = softmax(logalpha[herds_T[i],]')';
                          pred[i] = alpha[i, 2];
     }
-
-   // predicted porbabilities of status positive for each ehrd on each month
-    for(j in 1:N){
-
-     proba_pred_0[j] = softmax(logalpha[j,]')';
-     proba_pred[j] = proba_pred_0[j, 2];
-     status_pred[j] = bernoulli_rng(proba_pred[j]);
-
-    }
-
-  // estimation of monthly prevalences
-    for(i_month in 1:n_month){
-
-    month_prev[i_month] = 0;
-
-     for(ii_month in 1:month_N[i_month]){
-
-     month_prev[i_month] = month_prev[i_month] + status_pred[month_mat[ii_month, i_month]];
-
-     }
-
-     month_prev[i_month] =  month_prev[i_month] / month_N[i_month];
-
-  }
-
   }
 }"
 
@@ -915,9 +739,6 @@ generated quantities{
   real theta_norm_mean[n_risk_factors];
   real theta_norm_sd[n_risk_factors];
   matrix[N, n_risk_factors] risk_factors;
-  int<lower = 1> n_month;
-  int<lower = 1> month_N[n_month];
-  int month_mat [n_herds, n_month];
 
 }
 parameters{
@@ -1034,47 +855,14 @@ generated quantities{
   // variable in which predictions are stored
   real pred[n_herds];
 
-  // monthly prevalences
-  real<lower = 0> month_prev[n_month];
-
-
   {
     matrix[n_herds, 2] alpha;
-  // predicted statuses on each month
-    matrix[N, 2] proba_pred_0;
-    real proba_pred[N];
-    int status_pred[N];
 
   // loop in which the probabilities of infection are predicted
     for(i in 1:n_herds){
       alpha[i] = softmax(logalpha[herds_T[i],]')';
-                         pred[i] = alpha[i, 2];
+      pred[i] = alpha[i, 2];
     }
-
-   // predicted porbabilities of status positive for each ehrd on each month
-    for(j in 1:N){
-
-     proba_pred_0[j] = softmax(logalpha[j,]')';
-     proba_pred[j] = proba_pred_0[j, 2];
-     status_pred[j] = bernoulli_rng(proba_pred[j]);
-
-    }
-
-  // estimation of monthly prevalences
-    for(i_month in 1:n_month){
-
-    month_prev[i_month] = 0;
-
-     for(ii_month in 1:month_N[i_month]){
-
-     month_prev[i_month] = month_prev[i_month] + status_pred[month_mat[ii_month, i_month]];
-
-     }
-
-     month_prev[i_month] =  month_prev[i_month] / month_N[i_month];
-
-  }
-
   }
 }"
 }
@@ -1108,9 +896,6 @@ write_Stan_model.herd_dynLogit_rf <- function(data){
   real theta_norm_mean[n_risk_factors];
   real theta_norm_sd[n_risk_factors];
   matrix[N, n_risk_factors] risk_factors;
-  int<lower = 1> n_month;
-  int<lower = 1> month_N[n_month];
-  int month_mat [n_herds, n_month];
 
 }
 parameters{
@@ -1223,47 +1008,14 @@ generated quantities{
   // variable in which predictions are stored
   real pred[n_herds];
 
-  // monthly prevalences
-  real<lower = 0> month_prev[n_month];
-
-
   {
     matrix[n_herds, 2] alpha;
-  // predicted statuses on each month
-    matrix[N, 2] proba_pred_0;
-    real proba_pred[N];
-    int status_pred[N];
 
   // loop in which the probabilities of infection are predicted
     for(i in 1:n_herds){
       alpha[i] = softmax(logalpha[herds_T[i],]')';
-                         pred[i] = alpha[i, 2];
+      pred[i] = alpha[i, 2];
     }
-
-   // predicted porbabilities of status positive for each ehrd on each month
-    for(j in 1:N){
-
-     proba_pred_0[j] = softmax(logalpha[j,]')';
-     proba_pred[j] = proba_pred_0[j, 2];
-     status_pred[j] = bernoulli_rng(proba_pred[j]);
-
-    }
-
-  // estimation of monthly prevalences
-    for(i_month in 1:n_month){
-
-    month_prev[i_month] = 0;
-
-     for(ii_month in 1:month_N[i_month]){
-
-     month_prev[i_month] = month_prev[i_month] + status_pred[month_mat[ii_month, i_month]];
-
-     }
-
-     month_prev[i_month] =  month_prev[i_month] / month_N[i_month];
-
-  }
-
   }
 }"
   } else {
@@ -1290,9 +1042,6 @@ generated quantities{
   real theta_norm_mean[n_risk_factors];
   real theta_norm_sd[n_risk_factors];
   matrix[N, n_risk_factors] risk_factors;
-  int<lower = 1> n_month;
-  int<lower = 1> month_N[n_month];
-  int month_mat [n_herds, n_month];
 
 }
 parameters{
@@ -1409,46 +1158,14 @@ generated quantities{
   // variable in which predictions are stored
   real pred[n_herds];
 
-  // monthly prevalences
-  real<lower = 0> month_prev[n_month];
-
-
   {
     matrix[n_herds, 2] alpha;
-  // predicted statuses on each month
-    matrix[N, 2] proba_pred_0;
-    real proba_pred[N];
-    int status_pred[N];
 
   // loop in which the probabilities of infection are predicted
     for(i in 1:n_herds){
       alpha[i] = softmax(logalpha[herds_T[i],]')';
                          pred[i] = alpha[i, 2];
     }
-
-   // predicted porbabilities of status positive for each ehrd on each month
-    for(j in 1:N){
-
-     proba_pred_0[j] = softmax(logalpha[j,]')';
-     proba_pred[j] = proba_pred_0[j, 2];
-     status_pred[j] = bernoulli_rng(proba_pred[j]);
-
-    }
-
-  // estimation of monthly prevalences
-    for(i_month in 1:n_month){
-
-    month_prev[i_month] = 0;
-
-     for(ii_month in 1:month_N[i_month]){
-
-     month_prev[i_month] = month_prev[i_month] + status_pred[month_mat[ii_month, i_month]];
-
-     }
-
-     month_prev[i_month] =  month_prev[i_month] / month_N[i_month];
-
-  }
 
   }
 }"

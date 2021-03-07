@@ -14,25 +14,6 @@ STOCfree_Stan_data.default <- function(STOCfree_data){
 #' @export
 STOCfree_Stan_data.herd <- function(STOCfree_data){
 
-  ## data used to record monthly prevalences
-  ## between first and penultimate month
-  month_max  <- max(STOCfree_data$test_data$month_id) - 1
-  month_N <- tapply(STOCfree_data$risk_factor_data$month_id, STOCfree_data$risk_factor_data$month_id, length)
-  month_N <- month_N[-length(month_N)]
-
-  # this matrix is filled with the status ids corresponding with each month
-  month_mat <- matrix(rep(NA, length(month_N) * max(month_N)),
-                      ncol = length(month_N))
-
-  for(i in 1:ncol(month_mat)){
-
-    this_month <- STOCfree_data$risk_factor_data$status_id[STOCfree_data$risk_factor_data$month_id == i]
-    month_mat[1:length(this_month), i] <- this_month
-
-    month_mat[is.na(month_mat[, i]), i] <- 0
-
-  }
-
   ## number of tests used
   n_tests <- nrow(STOCfree_data$test_perf_prior)
 
@@ -79,10 +60,7 @@ STOCfree_Stan_data.herd <- function(STOCfree_data){
       tau1_beta_a = STOCfree_data$inf_dyn_priors["tau1_a"],
       tau1_beta_b = STOCfree_data$inf_dyn_priors["tau1_b"],
       tau2_beta_a = STOCfree_data$inf_dyn_priors["tau2_a"],
-      tau2_beta_b = STOCfree_data$inf_dyn_priors["tau2_b"],
-      n_month = month_max,
-      month_N = month_N,
-      month_mat = month_mat
+      tau2_beta_b = STOCfree_data$inf_dyn_priors["tau2_b"]
     )
 
 
@@ -131,10 +109,7 @@ STOCfree_Stan_data.herd <- function(STOCfree_data){
     tau1_beta_a = STOCfree_data$inf_dyn_priors["tau1_a"],
     tau1_beta_b = STOCfree_data$inf_dyn_priors["tau1_b"],
     tau2_beta_a = STOCfree_data$inf_dyn_priors["tau2_a"],
-    tau2_beta_b = STOCfree_data$inf_dyn_priors["tau2_b"],
-    n_month = month_max,
-    month_N = month_N,
-    month_mat = month_mat
+    tau2_beta_b = STOCfree_data$inf_dyn_priors["tau2_b"]
   )
 
   }
@@ -145,25 +120,6 @@ STOCfree_Stan_data.herd <- function(STOCfree_data){
 
 #' @export
 STOCfree_Stan_data.herd_dynLogit <- function(STOCfree_data){
-
-  ## data used to record monthly prevalences
-  ## between first and penultimate month
-  month_max  <- max(STOCfree_data$test_data$month_id) - 1
-  month_N <- tapply(STOCfree_data$risk_factor_data$month_id, STOCfree_data$risk_factor_data$month_id, length)
-  month_N <- month_N[-length(month_N)]
-
-  # this matrix is filled with the status ids corresponding with each month
-  month_mat <- matrix(rep(NA, length(month_N) * max(month_N)),
-                      ncol = length(month_N))
-
-  for(i in 1:ncol(month_mat)){
-
-    this_month <- STOCfree_data$risk_factor_data$status_id[STOCfree_data$risk_factor_data$month_id == i]
-    month_mat[1:length(this_month), i] <- this_month
-
-    month_mat[is.na(month_mat[, i]), i] <- 0
-
-  }
 
   ## number of tests used
   n_tests <- nrow(STOCfree_data$test_perf_prior)
@@ -211,10 +167,7 @@ STOCfree_Stan_data.herd_dynLogit <- function(STOCfree_data){
       logit_tau1_mean = STOCfree_data$inf_dyn_priors["logit_tau1_mean"],
       logit_tau1_sd = STOCfree_data$inf_dyn_priors["logit_tau1_sd"],
       logit_tau2_mean = STOCfree_data$inf_dyn_priors["logit_tau2_mean"],
-      logit_tau2_sd = STOCfree_data$inf_dyn_priors["logit_tau2_sd"],
-      n_month = month_max,
-      month_N = month_N,
-      month_mat = month_mat
+      logit_tau2_sd = STOCfree_data$inf_dyn_priors["logit_tau2_sd"]
     )
 
 
@@ -263,10 +216,7 @@ STOCfree_Stan_data.herd_dynLogit <- function(STOCfree_data){
     logit_tau1_mean = STOCfree_data$inf_dyn_priors["logit_tau1_mean"],
     logit_tau1_sd = STOCfree_data$inf_dyn_priors["logit_tau1_sd"],
     logit_tau2_mean = STOCfree_data$inf_dyn_priors["logit_tau2_mean"],
-    logit_tau2_sd = STOCfree_data$inf_dyn_priors["logit_tau2_sd"],
-    n_month = month_max,
-    month_N = month_N,
-    month_mat = month_mat
+    logit_tau2_sd = STOCfree_data$inf_dyn_priors["logit_tau2_sd"]
   )
 
   }
@@ -279,25 +229,6 @@ STOCfree_Stan_data.herd_dynLogit <- function(STOCfree_data){
 
 #' @export
 STOCfree_Stan_data.herd_rf <- function(STOCfree_data){
-
-  ## data used to record monthly prevalences
-  ## between first and penultimate month
-  month_max  <- max(STOCfree_data$test_data$month_id) - 1
-  month_N <- tapply(STOCfree_data$risk_factor_data$month_id, STOCfree_data$risk_factor_data$month_id, length)
-  month_N <- month_N[-length(month_N)]
-
-  # this matrix is filled with the status ids corresponding with each month
-  month_mat <- matrix(rep(NA, length(month_N) * max(month_N)),
-                      ncol = length(month_N))
-
-  for(i in 1:ncol(month_mat)){
-
-    this_month <- STOCfree_data$risk_factor_data$status_id[STOCfree_data$risk_factor_data$month_id == i]
-    month_mat[1:length(this_month), i] <- this_month
-
-    month_mat[is.na(month_mat[, i]), i] <- 0
-
-  }
 
   ## number of tests used
   n_tests <- nrow(STOCfree_data$test_perf_prior)
@@ -347,10 +278,7 @@ STOCfree_Stan_data.herd_rf <- function(STOCfree_data){
       theta_norm_mean = STOCfree_data$risk_factors$mean_prior,
       theta_norm_sd = STOCfree_data$risk_factors$sd_prior,
       n_risk_factors = length(STOCfree_data$risk_factors$mean_prior),
-      risk_factors = as.matrix(STOCfree_data$risk_factor_data[, -(1:3)]),
-      n_month = month_max,
-      month_N = month_N,
-      month_mat = month_mat
+      risk_factors = as.matrix(STOCfree_data$risk_factor_data[, -(1:3)])
     )
 
   } else {
@@ -400,10 +328,7 @@ STOCfree_Stan_data.herd_rf <- function(STOCfree_data){
     theta_norm_mean = STOCfree_data$risk_factors$mean_prior,
     theta_norm_sd = STOCfree_data$risk_factors$sd_prior,
     n_risk_factors = length(STOCfree_data$risk_factors$mean_prior),
-    risk_factors = as.matrix(STOCfree_data$risk_factor_data[, -(1:3)]),
-    n_month = month_max,
-    month_N = month_N,
-    month_mat = month_mat
+    risk_factors = as.matrix(STOCfree_data$risk_factor_data[, -(1:3)])
   )
 
   }
@@ -416,25 +341,6 @@ STOCfree_Stan_data.herd_rf <- function(STOCfree_data){
 
 #' @export
 STOCfree_Stan_data.herd_dynLogit_rf <- function(STOCfree_data){
-
-  ## data used to record monthly prevalences
-  ## between first and penultimate month
-  month_max  <- max(STOCfree_data$test_data$month_id) - 1
-  month_N <- tapply(STOCfree_data$risk_factor_data$month_id, STOCfree_data$risk_factor_data$month_id, length)
-  month_N <- month_N[-length(month_N)]
-
-  # this matrix is filled with the status ids corresponding with each month
-  month_mat <- matrix(rep(NA, length(month_N) * max(month_N)),
-                      ncol = length(month_N))
-
-  for(i in 1:ncol(month_mat)){
-
-    this_month <- STOCfree_data$risk_factor_data$status_id[STOCfree_data$risk_factor_data$month_id == i]
-    month_mat[1:length(this_month), i] <- this_month
-
-    month_mat[is.na(month_mat[, i]), i] <- 0
-
-  }
 
   ## number of tests used
   n_tests <- nrow(STOCfree_data$test_perf_prior)
@@ -484,10 +390,7 @@ STOCfree_Stan_data.herd_dynLogit_rf <- function(STOCfree_data){
       theta_norm_mean = STOCfree_data$risk_factors$mean_prior,
       theta_norm_sd = STOCfree_data$risk_factors$sd_prior,
       n_risk_factors = length(STOCfree_data$risk_factors$mean_prior),
-      risk_factors = as.matrix(STOCfree_data$risk_factor_data[, -(1:3)]),
-      n_month = month_max,
-      month_N = month_N,
-      month_mat = month_mat
+      risk_factors = as.matrix(STOCfree_data$risk_factor_data[, -(1:3)])
     )
 
 
@@ -538,10 +441,7 @@ STOCfree_Stan_data.herd_dynLogit_rf <- function(STOCfree_data){
     theta_norm_mean = STOCfree_data$risk_factors$mean_prior,
     theta_norm_sd = STOCfree_data$risk_factors$sd_prior,
     n_risk_factors = length(STOCfree_data$risk_factors$mean_prior),
-    risk_factors = as.matrix(STOCfree_data$risk_factor_data[, -(1:3)]),
-    n_month = month_max,
-    month_N = month_N,
-    month_mat = month_mat
+    risk_factors = as.matrix(STOCfree_data$risk_factor_data[, -(1:3)])
   )
 
   }

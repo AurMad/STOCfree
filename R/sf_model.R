@@ -151,6 +151,7 @@ JAGS_monitor <- function(STOCfree_data){
 #' @param STOCfree_data
 #' @param n_chains
 #' @param n_iter
+#' @param n_thin thinning interval for monitors
 #' @param save_output
 #' @param out_path
 #'
@@ -161,6 +162,7 @@ JAGS_monitor <- function(STOCfree_data){
 STOCfree_model_Stan <- function(STOCfree_data,
                                 n_chains = 4,
                                 n_iter = 1000,
+                                n_thin = 1,
                                 save_model = TRUE,
                                 save_data = FALSE,
                                 save_output = TRUE,
@@ -172,6 +174,7 @@ STOCfree_model_Stan <- function(STOCfree_data,
   STOCfree_Stan(STOCfree_data = STOCfree_data,
                 n_chains = n_chains,
                 n_iter = n_iter,
+                n_thin = n_thin,
                 save_output = save_output,
                 out_path = out_path)
 
@@ -182,6 +185,12 @@ STOCfree_model_Stan <- function(STOCfree_data,
 #' @param STOCfree_data a STOC free data object
 #' @param save_output if TRUE, the JAGS model output is saved to out_path in a tidy format using the tidybayes package
 #' @param out_path folder where model code and output are saved. By default, a STOCfree_files folder is created in the working directory
+#' @param n_chains number of MCMC chains
+#' @param n_iter number of iterations to monitor
+#' @param n_thin thinning interval for monitors
+#' @param n_warmup
+#' @param save_model if TRUE, the Stan model code is saved to out_path
+#' @param save_data
 #'
 #' @details The code used is an adaptation of Damiano et al. (2017): https://github.com/luisdamiano/stancon18
 #'
@@ -190,6 +199,8 @@ STOCfree_model_Stan <- function(STOCfree_data,
 STOCfree_Stan <- function(STOCfree_data,
                                 n_chains = 4,
                                 n_iter = 1000,
+                                n_thin = 1,
+                                n_warmup = NULL,
                                 save_model = TRUE,
                                 save_data = FALSE,
                                 save_output = TRUE,
@@ -225,7 +236,9 @@ STOCfree_Stan <- function(STOCfree_data,
   Stan_fit <- sf_Stan$sample(
     data = sf_Stan_data,
     chains = n_chains,
-    iter_sampling = n_iter
+    iter_warmup = n_warmup,
+    iter_sampling = n_iter,
+    thin = n_thin
     )
 
   ## model results saved in tidy format
@@ -241,10 +254,6 @@ STOCfree_Stan <- function(STOCfree_data,
     ## saving predicted probabilities of latent status
     write.csv(extract_STOCfree_pred(x = Stan_fit, STOCfree_data),
               file = paste0(STOCfree_path, "/predictions.csv"),
-              row.names = FALSE)
-
-    ## saving monthly prevalences
-    write.csv(extract_STOCfree_month_prev(Stan_fit, STOCfree_data), file = paste0(STOCfree_path , "/month_prev.csv"),
               row.names = FALSE)
 
   }
