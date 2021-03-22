@@ -99,6 +99,7 @@ STOCfree_JAGS <- function(STOCfree_data,
     burnin = n_burnin,
     sample = n_iter / n_thin,
     thin = n_thin,
+    inits = STOCfree_model_inits(STOCfree_data, n_chains, engine = "JAGS"),
     method = method,
     ...)
 
@@ -238,7 +239,8 @@ STOCfree_Stan <- function(STOCfree_data,
     chains = n_chains,
     iter_warmup = n_warmup,
     iter_sampling = n_iter,
-    thin = n_thin
+    thin = n_thin,
+    init = STOCfree_model_inits(STOCfree_data, n_chains, engine = "Stan")
     )
 
   ## model results saved in tidy format
@@ -260,4 +262,118 @@ STOCfree_Stan <- function(STOCfree_data,
 
  return(Stan_fit)
 
+}
+
+
+
+
+
+## this function creates initial values for different model parameters
+## using prior distributions
+STOCfree_model_inits <- function(STOCfree_data, n_chains, engine){
+
+  n_tests <- attr(STOCfree_data, "number of tests")
+  status_dynamics_scale <- attr(STOCfree_data, "status dynamics scale")
+  n_risk_factors <- attr(STOCfree_data, "number of risk factors")
+
+  list_inits <- list()
+
+  for(n in 1:n_chains){
+
+    ## initial values for test characteristics
+    inits <- list(Se = rep(NA, n_tests), Sp = rep(NA, n_tests))
+
+    for(i in 1:n_tests){
+
+      inits$Se[i] <- rbeta(1, STOCfree_data$test_perf_prior$Se_a[i], STOCfree_data$test_perf_prior$Se_b[i])
+      inits$Sp[i] <- rbeta(1, STOCfree_data$test_perf_prior$Sp_a[i], STOCfree_data$test_perf_prior$Sp_b[i])
+
+    }
+
+    ## dynamics on the probability scale
+    if(status_dynamics_scale == "proba"){
+
+
+      if(engine == "JAGS"){
+
+        inits <- c(inits, tau2 = NA)
+
+        inits$tau2 <- rbeta(1, STOCfree_data$inf_dyn_priors["tau2_a"], STOCfree_data$inf_dyn_priors["tau2_b"])
+
+      }
+
+
+      if(engine == "Stan"){
+
+        inits <- c(inits, pi1 = NA, tau2 = NA)
+
+        inits$pi1  <- rbeta(1, STOCfree_data$inf_dyn_priors["pi1_a"], STOCfree_data$inf_dyn_priors["pi1_b"])
+        inits$tau2 <- rbeta(1, STOCfree_data$inf_dyn_priors["tau2_a"], STOCfree_data$inf_dyn_priors["tau2_b"])
+
+      }
+
+      ## no risk factor, dynamics on the probability scale
+      if(n_risk_factors == 0){
+
+        inits <- c(inits, tau1 = NA)
+        inits$tau1 <- rbeta(1, STOCfree_data$inf_dyn_priors["tau1_a"], STOCfree_data$inf_dyn_priors["tau1_b"])
+
+      } else {
+
+        inits <- c(inits, list(theta = rep(NA, nrow(STOCfree_data$risk_factors))))
+
+        for(i in 1:nrow(STOCfree_data$risk_factors)){
+
+          inits$theta[i] <- rnorm(1, STOCfree_data$risk_factors$mean_prior[i], STOCfree_data$risk_factors$sd_prior[i])
+
+        }
+
+      }
+    } ## dynamics on the probability scale
+
+
+    ## dynamics on the logit scale
+    if(status_dynamics_scale == "logit"){
+
+      if(engine == "JAGS"){
+
+        inits <- c(inits, logit_tau2 = NA)
+
+        inits$logit_tau2 <- rnorm(1, STOCfree_data$inf_dyn_priors["logit_tau2_mean"], STOCfree_data$inf_dyn_priors["logit_tau2_sd"])
+
+      }
+
+      if(engine == "Stan"){
+
+        inits <- c(inits, pi1 = NA, tau2 = NA)
+
+        inits$pi1  <- invlogit(rnorm(1, STOCfree_data$inf_dyn_priors["logit_pi1_mean"], STOCfree_data$inf_dyn_priors["logit_pi1_sd"]))
+        inits$tau2 <- invlogit(rnorm(1, STOCfree_data$inf_dyn_priors["logit_tau2_mean"], STOCfree_data$inf_dyn_priors["logit_tau2_sd"]))
+
+      }
+
+      ## no risk factor, dynamics on the probability scale
+      if(n_risk_factors == 0){
+
+        inits <- c(inits, tau1 = NA)
+        inits$tau1 <- invlogit(rnorm(1, STOCfree_data$inf_dyn_priors["logit_tau1_mean"], STOCfree_data$inf_dyn_priors["logit_tau1_sd"]))
+
+      } else {
+
+        inits <- c(inits, list(theta = rep(NA, nrow(STOCfree_data$risk_factors))))
+
+        for(i in 1:nrow(STOCfree_data$risk_factors)){
+
+          inits$theta[i] <- rnorm(1, STOCfree_data$risk_factors$mean_prior[i], STOCfree_data$risk_factors$sd_prior[i])
+
+        }
+
+      }
+    } ## dynamics on the probability scale
+
+    list_inits <- c(list_inits, list(inits))
+
+  }
+
+  list_inits
 }
