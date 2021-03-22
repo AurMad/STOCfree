@@ -338,7 +338,6 @@ STOCfree_model_inits <- function(STOCfree_data, n_chains, engine){
       if(engine == "JAGS"){
 
         inits <- c(inits, logit_tau2 = NA)
-
         inits$logit_tau2 <- rnorm(1, STOCfree_data$inf_dyn_priors["logit_tau2_mean"], STOCfree_data$inf_dyn_priors["logit_tau2_sd"])
 
       }
@@ -355,8 +354,20 @@ STOCfree_model_inits <- function(STOCfree_data, n_chains, engine){
       ## no risk factor, dynamics on the probability scale
       if(n_risk_factors == 0){
 
-        inits <- c(inits, tau1 = NA)
-        inits$tau1 <- invlogit(rnorm(1, STOCfree_data$inf_dyn_priors["logit_tau1_mean"], STOCfree_data$inf_dyn_priors["logit_tau1_sd"]))
+        if(engine == "JAGS"){
+
+          inits <- c(inits, logit_tau1 = NA)
+          inits$logit_tau1 <- rnorm(1, STOCfree_data$inf_dyn_priors["logit_tau1_mean"], STOCfree_data$inf_dyn_priors["logit_tau1_sd"])
+
+        }
+
+        if(engine == "Stan"){
+
+          inits <- c(inits, tau1 = NA)
+          inits$tau1 <- invlogit(rnorm(1, STOCfree_data$inf_dyn_priors["logit_tau1_mean"], STOCfree_data$inf_dyn_priors["logit_tau1_sd"]))
+
+        }
+
 
       } else {
 
