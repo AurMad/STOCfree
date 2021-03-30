@@ -516,7 +516,7 @@ plot_priors_rf(sfd)
 
 ## Running the Bayesian model
 
-This is done as explained above by calling the STOCfree_Stan() or STOCfree_Stan() functions. In this case, estimates for the logistic regression parameters will appear as theta.1 (model intercept) and theta.2 (coefficient for the nAnim_8_8 variable).
+This is done as explained above by calling the `STOCfree_Stan()` or `STOCfree_JAGS()` functions. In this case, estimates for the logistic regression parameters will appear as theta1 (model intercept) and theta2 (coefficient for the nAnim_8_8 variable).
 
 Below is a complete example.
 

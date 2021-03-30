@@ -80,7 +80,7 @@ the model.
 Before installing the STOCfree package, you need to install either Stan
 or JAGS.
 
--   The Stan implementation relies on and interface called
+-   The Stan implementation relies on an interface called
     [CmdStan](https://mc-stan.org/users/interfaces/cmdstan) which
     communicates with R through the
     [CmdStanR](https://mc-stan.org/cmdstanr/) R package. The
@@ -511,7 +511,7 @@ sfm_stan <- STOCfree_Stan(sfd,
     ## Chain 1 Iteration: 1800 / 2000 [ 90%]  (Sampling) 
     ## Chain 1 Iteration: 1900 / 2000 [ 95%]  (Sampling) 
     ## Chain 1 Iteration: 2000 / 2000 [100%]  (Sampling) 
-    ## Chain 1 finished in 49.2 seconds.
+    ## Chain 1 finished in 52.1 seconds.
     ## Chain 2 Iteration:    1 / 2000 [  0%]  (Warmup) 
     ## Chain 2 Iteration:  100 / 2000 [  5%]  (Warmup) 
     ## Chain 2 Iteration:  200 / 2000 [ 10%]  (Warmup) 
@@ -534,7 +534,7 @@ sfm_stan <- STOCfree_Stan(sfd,
     ## Chain 2 Iteration: 1800 / 2000 [ 90%]  (Sampling) 
     ## Chain 2 Iteration: 1900 / 2000 [ 95%]  (Sampling) 
     ## Chain 2 Iteration: 2000 / 2000 [100%]  (Sampling) 
-    ## Chain 2 finished in 48.8 seconds.
+    ## Chain 2 finished in 48.5 seconds.
     ## Chain 3 Iteration:    1 / 2000 [  0%]  (Warmup) 
     ## Chain 3 Iteration:  100 / 2000 [  5%]  (Warmup) 
     ## Chain 3 Iteration:  200 / 2000 [ 10%]  (Warmup) 
@@ -557,11 +557,11 @@ sfm_stan <- STOCfree_Stan(sfd,
     ## Chain 3 Iteration: 1800 / 2000 [ 90%]  (Sampling) 
     ## Chain 3 Iteration: 1900 / 2000 [ 95%]  (Sampling) 
     ## Chain 3 Iteration: 2000 / 2000 [100%]  (Sampling) 
-    ## Chain 3 finished in 48.8 seconds.
+    ## Chain 3 finished in 51.0 seconds.
     ## 
     ## All 3 chains finished successfully.
-    ## Mean chain execution time: 48.9 seconds.
-    ## Total execution time: 148.1 seconds.
+    ## Mean chain execution time: 50.5 seconds.
+    ## Total execution time: 152.9 seconds.
 
 # Running the STOC free model in JAGS
 
@@ -588,7 +588,7 @@ sfm_jags <- STOCfree_JAGS(sfd,
     ## Calling 3 simulations using the parallel method...
     ## Following the progress of chain 1 (the program will wait for all chains
     ## to finish before continuing):
-    ## Welcome to JAGS 4.3.0 on Tue Mar 30 18:47:43 2021
+    ## Welcome to JAGS 4.3.0 on Tue Mar 30 19:13:17 2021
     ## JAGS is free software and comes with ABSOLUTELY NO WARRANTY
     ## Loading module: basemod: ok
     ## Loading module: bugs: ok
@@ -614,7 +614,6 @@ sfm_jags <- STOCfree_JAGS(sfd,
     ## ************************************************** 100%
     ## . . . . Updating 0
     ## . Deleting model
-    ## . 
     ## All chains have finished
     ## Simulation complete.  Reading coda files...
     ## Coda files loaded successfully
@@ -708,14 +707,14 @@ summary(param)
 
     ## Warning: Dropping 'draws_df' class as required metadata was removed.
 
-    ##            mean           sd    median       2.5%      97.5%      ess
-    ## Se1  0.95015230 0.0029631528 0.9502165 0.94414743 0.95580925 4102.113
-    ## Se2  0.88381339 0.0207045881 0.8845240 0.84229798 0.92255015 4474.959
-    ## Sp1  0.98545675 0.0095371187 0.9872355 0.96182098 0.99794013 4231.215
-    ## Sp2  0.99989992 0.0001019602 0.9999320 0.99961795 0.99999800 3686.056
-    ## pi1  0.53232881 0.0531912414 0.5318625 0.42810860 0.63538190 4512.493
-    ## tau1 0.04635906 0.0072139966 0.0460054 0.03312834 0.06194781 3535.636
-    ## tau2 0.96374865 0.0065929205 0.9641295 0.95012957 0.97561532 3546.076
+    ##            mean          sd    median       2.5%      97.5%      ess
+    ## Se1  0.95016347 0.003019192 0.9502120 0.94426678 0.95596702 3808.993
+    ## Se2  0.88313453 0.020020801 0.8844210 0.84050768 0.91844588 3844.017
+    ## Sp1  0.98568940 0.009639242 0.9878720 0.96208773 0.99830217 4123.983
+    ## Sp2  0.99989907 0.000105357 0.9999330 0.99960693 0.99999800 4127.368
+    ## pi1  0.53179370 0.052046602 0.5313565 0.42915958 0.63574543 4333.576
+    ## tau1 0.04625212 0.006945206 0.0460412 0.03367877 0.06062848 4054.314
+    ## tau2 0.96376078 0.006495356 0.9642780 0.94952450 0.97508955 3794.391
 
 ### Predicted probabilities of infection
 
@@ -1043,10 +1042,10 @@ plot_priors_rf(sfd)
 
 ## Running the Bayesian model
 
-This is done as explained above by calling the STOCfree\_Stan() or
-STOCfree\_Stan() functions. In this case, estimates for the logistic
-regression parameters will appear as theta.1 (model intercept) and
-theta.2 (coefficient for the nAnim\_8\_8 variable).
+This is done as explained above by calling the `STOCfree_Stan()` or
+`STOCfree_JAGS()` functions. In this case, estimates for the logistic
+regression parameters will appear as theta1 (model intercept) and theta2
+(coefficient for the nAnim\_8\_8 variable).
 
 Below is a complete example.
 
@@ -1131,23 +1130,23 @@ sfm_stan_rf <- STOCfree_Stan(sfd,
     ## Chain 1 Iteration:   1 / 110 [  0%]  (Warmup) 
     ## Chain 1 Iteration:  11 / 110 [ 10%]  (Sampling) 
     ## Chain 1 Iteration: 110 / 110 [100%]  (Sampling) 
-    ## Chain 1 finished in 11.1 seconds.
+    ## Chain 1 finished in 11.4 seconds.
     ## Chain 2 WARNING: No variance estimation is 
     ## Chain 2          performed for num_warmup < 20 
     ## Chain 2 Iteration:   1 / 110 [  0%]  (Warmup) 
     ## Chain 2 Iteration:  11 / 110 [ 10%]  (Sampling) 
     ## Chain 2 Iteration: 110 / 110 [100%]  (Sampling) 
-    ## Chain 2 finished in 17.2 seconds.
+    ## Chain 2 finished in 17.8 seconds.
     ## Chain 3 WARNING: No variance estimation is 
     ## Chain 3          performed for num_warmup < 20 
     ## Chain 3 Iteration:   1 / 110 [  0%]  (Warmup) 
     ## Chain 3 Iteration:  11 / 110 [ 10%]  (Sampling) 
     ## Chain 3 Iteration: 110 / 110 [100%]  (Sampling) 
-    ## Chain 3 finished in 8.9 seconds.
+    ## Chain 3 finished in 9.1 seconds.
     ## 
     ## All 3 chains finished successfully.
-    ## Mean chain execution time: 12.4 seconds.
-    ## Total execution time: 38.5 seconds.
+    ## Mean chain execution time: 12.7 seconds.
+    ## Total execution time: 39.5 seconds.
 
     ## 
     ## Warning: 21 of 300 (7.0%) transitions ended with a divergence.
@@ -1175,7 +1174,7 @@ sfm_jags_rf <- STOCfree_JAGS(sfd,
     ## Calling 3 simulations using the parallel method...
     ## Following the progress of chain 1 (the program will wait for all chains
     ## to finish before continuing):
-    ## Welcome to JAGS 4.3.0 on Tue Mar 30 18:50:15 2021
+    ## Welcome to JAGS 4.3.0 on Tue Mar 30 19:15:42 2021
     ## JAGS is free software and comes with ABSOLUTELY NO WARRANTY
     ## Loading module: basemod: ok
     ## Loading module: bugs: ok
