@@ -8,6 +8,8 @@ STOCfree_Stan(
   STOCfree_data,
   n_chains = 4,
   n_iter = 1000,
+  n_thin = 1,
+  n_warmup = NULL,
   save_model = TRUE,
   save_data = FALSE,
   save_output = TRUE,
@@ -16,6 +18,16 @@ STOCfree_Stan(
 }
 \arguments{
 \item{STOCfree_data}{a STOC free data object}
+
+\item{n_chains}{number of MCMC chains}
+
+\item{n_iter}{number of iterations to monitor}
+
+\item{n_thin}{thinning interval for monitors}
+
+\item{save_model}{if TRUE, the Stan model code is saved to out_path}
+
+\item{save_data}{}
 
 \item{save_output}{if TRUE, the JAGS model output is saved to out_path in a tidy format using the tidybayes package}
 

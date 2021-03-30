@@ -10,10 +10,12 @@ longitudinal data
 -   [Priors for test characteristics](#priors-for-test-characteristics)
 -   [Priors for the model parameters related to status
     dynamics](#priors-for-the-model-parameters-related-to-status-dynamics)
--   [Running the STOC free model](#running-the-stoc-free-model)
+-   [Running the STOC free model in
+    Stan](#running-the-stoc-free-model-in-stan)
+-   [Running the STOC free model in
+    JAGS](#running-the-stoc-free-model-in-jags)
 -   [Model results](#model-results)
 -   [Inclusion of risk factors](#inclusion-of-risk-factors)
--   [Animal level models](#animal-level-models)
 
 # Overview
 
@@ -60,41 +62,43 @@ Model, running at the month level. The variable of interest is a latent
 status regarding infection that is imperfectly measured with tests and
 that can be predicted by risk factors. The model returns a herd level
 posterior distribution for the probability of being status positive
-given a sequence of test results and risk factor occurrence. This
-probability of being positive to the status (usually infection) is
-predicted for the last month in the dataset. Data collected before are
-used as historical data to train the model. Risk factors of new
-infection (more broadly of becoming status positive) are considered. The
-model is run in a Bayesian framework with estimation and prediction
-performed in [JAGS](http://mcmc-jags.sourceforge.net/).
-
-Depending on the input, the details of the model can be different.
-Specifying different types of input will lead to different functions
-being called internally. Currently, the following types of inputs can be
-modelled:
-
--   Herd level test results, 1 test, no risk factors
--   Herd level test results, 1 test, several risk factors
--   Herd level test results, several tests, no risk factors
--   Herd level test results, several tests, several risk factors
--   Animal level test results, one test, no risk factors
--   Animal level test results, several tests, several risk factors
+given a sequence of test results and risk factors. This probability of
+being positive to the status (usually infection) is predicted for the
+last month in the dataset. Data collected before are used as historical
+data to train the model. Risk factors of new infection (more broadly of
+becoming status positive) are considered. The model is run in a Bayesian
+framework with estimation and prediction performed in either
+[Stan](https://mc-stan.org/) or
+[JAGS](http://mcmc-jags.sourceforge.net/). The model runs faster and
+better in Stan.
 
 The next sections describe how to install the package, set up and run
 the model.
 
 # Package installation and update
 
-Before installing the package, you need to make sure that JAGS is
-installed. This programme can be installed from the following website:
-<https://sourceforge.net/projects/mcmc-jags/files/>. If R cannot find
-JAGS upon calling `STOCfree_model()` try running the following in the
-console `Sys.setenv(JAGS_HOME=“PATH/JAGS installation”)`.
+Before installing the STOCfree package, you need to install either Stan
+or JAGS.
 
-The easiest way to install the `STOCfree` package is from Github. This
-requires installing the `devtool` package first. You will need R version
-3.6 or later to install the package. You may be asked to install or
-update several packages during the installation.
+-   The Stan implementation relies on and interface called
+    [CmdStan](https://mc-stan.org/users/interfaces/cmdstan) which
+    communicates with R through the
+    [CmdStanR](https://mc-stan.org/cmdstanr/) R package. The
+    instructions to install both CmdStan and CmdStanR can be found on
+    the following page:
+    <https://mc-stan.org/cmdstanr/articles/cmdstanr.html>. Running the
+    Stan model also requires installing the
+    [posterior](https://github.com/stan-dev/posterior) R package.
+
+-   JAGS can be installed from the following website:
+    <https://sourceforge.net/projects/mcmc-jags/files/>. If R cannot
+    find JAGS upon calling `STOCfree_JAGS()` try running the following
+    in the console `Sys.setenv(JAGS_HOME=“PATH/JAGS installation”)`.
+
+The `STOCfree` package needs to be installed from Github. This requires
+installing the `devtool` package first. You will need R version 3.6 or
+later to install the package. You may be asked to install or update
+several packages during the installation.
 
 ``` r
 install.packages("devtools")
@@ -382,7 +386,7 @@ Github. See <https://github.com/AurMad/betadistapp>
 These parameters are the probability of being status positive on the
 first time step (pi1), the probability of becoming status positive
 between consecutive time steps (tau1) and the probability of remaining
-test positive between consecutive time steps (tau2). When risk factors
+status positive between consecutive time steps (tau2). When risk factors
 are included in the model, tau1 is modelled as a function of these risk
 factors and the parameters for the prior distribution of tau1 will not
 be taken into account.
@@ -463,33 +467,128 @@ plot_priors_status_dyn(sfd1)
 
 ![](README_files/figure-gfm/plots%20of%20parameters%20of%20prior%20distributions%20for%20status%20dynamics%20on%20the%20logit%20scale-1.png)<!-- -->
 
-# Running the STOC free model
+# Running the STOC free model in Stan
 
-The STOC free model is run using the `STOCfree_model()` function. This
+The Stan implementation uses the forward algorithm for the estimation.
+The code was adapted from a tutorial on Hidden Markov models in Stan by
+[Damiano et al. (2017)](https://github.com/luisdamiano/stancon18). The
+model is run using the `STOCfree_Stan()` function. The main argument is
+a `STOCfree_data` object as created above. By default, the model outputs
+are stored in a folder called ‘STOCfree\_files’. This output folder can
+be changed using through `out_path` argument.
+
+``` r
+sfm_stan <- STOCfree_Stan(sfd,
+                      n_chains = 3,
+                      n_iter = 1000,
+                      n_thin = 1,
+                      out_path = "STOCfree_Stan_1")
+```
+
+    ## Compiling Stan program...
+
+    ## Running MCMC with 3 sequential chains...
+    ## 
+    ## Chain 1 Iteration:    1 / 2000 [  0%]  (Warmup) 
+    ## Chain 1 Iteration:  100 / 2000 [  5%]  (Warmup) 
+    ## Chain 1 Iteration:  200 / 2000 [ 10%]  (Warmup) 
+    ## Chain 1 Iteration:  300 / 2000 [ 15%]  (Warmup) 
+    ## Chain 1 Iteration:  400 / 2000 [ 20%]  (Warmup) 
+    ## Chain 1 Iteration:  500 / 2000 [ 25%]  (Warmup) 
+    ## Chain 1 Iteration:  600 / 2000 [ 30%]  (Warmup) 
+    ## Chain 1 Iteration:  700 / 2000 [ 35%]  (Warmup) 
+    ## Chain 1 Iteration:  800 / 2000 [ 40%]  (Warmup) 
+    ## Chain 1 Iteration:  900 / 2000 [ 45%]  (Warmup) 
+    ## Chain 1 Iteration: 1000 / 2000 [ 50%]  (Warmup) 
+    ## Chain 1 Iteration: 1001 / 2000 [ 50%]  (Sampling) 
+    ## Chain 1 Iteration: 1100 / 2000 [ 55%]  (Sampling) 
+    ## Chain 1 Iteration: 1200 / 2000 [ 60%]  (Sampling) 
+    ## Chain 1 Iteration: 1300 / 2000 [ 65%]  (Sampling) 
+    ## Chain 1 Iteration: 1400 / 2000 [ 70%]  (Sampling) 
+    ## Chain 1 Iteration: 1500 / 2000 [ 75%]  (Sampling) 
+    ## Chain 1 Iteration: 1600 / 2000 [ 80%]  (Sampling) 
+    ## Chain 1 Iteration: 1700 / 2000 [ 85%]  (Sampling) 
+    ## Chain 1 Iteration: 1800 / 2000 [ 90%]  (Sampling) 
+    ## Chain 1 Iteration: 1900 / 2000 [ 95%]  (Sampling) 
+    ## Chain 1 Iteration: 2000 / 2000 [100%]  (Sampling) 
+    ## Chain 1 finished in 49.2 seconds.
+    ## Chain 2 Iteration:    1 / 2000 [  0%]  (Warmup) 
+    ## Chain 2 Iteration:  100 / 2000 [  5%]  (Warmup) 
+    ## Chain 2 Iteration:  200 / 2000 [ 10%]  (Warmup) 
+    ## Chain 2 Iteration:  300 / 2000 [ 15%]  (Warmup) 
+    ## Chain 2 Iteration:  400 / 2000 [ 20%]  (Warmup) 
+    ## Chain 2 Iteration:  500 / 2000 [ 25%]  (Warmup) 
+    ## Chain 2 Iteration:  600 / 2000 [ 30%]  (Warmup) 
+    ## Chain 2 Iteration:  700 / 2000 [ 35%]  (Warmup) 
+    ## Chain 2 Iteration:  800 / 2000 [ 40%]  (Warmup) 
+    ## Chain 2 Iteration:  900 / 2000 [ 45%]  (Warmup) 
+    ## Chain 2 Iteration: 1000 / 2000 [ 50%]  (Warmup) 
+    ## Chain 2 Iteration: 1001 / 2000 [ 50%]  (Sampling) 
+    ## Chain 2 Iteration: 1100 / 2000 [ 55%]  (Sampling) 
+    ## Chain 2 Iteration: 1200 / 2000 [ 60%]  (Sampling) 
+    ## Chain 2 Iteration: 1300 / 2000 [ 65%]  (Sampling) 
+    ## Chain 2 Iteration: 1400 / 2000 [ 70%]  (Sampling) 
+    ## Chain 2 Iteration: 1500 / 2000 [ 75%]  (Sampling) 
+    ## Chain 2 Iteration: 1600 / 2000 [ 80%]  (Sampling) 
+    ## Chain 2 Iteration: 1700 / 2000 [ 85%]  (Sampling) 
+    ## Chain 2 Iteration: 1800 / 2000 [ 90%]  (Sampling) 
+    ## Chain 2 Iteration: 1900 / 2000 [ 95%]  (Sampling) 
+    ## Chain 2 Iteration: 2000 / 2000 [100%]  (Sampling) 
+    ## Chain 2 finished in 48.8 seconds.
+    ## Chain 3 Iteration:    1 / 2000 [  0%]  (Warmup) 
+    ## Chain 3 Iteration:  100 / 2000 [  5%]  (Warmup) 
+    ## Chain 3 Iteration:  200 / 2000 [ 10%]  (Warmup) 
+    ## Chain 3 Iteration:  300 / 2000 [ 15%]  (Warmup) 
+    ## Chain 3 Iteration:  400 / 2000 [ 20%]  (Warmup) 
+    ## Chain 3 Iteration:  500 / 2000 [ 25%]  (Warmup) 
+    ## Chain 3 Iteration:  600 / 2000 [ 30%]  (Warmup) 
+    ## Chain 3 Iteration:  700 / 2000 [ 35%]  (Warmup) 
+    ## Chain 3 Iteration:  800 / 2000 [ 40%]  (Warmup) 
+    ## Chain 3 Iteration:  900 / 2000 [ 45%]  (Warmup) 
+    ## Chain 3 Iteration: 1000 / 2000 [ 50%]  (Warmup) 
+    ## Chain 3 Iteration: 1001 / 2000 [ 50%]  (Sampling) 
+    ## Chain 3 Iteration: 1100 / 2000 [ 55%]  (Sampling) 
+    ## Chain 3 Iteration: 1200 / 2000 [ 60%]  (Sampling) 
+    ## Chain 3 Iteration: 1300 / 2000 [ 65%]  (Sampling) 
+    ## Chain 3 Iteration: 1400 / 2000 [ 70%]  (Sampling) 
+    ## Chain 3 Iteration: 1500 / 2000 [ 75%]  (Sampling) 
+    ## Chain 3 Iteration: 1600 / 2000 [ 80%]  (Sampling) 
+    ## Chain 3 Iteration: 1700 / 2000 [ 85%]  (Sampling) 
+    ## Chain 3 Iteration: 1800 / 2000 [ 90%]  (Sampling) 
+    ## Chain 3 Iteration: 1900 / 2000 [ 95%]  (Sampling) 
+    ## Chain 3 Iteration: 2000 / 2000 [100%]  (Sampling) 
+    ## Chain 3 finished in 48.8 seconds.
+    ## 
+    ## All 3 chains finished successfully.
+    ## Mean chain execution time: 48.9 seconds.
+    ## Total execution time: 148.1 seconds.
+
+# Running the STOC free model in JAGS
+
+The STOC free model is run using the `STOCfree_JAGS()` function. This
 function is a wrapper for the `run.jags()` function from the `runjags`
 package. The main argument is a `STOCfree_data` object as created above.
 By default, the models outputs are stored in a folder called
-‘STOCfree\_files’.
+‘STOCfree\_files’. This output folder can be changed using through
+`out_path` argument.
 
 ``` r
-sfm <- STOCfree_model(sfd,
-                      n_chains = 4,
-                      n_burnin = 100,
+sfm_jags <- STOCfree_JAGS(sfd,
+                      n_chains = 3,
+                      n_burnin = 1000,
                       n_iter = 1000,
-                      n_thin = 10)
+                      n_thin = 1,
+                      out_path = "STOCfree_JAGS_1")
 ```
-
-    ## Warning: No initial values were provided - JAGS will use the same initial values
-    ## for all chains
 
     ## Warning: You attempted to start parallel chains without setting different PRNG
     ## for each chain, which is not recommended. Different .RNG.name values have been
     ## added to each set of initial values.
 
-    ## Calling 4 simulations using the parallel method...
+    ## Calling 3 simulations using the parallel method...
     ## Following the progress of chain 1 (the program will wait for all chains
     ## to finish before continuing):
-    ## Welcome to JAGS 4.3.0 on Tue Jan 12 11:40:43 2021
+    ## Welcome to JAGS 4.3.0 on Tue Mar 30 18:47:43 2021
     ## JAGS is free software and comes with ABSOLUTELY NO WARRANTY
     ## Loading module: basemod: ok
     ## Loading module: bugs: ok
@@ -507,14 +606,15 @@ sfm <- STOCfree_model(sfd,
     ## -------------------------------------------------| 1000
     ## ++++++++++++++++++++++++++++++++++++++++++++++++++ 100%
     ## Adaptation successful
-    ## . Updating 100
-    ## -------------------------------------------------| 100
+    ## . Updating 1000
+    ## -------------------------------------------------| 1000
     ## ************************************************** 100%
     ## . . . . . . . Updating 1000
     ## -------------------------------------------------| 1000
     ## ************************************************** 100%
     ## . . . . Updating 0
     ## . Deleting model
+    ## . 
     ## All chains have finished
     ## Simulation complete.  Reading coda files...
     ## Coda files loaded successfully
@@ -527,30 +627,42 @@ sfm <- STOCfree_model(sfd,
 
 ## Structure of the returned object
 
-The model returns an object of class `runjags`. Therefore, all methods
-and functions working with runjags objects will work with outputs
-created by `STOCfree_model()`.
+The Stan model returns an object of classes `CmdStanMCMC`, `CmdStanFit`
+and `R6`. Therefore, all methods and functions working with objects of
+these classes will work with outputs created by `STOCfree_Stan()`.
+
+The JAGS model returns an object of class `runjags`. Therefore, all
+methods and functions working with runjags objects will work with
+outputs created by `STOCfree_JAGS()`.
+
+The `STOCfree` package contains functions to explore the model outputs
+that work in the same way, regardless of whether the output was
+generated with Stan or JAGS.
 
 ## STOCfree\_model outputs
 
-Three specific types of model outputs are of interest and can be
+Two specific types of model outputs are of interest and can be
 extracted, either directly from the model output or loaded from the disk
-when `STOCfree_model()` was run using `save_output = TRUE`.
+when `STOCfree_model()` was run using `save_output = TRUE`. These model
+outputs are the model parameters (Se, Sp, *τ*<sub>1</sub>, …) and
+predicted probabilities of being status positive. Additionally, the JAGS
+model returns estimated monthly prevalences during the historical
+period.
 
 ### Model parameters
 
 By model parameters, we mean test characteristics, parameters related to
 infection dynamics and association with risk factors. These can be
-extracted from the model ouptut:
+extracted from the model output:
 
 ``` r
-param <- extract_STOCfree_param(sfm)
+param <- extract_STOCfree_param(sfm_stan)
 ```
 
 or loaded from the disk
 
 ``` r
-param <- read_STOCfree_param()
+param <- read_STOCfree_param(out_path = "STOCfree_Stan_1")
 ```
 
 These 2 functions create objects of class `STOCfree_param` for which
@@ -562,26 +674,48 @@ print(param)
 
     ## MCMC samples from STOC free model parameters
     ## 
-    ## Parameters: Se.1, Se.2, Sp.1, Sp.2, tau1, tau2 
-    ## Number of chains: 4 
-    ## Number of iterations per chain: 100 
-    ## Number of draws: 400
+    ## Parameters: Se1, Se2, Sp1, Sp2, tau1, tau2 
+    ## Number of chains: 3 
+    ## Number of iterations per chain: 1000 
+    ## Number of draws: 3000
 
 Traceplots can be generated to check convergence visually.
 
 ``` r
-plot(param, parameter = "Se.1", type = "traceplot")
+plot(param, parameter = "Se1", type = "traceplot")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
 Density plots can be generated.
 
 ``` r
-plot(param, parameter = "Se.1", type = "density")
+plot(param, parameter = "Se1", type = "density")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-11-1.png)<!-- --> Summary
+values for each parameter can be obtained as follows:
+
+``` r
+summary(param)
+```
+
+    ## Warning: Dropping 'draws_df' class as required metadata was removed.
+
+    ## Warning: Dropping 'draws_df' class as required metadata was removed.
+
+    ## Warning: Dropping 'draws_df' class as required metadata was removed.
+
+    ## Warning: Dropping 'draws_df' class as required metadata was removed.
+
+    ##            mean           sd    median       2.5%      97.5%      ess
+    ## Se1  0.95015230 0.0029631528 0.9502165 0.94414743 0.95580925 4102.113
+    ## Se2  0.88381339 0.0207045881 0.8845240 0.84229798 0.92255015 4474.959
+    ## Sp1  0.98545675 0.0095371187 0.9872355 0.96182098 0.99794013 4231.215
+    ## Sp2  0.99989992 0.0001019602 0.9999320 0.99961795 0.99999800 3686.056
+    ## pi1  0.53232881 0.0531912414 0.5318625 0.42810860 0.63538190 4512.493
+    ## tau1 0.04635906 0.0072139966 0.0460054 0.03312834 0.06194781 3535.636
+    ## tau2 0.96374865 0.0065929205 0.9641295 0.95012957 0.97561532 3546.076
 
 ### Predicted probabilities of infection
 
@@ -589,16 +723,16 @@ MCMC samples for the herd level predicted probabilities of infection can
 also be extracted or loaded.
 
 ``` r
-pred <- extract_STOCfree_pred(sfm)
+pred  <- extract_STOCfree_pred(sfm_stan, sfd)
 ```
 
 or
 
 ``` r
-pred <- read_STOCfree_pred()
+pred <- read_STOCfree_pred("STOCfree_Stan_1")
 ```
 
-Calling print on these objects will dispolay the list of herds.$
+Calling print on these objects will display the list of herds.
 
 ``` r
 print(pred)
@@ -630,17 +764,17 @@ plot(pred, herd = c("FR001", "FR002"), type = "individual", legend = TRUE)
 
 ### Monthly prevalences
 
-The predicted monthly prevalences of infection can be extracted or
-loaded using:
+This is only available for the JAGS model. The predicted monthly
+prevalences of infection can be extracted or loaded using:
 
 ``` r
-prev <- extract_STOCfree_month_prev(sfm, sfd)
+prev <- extract_STOCfree_month_prev(sfm_jags, sfd)
 ```
 
 or
 
 ``` r
-prev <- read_STOCfree_month_prev()
+prev <- read_STOCfree_month_prev("STOCfree_JAGS_1")
 ```
 
 Calling plot on this object will create boxplots of estimated monthly
@@ -650,7 +784,7 @@ infection prevalences.
 plot(prev)
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->
+![](README_files/figure-gfm/plot%20of%20monthly%20prevalences-1.png)<!-- -->
 
 # Inclusion of risk factors
 
@@ -757,7 +891,7 @@ ggplot(data = nAnim_lagged, aes(x = lag2, y = lag1, fill = AIC)) +
   ggtitle("Number of animals purchased")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-24-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-21-1.png)<!-- -->
 
 When the function is used to evaluate several candidate variables, all
 these variables can be incldued in a multivariate logistic model. For
@@ -905,20 +1039,199 @@ the density below 0.2.
 plot_priors_rf(sfd)
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-34-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-31-1.png)<!-- -->
 
 ## Running the Bayesian model
 
-This is done as explained above by calling the STOCfree\_model()
-functions. In this case, estimates for the logistic regression
-parameters will appear as theta.1 (model intercept) and theta.2
-(coefficient for the nAnim\_8\_8 variable).
+This is done as explained above by calling the STOCfree\_Stan() or
+STOCfree\_Stan() functions. In this case, estimates for the logistic
+regression parameters will appear as theta.1 (model intercept) and
+theta.2 (coefficient for the nAnim\_8\_8 variable).
 
-# Animal level models
+Below is a complete example.
 
-When test results are available at the animal level, the model works
-slightly differently. In this case, the probability of infection is
-still at the herd level, but in infected herds, the number of positives
-follows a binomial distribution: n\_positives \~ Binomial(pi\_within,
-n\_tested). pi\_within represents the proportion of infected animals in
-infected herds.
+``` r
+## Creation of the STOCfree_data object
+sfd <- STOCfree_data(test_data = herdBTM,
+                     test_herd_col = "Farm",
+                     test_date_col = "DateOfTest",
+                     test_res_col = "TestResult",
+                     test_name_col = "Test",
+                     test_level = "herd",
+                     status_dynamics_scale = "logit")
+
+## Priors for test characteristics
+sfd <- set_priors_tests(sfd,
+                 test = "BTM_ODR",
+                 Se_a = 5000,
+                 Se_b = 260,
+                 Sp_a = 20,
+                 Sp_b = 2)
+
+sfd <- set_priors_tests(sfd,
+                 test = "confirm",
+                 Se_a = 20,
+                 Se_b = 2,
+                 Sp_a = 10000,
+                 Sp_b = 1)
+
+## Prior for infection dynamics
+sfd <- set_priors_status_dyn(sfd, 
+                              logit_pi1_mean = 0, 
+                              logit_pi1_sd = 4, 
+                              logit_tau2_mean = 3, 
+                              logit_tau2_sd = 1)
+```
+
+    ## Set prior distributions for status dynamics using:
+    ## sfd <- set_priors_status_dyn(sfd, logit_tau1_mean = , logit_tau1_sd = )
+
+``` r
+## Adding a risk factor to the TSOCfree_data object
+sfd <- sf_add_risk_factor(
+  sfd = sfd,
+  risk_factor_data = intro,
+  risk_herd_col = "Farm",
+  risk_date_col = "dateIntr",
+  risk_factor_col = "nAnim",
+  risk_factor_type = "continuous",
+  lag1 = 8,
+  lag2 = 8,
+  FUN = sum)
+
+## Priors for risk factors association with log-odds of becoming positive
+sfd <- set_priors_rf(sfd,
+                   risk_factor = "Intercept",
+                   mean = -3, sd = 1)
+
+
+sfd <- set_priors_rf(sfd,
+                   risk_factor = "nAnim_8_8",
+                   mean = 0, sd = 2)
+```
+
+Stan version:
+
+``` r
+set.seed(124)
+sfm_stan_rf <- STOCfree_Stan(sfd,
+                      n_chains = 3,
+                      n_warmup = 10,
+                      n_iter = 100,
+                      n_thin = 1,
+                      out_path = "STOCfree_Stan_2")
+```
+
+    ## Compiling Stan program...
+
+    ## Running MCMC with 3 sequential chains...
+    ## 
+    ## Chain 1 WARNING: No variance estimation is 
+    ## Chain 1          performed for num_warmup < 20 
+    ## Chain 1 Iteration:   1 / 110 [  0%]  (Warmup) 
+    ## Chain 1 Iteration:  11 / 110 [ 10%]  (Sampling) 
+    ## Chain 1 Iteration: 110 / 110 [100%]  (Sampling) 
+    ## Chain 1 finished in 11.1 seconds.
+    ## Chain 2 WARNING: No variance estimation is 
+    ## Chain 2          performed for num_warmup < 20 
+    ## Chain 2 Iteration:   1 / 110 [  0%]  (Warmup) 
+    ## Chain 2 Iteration:  11 / 110 [ 10%]  (Sampling) 
+    ## Chain 2 Iteration: 110 / 110 [100%]  (Sampling) 
+    ## Chain 2 finished in 17.2 seconds.
+    ## Chain 3 WARNING: No variance estimation is 
+    ## Chain 3          performed for num_warmup < 20 
+    ## Chain 3 Iteration:   1 / 110 [  0%]  (Warmup) 
+    ## Chain 3 Iteration:  11 / 110 [ 10%]  (Sampling) 
+    ## Chain 3 Iteration: 110 / 110 [100%]  (Sampling) 
+    ## Chain 3 finished in 8.9 seconds.
+    ## 
+    ## All 3 chains finished successfully.
+    ## Mean chain execution time: 12.4 seconds.
+    ## Total execution time: 38.5 seconds.
+
+    ## 
+    ## Warning: 21 of 300 (7.0%) transitions ended with a divergence.
+    ## This may indicate insufficient exploration of the posterior distribution.
+    ## Possible remedies include: 
+    ##   * Increasing adapt_delta closer to 1 (default is 0.8) 
+    ##   * Reparameterizing the model (e.g. using a non-centered parameterization)
+    ##   * Using informative or weakly informative prior distributions
+
+JAGS version
+
+``` r
+sfm_jags_rf <- STOCfree_JAGS(sfd,
+                      n_chains = 3,
+                      n_burnin = 1000,
+                      n_iter = 1000,
+                      n_thin = 1,
+                      out_path = "STOCfree_JAGS_2")
+```
+
+    ## Warning: You attempted to start parallel chains without setting different PRNG
+    ## for each chain, which is not recommended. Different .RNG.name values have been
+    ## added to each set of initial values.
+
+    ## Calling 3 simulations using the parallel method...
+    ## Following the progress of chain 1 (the program will wait for all chains
+    ## to finish before continuing):
+    ## Welcome to JAGS 4.3.0 on Tue Mar 30 18:50:15 2021
+    ## JAGS is free software and comes with ABSOLUTELY NO WARRANTY
+    ## Loading module: basemod: ok
+    ## Loading module: bugs: ok
+    ## . . Reading data file data.txt
+    ## . Compiling model graph
+    ##    Resolving undeclared variables
+    ##    Allocating nodes
+    ## Graph information:
+    ##    Observed stochastic nodes: 824
+    ##    Unobserved stochastic nodes: 3407
+    ##    Total graph size: 37768
+    ## . Reading parameter file inits1.txt
+    ## . Initializing model
+    ## . Adapting 1000
+    ## -------------------------------------------------| 1000
+    ## ++++++++++++++++++++++++++++++++++++++++++++++++++ 100%
+    ## Adaptation successful
+    ## . Updating 1000
+    ## -------------------------------------------------| 1000
+    ## ************************************************** 100%
+    ## . . . . . . . Updating 1000
+    ## -------------------------------------------------| 1000
+    ## ************************************************** 100%
+    ## . . . . Updating 0
+    ## . Deleting model
+    ## . 
+    ## All chains have finished
+    ## Simulation complete.  Reading coda files...
+    ## Coda files loaded successfully
+    ## Note: Summary statistics were not produced as there are >50 monitored
+    ## variables
+    ## [To override this behaviour see ?add.summary and ?runjags.options]
+    ## FALSEFinished running the simulation
+
+Summary of parameters estimated with the Stan model.
+
+``` r
+param <- extract_STOCfree_param(sfm_stan_rf)
+
+summary(param)
+```
+
+    ## Warning: Dropping 'draws_df' class as required metadata was removed.
+
+    ## Warning: Dropping 'draws_df' class as required metadata was removed.
+
+    ## Warning: Dropping 'draws_df' class as required metadata was removed.
+
+    ## Warning: Dropping 'draws_df' class as required metadata was removed.
+
+    ##              mean           sd     median       2.5%      97.5%       ess
+    ## Se1     0.9501221 3.004602e-03  0.9502215  0.9445554  0.9555005 300.00000
+    ## Se2     0.8822256 1.845546e-02  0.8832340  0.8440681  0.9152416 270.04594
+    ## Sp1     0.9839840 1.046570e-02  0.9868455  0.9596149  0.9981407  96.46490
+    ## Sp2     0.9998781 9.848068e-05  0.9999100  0.9996285  0.9999900  40.24924
+    ## pi1     0.5250516 5.156217e-02  0.5225025  0.4190081  0.6230360 277.04410
+    ## tau2    0.9640280 6.596490e-03  0.9646025  0.9493774  0.9764860 230.32408
+    ## theta1 -3.0366062 1.760129e-01 -3.0292050 -3.4207157 -2.7437388 310.85648
+    ## theta2 -0.8937525 1.403491e+00 -0.1618395 -4.8033437  0.1327674  77.30943

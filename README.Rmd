@@ -20,24 +20,19 @@ The problem addressed is the following. For some major infectious diseases of ca
 
 In the STOC free project, infection by the Bovine Viral Diarrhoea Virus (BVDV) in cattle is taken as an example. A [description of BVDV surveillance programmes](https://www.sciencedirect.com/science/article/pii/S0022030220301697) in the countries involved in the project was published by van Roon et al. in the Journal of Dairy Science in 2020 and shows the variety in existing programmes.
 
-The statistical framework described on this page is meant to model surveillance programmes in which all herds in the programme are tested at regular time intervals. The model can be described as a Hidden Markov Model, running at the month level. The variable of interest is a latent status regarding infection that is imperfectly measured with tests and that can be predicted by risk factors. The model returns a herd level posterior distribution for the probability of being status positive given a sequence of test results and risk factor occurrence. This probability of being positive to the status (usually infection) is predicted for the last month in the dataset. Data collected before are used as historical data to train the model. Risk factors of new infection (more broadly of becoming status positive) are considered. The model is run in a Bayesian framework with estimation and prediction performed in [JAGS](http://mcmc-jags.sourceforge.net/).
-
-Depending on the input, the details of the model can be different. Specifying different types of input will lead to different functions being called internally. Currently, the following types of inputs can be modelled:
-
-- Herd level test results, 1 test, no risk factors
-- Herd level test results, 1 test, several risk factors
-- Herd level test results, several tests, no risk factors
-- Herd level test results, several tests, several risk factors
-- Animal level test results, one test, no risk factors
-- Animal level test results, several tests, several risk factors
+The statistical framework described on this page is meant to model surveillance programmes in which all herds in the programme are tested at regular time intervals. The model can be described as a Hidden Markov Model, running at the month level. The variable of interest is a latent status regarding infection that is imperfectly measured with tests and that can be predicted by risk factors. The model returns a herd level posterior distribution for the probability of being status positive given a sequence of test results and risk factors. This probability of being positive to the status (usually infection) is predicted for the last month in the dataset. Data collected before are used as historical data to train the model. Risk factors of new infection (more broadly of becoming status positive) are considered. The model is run in a Bayesian framework with estimation and prediction performed in either [Stan](https://mc-stan.org/) or [JAGS](http://mcmc-jags.sourceforge.net/). The model runs faster and better in Stan.
 
 The next sections describe how to install the package, set up and run the model.
 
 # Package installation and update
 
-Before installing the package, you need to make sure that JAGS is installed. This programme can be installed from the following website: https://sourceforge.net/projects/mcmc-jags/files/. If R cannot find JAGS upon calling `STOCfree_model()` try running the following in the console `Sys.setenv(JAGS_HOME=“PATH/JAGS installation”)`.
+Before installing the STOCfree package, you need to install either Stan or JAGS.
 
-The easiest way to install the `STOCfree` package is from Github. This requires installing the `devtool` package first. You will need R version 3.6 or later to install the package. You may be asked to install or update several packages during the installation.
+- The Stan implementation relies on an interface called [CmdStan](https://mc-stan.org/users/interfaces/cmdstan) which communicates with R through the [CmdStanR](https://mc-stan.org/cmdstanr/) R package. The instructions to install both CmdStan and CmdStanR can be found on the following page: https://mc-stan.org/cmdstanr/articles/cmdstanr.html. Running the Stan model also requires installing the [posterior](https://github.com/stan-dev/posterior) R package.
+
+- JAGS can be installed from the following website: https://sourceforge.net/projects/mcmc-jags/files/. If R cannot find JAGS upon calling `STOCfree_JAGS()` try running the following in the console `Sys.setenv(JAGS_HOME=“PATH/JAGS installation”)`.
+
+The `STOCfree` package needs to be installed from Github. This requires installing the `devtool` package first. You will need R version 3.6 or later to install the package. You may be asked to install or update several packages during the installation.
 
 ```{r, eval = FALSE, message=FALSE}
 install.packages("devtools")
@@ -203,7 +198,7 @@ In order to help selecting appropriate parameter values for the Beta distributio
 
 # Priors for the model parameters related to status dynamics
 
-These parameters are the probability of being status positive on the first time step (pi1), the probability of becoming status positive between consecutive time steps (tau1) and the probability of remaining test positive between consecutive time steps (tau2). When risk factors are included in the model, tau1 is modelled as a function of these risk factors and the parameters for the prior distribution of tau1 will not be taken into account.
+These parameters are the probability of being status positive on the first time step (pi1), the probability of becoming status positive between consecutive time steps (tau1) and the probability of remaining status positive between consecutive time steps (tau2). When risk factors are included in the model, tau1 is modelled as a function of these risk factors and the parameters for the prior distribution of tau1 will not be taken into account.
 
 ## Probability scale
 
@@ -255,40 +250,56 @@ These distributions can be plotted.
 plot_priors_status_dyn(sfd1)
 ```
 
+# Running the STOC free model in Stan
 
-# Running the STOC free model
+The Stan implementation uses the forward algorithm for the estimation. The code was adapted from a tutorial on Hidden Markov models in Stan by [Damiano et al. (2017)](https://github.com/luisdamiano/stancon18). The model is run using the `STOCfree_Stan()` function. The main argument is a `STOCfree_data` object as created above. By default, the model outputs are stored in a folder called 'STOCfree_files'. This output folder can be changed using through `out_path` argument.
 
-The STOC free model is run using the `STOCfree_model()` function. This function is a wrapper for the `run.jags()` function from the `runjags` package. The main argument is a `STOCfree_data` object as created above. By default, the models outputs are stored in a folder called 'STOCfree_files'.
-
-```{r running the STOCfree model}
-sfm <- STOCfree_model(sfd,
-                      n_chains = 4,
-                      n_burnin = 100,
+```{r running the Stan version of the STOCfree model}
+sfm_stan <- STOCfree_Stan(sfd,
+                      n_chains = 3,
                       n_iter = 1000,
-                      n_thin = 10)
+                      n_thin = 1,
+                      out_path = "STOCfree_Stan_1")
+```
+
+# Running the STOC free model in JAGS
+
+The STOC free model is run using the `STOCfree_JAGS()` function. This function is a wrapper for the `run.jags()` function from the `runjags` package. The main argument is a `STOCfree_data` object as created above. By default, the models outputs are stored in a folder called 'STOCfree_files'. This output folder can be changed using through `out_path` argument.
+
+```{r running the JAGS version of the STOCfree model}
+sfm_jags <- STOCfree_JAGS(sfd,
+                      n_chains = 3,
+                      n_burnin = 1000,
+                      n_iter = 1000,
+                      n_thin = 1,
+                      out_path = "STOCfree_JAGS_1")
 ```
 # Model results
 
 ## Structure of the returned object
 
-The model returns an object of class `runjags`. Therefore, all methods and functions working with runjags objects will work with outputs created by `STOCfree_model()`. 
+The Stan model returns an object of classes `CmdStanMCMC`, `CmdStanFit` and `R6`. Therefore, all methods and functions working with objects of these classes will work with outputs created by `STOCfree_Stan()`. 
+
+The JAGS model returns an object of class `runjags`. Therefore, all methods and functions working with runjags objects will work with outputs created by `STOCfree_JAGS()`.
+
+The `STOCfree` package contains functions to explore the model outputs that work in the same way, regardless of whether the output was generated with Stan or JAGS.
 
 ## STOCfree_model outputs
 
-Three specific types of model outputs are of interest and can be extracted, either directly from the model output or loaded from the disk when `STOCfree_model()` was run using `save_output = TRUE`. 
+Two specific types of model outputs are of interest and can be extracted, either directly from the model output or loaded from the disk when `STOCfree_model()` was run using `save_output = TRUE`. These model outputs are the model parameters (Se, Sp, $\tau_1$, $\ldots$) and predicted probabilities of being status positive. Additionally, the JAGS model returns estimated monthly prevalences during the historical period.
 
 ### Model parameters
 
-By model parameters, we mean test characteristics, parameters related to infection dynamics and association with risk factors. These can be extracted from the model ouptut:
+By model parameters, we mean test characteristics, parameters related to infection dynamics and association with risk factors. These can be extracted from the model output:
 
-```{r}
-param <- extract_STOCfree_param(sfm)
+```{r extracting parameters from Stan model 1}
+param <- extract_STOCfree_param(sfm_stan)
 ```
 
 or loaded from the disk
 
 ```{r, eval = FALSE}
-param <- read_STOCfree_param()
+param <- read_STOCfree_param(out_path = "STOCfree_Stan_1")
 ```
 
 These 2 functions create objects of class `STOCfree_param` for which print and plot methods are defined in the package.
@@ -299,30 +310,36 @@ print(param)
 Traceplots can be generated to check convergence visually.
 
 ```{r}
-plot(param, parameter = "Se.1", type = "traceplot")
+plot(param, parameter = "Se1", type = "traceplot")
 ```
 
 Density plots can be generated. 
 
 ```{r}
-plot(param, parameter = "Se.1", type = "density")
+plot(param, parameter = "Se1", type = "density")
 ```
+Summary values for each parameter can be obtained as follows:
+
+```{r}
+summary(param)
+```
+
 
 ### Predicted probabilities of infection
 
-MCMC samples for the herd level predicted probabilities of infection can also be extracted or loaded.
+MCMC samples for the herd level predicted probabilities of infection can also be extracted or loaded. 
 
 ```{r}
-pred <- extract_STOCfree_pred(sfm)
+pred  <- extract_STOCfree_pred(sfm_stan, sfd)
 ```
 
 or
 
 ```{r, eval = FALSE}
-pred <- read_STOCfree_pred()
+pred <- read_STOCfree_pred("STOCfree_Stan_1")
 ```
 
-Calling print on these objects will dispolay the list of herds.$
+Calling print on these objects will display the list of herds.
 
 ```{r}
 print(pred)
@@ -339,24 +356,23 @@ It is also possible to plot the predicted probabilities of infection for specifi
 plot(pred, herd = c("FR001", "FR002"), type = "individual", legend = TRUE)
 ```
 
-
 ### Monthly prevalences
 
-The predicted monthly prevalences of infection can be extracted or loaded using:
+This is only available for the JAGS model. The predicted monthly prevalences of infection can be extracted or loaded using:
 
-```{r}
-prev <- extract_STOCfree_month_prev(sfm, sfd)
+```{r extraction of monthly prevalences from the JAGS model}
+prev <- extract_STOCfree_month_prev(sfm_jags, sfd)
 ```
 
 or 
  
-```{r}
-prev <- read_STOCfree_month_prev()
+```{r reading of the monthly prevalences from the JAGS model, eval = FALSE}
+prev <- read_STOCfree_month_prev("STOCfree_JAGS_1")
 ```
 
 Calling plot on this object will create boxplots of estimated monthly infection prevalences. 
 
-```{r}
+```{r plot of monthly prevalences}
 plot(prev)
 ```
 
@@ -500,9 +516,96 @@ plot_priors_rf(sfd)
 
 ## Running the Bayesian model
 
-This is done as explained above by calling the STOCfree_model() functions. In this case, estimates for the logistic regression parameters will appear as theta.1 (model intercept) and theta.2 (coefficient for the nAnim_8_8 variable).
+This is done as explained above by calling the STOCfree_Stan() or STOCfree_Stan() functions. In this case, estimates for the logistic regression parameters will appear as theta.1 (model intercept) and theta.2 (coefficient for the nAnim_8_8 variable).
+
+Below is a complete example.
+
+```{r complete example with risk factors}
+## Creation of the STOCfree_data object
+sfd <- STOCfree_data(test_data = herdBTM,
+                     test_herd_col = "Farm",
+                     test_date_col = "DateOfTest",
+                     test_res_col = "TestResult",
+                     test_name_col = "Test",
+                     test_level = "herd",
+                     status_dynamics_scale = "logit")
+
+## Priors for test characteristics
+sfd <- set_priors_tests(sfd,
+                 test = "BTM_ODR",
+                 Se_a = 5000,
+                 Se_b = 260,
+                 Sp_a = 20,
+                 Sp_b = 2)
+
+sfd <- set_priors_tests(sfd,
+                 test = "confirm",
+                 Se_a = 20,
+                 Se_b = 2,
+                 Sp_a = 10000,
+                 Sp_b = 1)
+
+## Prior for infection dynamics
+sfd <- set_priors_status_dyn(sfd, 
+                              logit_pi1_mean = 0, 
+                              logit_pi1_sd = 4, 
+                              logit_tau2_mean = 3, 
+                              logit_tau2_sd = 1)
+
+## Adding a risk factor to the TSOCfree_data object
+sfd <- sf_add_risk_factor(
+  sfd = sfd,
+  risk_factor_data = intro,
+  risk_herd_col = "Farm",
+  risk_date_col = "dateIntr",
+  risk_factor_col = "nAnim",
+  risk_factor_type = "continuous",
+  lag1 = 8,
+  lag2 = 8,
+  FUN = sum)
+
+## Priors for risk factors association with log-odds of becoming positive
+sfd <- set_priors_rf(sfd,
+                   risk_factor = "Intercept",
+                   mean = -3, sd = 1)
 
 
-# Animal level models
+sfd <- set_priors_rf(sfd,
+                   risk_factor = "nAnim_8_8",
+                   mean = 0, sd = 2)
+```
 
-When test results are available at the animal level, the model works slightly differently. In this case, the probability of infection is still at the herd level, but in infected herds, the number of positives follows a binomial distribution: n_positives ~ Binomial(pi_within, n_tested). pi_within represents the proportion of infected animals in infected herds.
+Stan version:
+
+```{r complete example with risk factors in Stan}
+set.seed(124)
+sfm_stan_rf <- STOCfree_Stan(sfd,
+                      n_chains = 3,
+                      n_warmup = 10,
+                      n_iter = 100,
+                      n_thin = 1,
+                      out_path = "STOCfree_Stan_2")
+```
+
+JAGS version
+
+```{r complete example with risk factors in JAGS}
+sfm_jags_rf <- STOCfree_JAGS(sfd,
+                      n_chains = 3,
+                      n_burnin = 1000,
+                      n_iter = 1000,
+                      n_thin = 1,
+                      out_path = "STOCfree_JAGS_2")
+
+```
+
+Summary of parameters estimated with the Stan model.
+
+```{r}
+param <- extract_STOCfree_param(sfm_stan_rf)
+
+summary(param)
+```
+
+
+

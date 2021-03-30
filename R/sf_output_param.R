@@ -54,6 +54,8 @@ extract_STOCfree_param <- function(x){
     id_cols2 <- (1:length(parameters))[-id_cols1]
 
     parameters <- parameters[, c(id_cols1, id_cols2)]
+    colnames(parameters)[4:length(parameters)] <- gsub("\\[", "", colnames(parameters)[4:length(parameters)])
+    colnames(parameters)[4:length(parameters)] <- gsub("\\]", "", colnames(parameters)[4:length(parameters)])
 
   } else { # if not Stan model
 
@@ -114,6 +116,8 @@ extract_STOCfree_param <- function(x){
     parameters <- tidybayes::spread_draws(samples, Se[..], Sp[..], theta[..], tau2, pi_within)
 
   }
+
+  colnames(parameters)[4:length(parameters)] <- gsub("\\.", "", colnames(parameters)[4:length(parameters)])
 
   } # end if JAGS model
 

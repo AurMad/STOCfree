@@ -8,6 +8,7 @@ STOCfree_model_Stan(
   STOCfree_data,
   n_chains = 4,
   n_iter = 1000,
+  n_thin = 1,
   save_model = TRUE,
   save_data = FALSE,
   save_output = TRUE,
@@ -15,6 +16,8 @@ STOCfree_model_Stan(
 )
 }
 \arguments{
+\item{n_thin}{thinning interval for monitors}
+
 \item{out_path}{}
 }
 \value{

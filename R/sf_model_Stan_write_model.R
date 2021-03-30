@@ -278,10 +278,6 @@ generated quantities{
   // variable in which predictions are stored
   real pred[n_herds];
 
-  // monthly prevalences
-  real<lower = 0> month_prev[n_month];
-
-
   // loop in which the probabilities of infection are predicted
   {
     matrix[n_herds, 2] alpha;
@@ -289,10 +285,10 @@ generated quantities{
   // loop in which the probabilities of infection are predicted
     for(i in 1:n_herds){
       alpha[i] = softmax(logalpha[herds_T[i],]')';
-                         pred[i] = alpha[i, 2];
+      pred[i] = alpha[i, 2];
     }
   }
-}"
+  }"
 }
 }
 

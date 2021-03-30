@@ -232,7 +232,6 @@ STOCfree_Stan <- function(STOCfree_data,
     sink()
 
   }
-
   ## sample
   Stan_fit <- sf_Stan$sample(
     data = sf_Stan_data,
@@ -270,12 +269,39 @@ STOCfree_Stan <- function(STOCfree_data,
 
 ## this function creates initial values for different model parameters
 ## using prior distributions
+## pi1, the prevalence of status positives on the first tests is estimated
+## from the proportion of test positives on the first test,
+## the initial values for sensitivity and specificity
+## this was made this way because I got errors when pi1 was sampled
+## randomly from the priors
+## I figured that pi1 was constrained by these 3 parameters
+## this seems to have resolved the problem
 STOCfree_model_inits <- function(STOCfree_data, n_chains, engine){
 
   n_tests <- attr(STOCfree_data, "number of tests")
   status_dynamics_scale <- attr(STOCfree_data, "status dynamics scale")
   n_risk_factors <- attr(STOCfree_data, "number of risk factors")
 
+  ## the initial value for pi1 is determined from other values
+  ## which test is the most frequent on the first test occasion?
+  test_m1 <- STOCfree_data$test_data[STOCfree_data$test_data$month_id == 1, ]
+  tab_test_id <- table(test_m1$test_id)
+
+  test1 <- as.integer(names(tab_test_id)[which(tab_test_id == max(tab_test_id))])
+
+  ## proportion of test positives with the most used test on the first test occasion
+  p_tpos_m1 <- nrow(test_m1[test_m1$test_id == test1 & test_m1$test_res == 1,]) / nrow(test_m1[test_m1$test_id == test1,])
+
+  ## function to estimate pi1 from proportion of test positives on first test occasion, Se and Sp
+  pi1_est <- function(p_tpos, Se, Sp){
+
+    pi1 <- (p_tpos - 1 + Sp) / (Se + Sp - 1)
+
+    return(pi1)
+
+  }
+
+  ## empty list to store initial values
   list_inits <- list()
 
   for(n in 1:n_chains){
@@ -307,7 +333,7 @@ STOCfree_model_inits <- function(STOCfree_data, n_chains, engine){
 
         inits <- c(inits, pi1 = NA, tau2 = NA)
 
-        inits$pi1  <- rbeta(1, STOCfree_data$inf_dyn_priors["pi1_a"], STOCfree_data$inf_dyn_priors["pi1_b"])
+        inits$pi1  <- pi1_est(p_tpos_m1, inits$Se[test1], inits$Se[test1])
         inits$tau2 <- rbeta(1, STOCfree_data$inf_dyn_priors["tau2_a"], STOCfree_data$inf_dyn_priors["tau2_b"])
 
       }
@@ -346,7 +372,7 @@ STOCfree_model_inits <- function(STOCfree_data, n_chains, engine){
 
         inits <- c(inits, pi1 = NA, tau2 = NA)
 
-        inits$pi1  <- invlogit(rnorm(1, STOCfree_data$inf_dyn_priors["logit_pi1_mean"], STOCfree_data$inf_dyn_priors["logit_pi1_sd"]))
+        inits$pi1  <- pi1_est(p_tpos_m1, inits$Se[test1], inits$Se[test1])
         inits$tau2 <- invlogit(rnorm(1, STOCfree_data$inf_dyn_priors["logit_tau2_mean"], STOCfree_data$inf_dyn_priors["logit_tau2_sd"]))
 
       }

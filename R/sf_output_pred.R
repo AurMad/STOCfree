@@ -68,9 +68,8 @@ extract_STOCfree_pred <- function(x, STOCfree_data = NULL){
 
     }
 
-
     ## columns reordered
-    predictions <- predictions[, c("herd", ".chain", ".iteration", ".draw", "predicted_proba")]
+    predictions <- as.data.frame(predictions[, c("herd", ".chain", ".iteration", ".draw", "predicted_proba")])
 
   } else {
 
@@ -89,10 +88,9 @@ extract_STOCfree_pred <- function(x, STOCfree_data = NULL){
 
   colnames(predictions)[1] <- "herd"
 
-  predictions <- new_STOCfree_pred(predictions)
-
   }
 
+  predictions <- new_STOCfree_pred(predictions)
   return(predictions)
 
   }
