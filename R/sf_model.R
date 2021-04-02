@@ -1,49 +1,3 @@
-#' JAGS implementation of the STOC free model - deprecated
-#'
-#' @param STOCfree_data
-#' @param n_chains
-#' @param n_burnin
-#' @param n_iter
-#' @param n_thin
-#' @param method
-#' @param save_model
-#' @param save_data
-#' @param save_output
-#' @param out_path
-#' @param ...
-#'
-#' @return
-#' @export
-STOCfree_model <- function(STOCfree_data,
-                           n_chains = 4,
-                           n_burnin = 5000,
-                           n_iter = 5000,
-                           n_thin = 20,
-                           method = "parallel",
-                           save_model = TRUE,
-                           save_data = FALSE,
-                           save_output = TRUE,
-                           out_path = "STOCfree_files",
-                           ...){
-
-
-  message("The STOCfree_model() function will soon be removed. Please use STOCfree_JAGS() instead.")
-
-  STOCfree_JAGS(STOCfree_data = STOCfree_data,
-                n_chains = n_chains,
-                n_burnin = n_burnin,
-                n_iter = n_iter,
-                n_thin = n_thin,
-                method = method,
-                save_model = save_model,
-                save_data = save_data,
-                save_output = save_output,
-                out_path = out_path,
-                ...)
-
-  }
-
-
 #' JAGS implementation of the STOC free model
 #'
 #' @param STOCfree_data a STOC free data object
@@ -158,40 +112,6 @@ JAGS_monitor <- function(STOCfree_data){
 
 }
 
-
-#' Stan implementation of the STOC free model - deprecated
-#'
-#' @param STOCfree_data
-#' @param n_chains
-#' @param n_iter
-#' @param n_thin thinning interval for monitors
-#' @param save_output
-#' @param out_path
-#'
-#' @return
-#' @export
-#'
-#' @examples
-STOCfree_model_Stan <- function(STOCfree_data,
-                                n_chains = 4,
-                                n_iter = 1000,
-                                n_thin = 1,
-                                save_model = TRUE,
-                                save_data = FALSE,
-                                save_output = TRUE,
-                                out_path = "STOCfree_files"){
-
-
-  message("The STOCfree_model_Stan() function will soon be removed. Please use STOCfree_Stan() instead.")
-
-  STOCfree_Stan(STOCfree_data = STOCfree_data,
-                n_chains = n_chains,
-                n_iter = n_iter,
-                n_thin = n_thin,
-                save_output = save_output,
-                out_path = out_path)
-
-}
 
 #' Stan implementation of the STOC free model
 #'
