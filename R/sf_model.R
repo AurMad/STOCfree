@@ -52,7 +52,8 @@ STOCfree_model <- function(STOCfree_data,
 #' @param n_iter number of iterations to monitor
 #' @param n_thin thinning interval for monitors
 #' @param method method to be passed to the runjags::run.jags() function. Default is parallel.
-#' @param save_model if TRUE, the JAGS model code is saved to out_path
+#' @param save_data if TRUE, the data are saved to 'out_path' as a .RData file
+#' @param save_inits if TRUE initial values are written to 'out_path' as a text file
 #' @param save_output if TRUE, the JAGS model output is saved to out_path in a tidy format using the tidybayes package
 #' @param out_path folder where model code and output are saved. By default, a STOCfree_files folder is created in the working directory
 #' @param ...
@@ -67,6 +68,7 @@ STOCfree_JAGS <- function(STOCfree_data,
                                 save_model = TRUE,
                                 save_data = FALSE,
                                 save_output = TRUE,
+                                save_inits = TRUE,
                                 out_path = "STOCfree_files",
                                 ...){
 
@@ -87,6 +89,16 @@ STOCfree_JAGS <- function(STOCfree_data,
 
   save(STOCfree_JAGS_data,
       file = paste0(STOCfree_path ,"/data.RData"))
+
+  }
+
+  ## initial values
+  inits <- STOCfree_model_inits(STOCfree_data, n_chains, engine = "JAGS")
+  if(save_inits == TRUE){
+
+    sink(paste0(STOCfree_path ,"/inits.txt"))
+    print(inits)
+    sink()
 
   }
 
@@ -184,14 +196,15 @@ STOCfree_model_Stan <- function(STOCfree_data,
 #' Stan implementation of the STOC free model
 #'
 #' @param STOCfree_data a STOC free data object
-#' @param save_output if TRUE, the JAGS model output is saved to out_path in a tidy format using the tidybayes package
-#' @param out_path folder where model code and output are saved. By default, a STOCfree_files folder is created in the working directory
 #' @param n_chains number of MCMC chains
 #' @param n_iter number of iterations to monitor
 #' @param n_thin thinning interval for monitors
-#' @param n_warmup
-#' @param save_model if TRUE, the Stan model code is saved to out_path
-#' @param save_data
+#' @param n_warmup number of warmup iterations
+#' @param out_path folder where model code and output are saved. By default, a STOCfree_files folder is created in the working directory
+#' @param save_output if TRUE, the JAGS model output is saved to out_path in a tidy format using the tidybayes package
+#' @param save_model if TRUE, the Stan model code is saved to 'out_path'
+#' @param save_data if TRUE, the data are saved to 'out_path' as a .RData file
+#' @param save_inits if TRUE initial values are written to 'out_path' as a text file
 #'
 #' @details The code used is an adaptation of Damiano et al. (2017): https://github.com/luisdamiano/stancon18
 #'
@@ -205,6 +218,7 @@ STOCfree_Stan <- function(STOCfree_data,
                                 save_model = TRUE,
                                 save_data = FALSE,
                                 save_output = TRUE,
+                                save_inits = TRUE,
                                 out_path = "STOCfree_files"){
 
   ## folder in which the different files are saved
@@ -232,6 +246,17 @@ STOCfree_Stan <- function(STOCfree_data,
     sink()
 
   }
+
+  ## initial values
+  inits <- STOCfree_model_inits(STOCfree_data, n_chains, engine = "Stan")
+  if(save_inits == TRUE){
+
+    sink(paste0(STOCfree_path ,"/inits.txt"))
+    print(inits)
+    sink()
+
+  }
+
   ## sample
   Stan_fit <- sf_Stan$sample(
     data = sf_Stan_data,
@@ -239,7 +264,7 @@ STOCfree_Stan <- function(STOCfree_data,
     iter_warmup = n_warmup,
     iter_sampling = n_iter,
     thin = n_thin,
-    init = STOCfree_model_inits(STOCfree_data, n_chains, engine = "Stan")
+    init = inits
     )
 
   ## model results saved in tidy format

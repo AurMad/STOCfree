@@ -14,6 +14,7 @@ STOCfree_JAGS(
   save_model = TRUE,
   save_data = FALSE,
   save_output = TRUE,
+  save_inits = TRUE,
   out_path = "STOCfree_files",
   ...
 )
@@ -31,9 +32,11 @@ STOCfree_JAGS(
 
 \item{method}{method to be passed to the runjags::run.jags() function. Default is parallel.}
 
-\item{save_model}{if TRUE, the JAGS model code is saved to out_path}
+\item{save_data}{if TRUE, the data are saved to 'out_path' as a .RData file}
 
 \item{save_output}{if TRUE, the JAGS model output is saved to out_path in a tidy format using the tidybayes package}
+
+\item{save_inits}{if TRUE initial values are written to 'out_path' as a text file}
 
 \item{out_path}{folder where model code and output are saved. By default, a STOCfree_files folder is created in the working directory}
 
