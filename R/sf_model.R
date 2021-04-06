@@ -235,7 +235,7 @@ STOCfree_model_inits <- function(STOCfree_data, n_chains, engine){
   test1 <- as.integer(names(tab_test_id)[which(tab_test_id == max(tab_test_id))])
 
   ## proportion of test positives with the most used test on the first test occasion
-  p_tpos_m1 <- nrow(test_m1[test_m1$test_id == test1 & test_m1$test_res == 1,]) / nrow(test_m1[test_m1$test_id == test1,])
+  p_tpos_m1 <- min( c(1, max( c(0, nrow(test_m1[test_m1$test_id == test1 & test_m1$test_res == 1,]) / nrow(test_m1[test_m1$test_id == test1,])))))
 
   ## function to estimate pi1 from proportion of test positives on first test occasion, Se and Sp
   pi1_est <- function(p_tpos, Se, Sp){
