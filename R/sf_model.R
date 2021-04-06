@@ -241,7 +241,7 @@ STOCfree_model_inits <- function(STOCfree_data, n_chains, engine){
   pi1_est <- function(p_tpos, Se, Sp){
 
     pi1 <- (p_tpos - 1 + Sp) / (Se + Sp - 1)
-    pi1 <- min( c(1, max( c(0, pi1))))
+    pi1 <- min( c(.99999, max( c(.00001, pi1))))
 
     return(pi1)
 
