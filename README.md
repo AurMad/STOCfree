@@ -433,7 +433,10 @@ plot_priors_status_dyn(sfd)
 
 To demonstrate how to set dynamics parameters on the logit scale, we use
 the `sfd1` object created above. As can be seen, the parameter values
-requested consist of means and standard deviations.
+requested consist of means and standard deviations. In order to help
+selecting appropriate parameter values for the normal distributions on
+the logit scale, we have designed a Shiny app which is available from
+Github. See <https://github.com/AurMad/logitnormdistapp>
 
 ``` r
 show_priors_status_dyn(sfd1)
@@ -511,7 +514,7 @@ sfm_stan <- STOCfree_Stan(sfd,
     ## Chain 1 Iteration: 1800 / 2000 [ 90%]  (Sampling) 
     ## Chain 1 Iteration: 1900 / 2000 [ 95%]  (Sampling) 
     ## Chain 1 Iteration: 2000 / 2000 [100%]  (Sampling) 
-    ## Chain 1 finished in 52.1 seconds.
+    ## Chain 1 finished in 48.3 seconds.
     ## Chain 2 Iteration:    1 / 2000 [  0%]  (Warmup) 
     ## Chain 2 Iteration:  100 / 2000 [  5%]  (Warmup) 
     ## Chain 2 Iteration:  200 / 2000 [ 10%]  (Warmup) 
@@ -534,7 +537,7 @@ sfm_stan <- STOCfree_Stan(sfd,
     ## Chain 2 Iteration: 1800 / 2000 [ 90%]  (Sampling) 
     ## Chain 2 Iteration: 1900 / 2000 [ 95%]  (Sampling) 
     ## Chain 2 Iteration: 2000 / 2000 [100%]  (Sampling) 
-    ## Chain 2 finished in 48.5 seconds.
+    ## Chain 2 finished in 49.1 seconds.
     ## Chain 3 Iteration:    1 / 2000 [  0%]  (Warmup) 
     ## Chain 3 Iteration:  100 / 2000 [  5%]  (Warmup) 
     ## Chain 3 Iteration:  200 / 2000 [ 10%]  (Warmup) 
@@ -557,11 +560,11 @@ sfm_stan <- STOCfree_Stan(sfd,
     ## Chain 3 Iteration: 1800 / 2000 [ 90%]  (Sampling) 
     ## Chain 3 Iteration: 1900 / 2000 [ 95%]  (Sampling) 
     ## Chain 3 Iteration: 2000 / 2000 [100%]  (Sampling) 
-    ## Chain 3 finished in 51.0 seconds.
+    ## Chain 3 finished in 48.2 seconds.
     ## 
     ## All 3 chains finished successfully.
-    ## Mean chain execution time: 50.5 seconds.
-    ## Total execution time: 152.9 seconds.
+    ## Mean chain execution time: 48.5 seconds.
+    ## Total execution time: 147.0 seconds.
 
 # Running the STOC free model in JAGS
 
@@ -588,7 +591,7 @@ sfm_jags <- STOCfree_JAGS(sfd,
     ## Calling 3 simulations using the parallel method...
     ## Following the progress of chain 1 (the program will wait for all chains
     ## to finish before continuing):
-    ## Welcome to JAGS 4.3.0 on Tue Mar 30 19:13:17 2021
+    ## Welcome to JAGS 4.3.0 on Wed Apr 07 17:16:33 2021
     ## JAGS is free software and comes with ABSOLUTELY NO WARRANTY
     ## Loading module: basemod: ok
     ## Loading module: bugs: ok
@@ -614,6 +617,7 @@ sfm_jags <- STOCfree_JAGS(sfd,
     ## ************************************************** 100%
     ## . . . . Updating 0
     ## . Deleting model
+    ## . 
     ## All chains have finished
     ## Simulation complete.  Reading coda files...
     ## Coda files loaded successfully
@@ -707,14 +711,14 @@ summary(param)
 
     ## Warning: Dropping 'draws_df' class as required metadata was removed.
 
-    ##            mean          sd    median       2.5%      97.5%      ess
-    ## Se1  0.95016347 0.003019192 0.9502120 0.94426678 0.95596702 3808.993
-    ## Se2  0.88313453 0.020020801 0.8844210 0.84050768 0.91844588 3844.017
-    ## Sp1  0.98568940 0.009639242 0.9878720 0.96208773 0.99830217 4123.983
-    ## Sp2  0.99989907 0.000105357 0.9999330 0.99960693 0.99999800 4127.368
-    ## pi1  0.53179370 0.052046602 0.5313565 0.42915958 0.63574543 4333.576
-    ## tau1 0.04625212 0.006945206 0.0460412 0.03367877 0.06062848 4054.314
-    ## tau2 0.96376078 0.006495356 0.9642780 0.94952450 0.97508955 3794.391
+    ##            mean           sd     median       2.5%      97.5%      ess
+    ## Se1  0.95014744 3.017621e-03 0.95014500 0.94420677 0.95591110 4694.167
+    ## Se2  0.88411997 2.008693e-02 0.88475050 0.84440147 0.92111073 4368.033
+    ## Sp1  0.98564419 9.419575e-03 0.98750450 0.96330645 0.99822880 4559.159
+    ## Sp2  0.99990041 9.650293e-05 0.99992800 0.99964390 0.99999800 4491.865
+    ## pi1  0.53133508 5.221025e-02 0.53103800 0.42771022 0.63332845 4620.418
+    ## tau1 0.04618096 6.985077e-03 0.04588535 0.03364961 0.06083296 3928.396
+    ## tau2 0.96363254 6.514450e-03 0.96411650 0.94951558 0.97477038 3697.785
 
 ### Predicted probabilities of infection
 
@@ -1130,23 +1134,23 @@ sfm_stan_rf <- STOCfree_Stan(sfd,
     ## Chain 1 Iteration:   1 / 110 [  0%]  (Warmup) 
     ## Chain 1 Iteration:  11 / 110 [ 10%]  (Sampling) 
     ## Chain 1 Iteration: 110 / 110 [100%]  (Sampling) 
-    ## Chain 1 finished in 11.4 seconds.
+    ## Chain 1 finished in 10.6 seconds.
     ## Chain 2 WARNING: No variance estimation is 
     ## Chain 2          performed for num_warmup < 20 
     ## Chain 2 Iteration:   1 / 110 [  0%]  (Warmup) 
     ## Chain 2 Iteration:  11 / 110 [ 10%]  (Sampling) 
     ## Chain 2 Iteration: 110 / 110 [100%]  (Sampling) 
-    ## Chain 2 finished in 17.8 seconds.
+    ## Chain 2 finished in 16.5 seconds.
     ## Chain 3 WARNING: No variance estimation is 
     ## Chain 3          performed for num_warmup < 20 
     ## Chain 3 Iteration:   1 / 110 [  0%]  (Warmup) 
     ## Chain 3 Iteration:  11 / 110 [ 10%]  (Sampling) 
     ## Chain 3 Iteration: 110 / 110 [100%]  (Sampling) 
-    ## Chain 3 finished in 9.1 seconds.
+    ## Chain 3 finished in 8.7 seconds.
     ## 
     ## All 3 chains finished successfully.
-    ## Mean chain execution time: 12.7 seconds.
-    ## Total execution time: 39.5 seconds.
+    ## Mean chain execution time: 11.9 seconds.
+    ## Total execution time: 37.1 seconds.
 
     ## 
     ## Warning: 21 of 300 (7.0%) transitions ended with a divergence.
@@ -1174,7 +1178,7 @@ sfm_jags_rf <- STOCfree_JAGS(sfd,
     ## Calling 3 simulations using the parallel method...
     ## Following the progress of chain 1 (the program will wait for all chains
     ## to finish before continuing):
-    ## Welcome to JAGS 4.3.0 on Tue Mar 30 19:15:42 2021
+    ## Welcome to JAGS 4.3.0 on Wed Apr 07 17:18:48 2021
     ## JAGS is free software and comes with ABSOLUTELY NO WARRANTY
     ## Loading module: basemod: ok
     ## Loading module: bugs: ok

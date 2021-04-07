@@ -227,7 +227,7 @@ plot_priors_status_dyn(sfd)
 
 ## Logit scale
 
-To demonstrate how to set dynamics parameters on the logit scale, we use the `sfd1` object created above. As can be seen, the parameter values requested consist of means and standard deviations.
+To demonstrate how to set dynamics parameters on the logit scale, we use the `sfd1` object created above. As can be seen, the parameter values requested consist of means and standard deviations. In order to help selecting appropriate parameter values for the normal distributions on the logit scale, we have designed a Shiny app which is available from Github. See https://github.com/AurMad/logitnormdistapp 
 
 ```{r parameters of prior distributions for status dynamics on the logit scale}
 show_priors_status_dyn(sfd1)
