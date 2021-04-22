@@ -2,7 +2,7 @@
 % Please edit documentation in R/sf_output_pred.R
 \name{plot.STOCfree_pred}
 \alias{plot.STOCfree_pred}
-\title{plot method for predicted probabilities of status positive}
+\title{plot method for herd-level predicted probabilities of being status positive}
 \usage{
 \method{plot}{STOCfree_pred}(x, herd = "all", type = "aggregated", legend = FALSE)
 }
@@ -17,5 +17,5 @@
 
 }
 \description{
-plot method for predicted probabilities of status positive
+plot method for herd-level predicted probabilities of being status positive
 }

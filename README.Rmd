@@ -356,6 +356,14 @@ It is also possible to plot the predicted probabilities of infection for specifi
 plot(pred, herd = c("FR001", "FR002"), type = "individual", legend = TRUE)
 ```
 
+A summary method is implemented for these predicted probabilities. It is possible to specify for which herds a summary is required.
+
+```{r}
+summary(pred, herd = c("FR001", "FR003"))
+```
+
+
+
 ### Monthly prevalences
 
 This is only available for the JAGS model. The predicted monthly prevalences of infection can be extracted or loaded using:

@@ -514,7 +514,7 @@ sfm_stan <- STOCfree_Stan(sfd,
     ## Chain 1 Iteration: 1800 / 2000 [ 90%]  (Sampling) 
     ## Chain 1 Iteration: 1900 / 2000 [ 95%]  (Sampling) 
     ## Chain 1 Iteration: 2000 / 2000 [100%]  (Sampling) 
-    ## Chain 1 finished in 48.3 seconds.
+    ## Chain 1 finished in 50.1 seconds.
     ## Chain 2 Iteration:    1 / 2000 [  0%]  (Warmup) 
     ## Chain 2 Iteration:  100 / 2000 [  5%]  (Warmup) 
     ## Chain 2 Iteration:  200 / 2000 [ 10%]  (Warmup) 
@@ -537,7 +537,7 @@ sfm_stan <- STOCfree_Stan(sfd,
     ## Chain 2 Iteration: 1800 / 2000 [ 90%]  (Sampling) 
     ## Chain 2 Iteration: 1900 / 2000 [ 95%]  (Sampling) 
     ## Chain 2 Iteration: 2000 / 2000 [100%]  (Sampling) 
-    ## Chain 2 finished in 49.1 seconds.
+    ## Chain 2 finished in 48.8 seconds.
     ## Chain 3 Iteration:    1 / 2000 [  0%]  (Warmup) 
     ## Chain 3 Iteration:  100 / 2000 [  5%]  (Warmup) 
     ## Chain 3 Iteration:  200 / 2000 [ 10%]  (Warmup) 
@@ -560,11 +560,11 @@ sfm_stan <- STOCfree_Stan(sfd,
     ## Chain 3 Iteration: 1800 / 2000 [ 90%]  (Sampling) 
     ## Chain 3 Iteration: 1900 / 2000 [ 95%]  (Sampling) 
     ## Chain 3 Iteration: 2000 / 2000 [100%]  (Sampling) 
-    ## Chain 3 finished in 48.2 seconds.
+    ## Chain 3 finished in 48.7 seconds.
     ## 
     ## All 3 chains finished successfully.
-    ## Mean chain execution time: 48.5 seconds.
-    ## Total execution time: 147.0 seconds.
+    ## Mean chain execution time: 49.2 seconds.
+    ## Total execution time: 148.9 seconds.
 
 # Running the STOC free model in JAGS
 
@@ -591,7 +591,7 @@ sfm_jags <- STOCfree_JAGS(sfd,
     ## Calling 3 simulations using the parallel method...
     ## Following the progress of chain 1 (the program will wait for all chains
     ## to finish before continuing):
-    ## Welcome to JAGS 4.3.0 on Wed Apr 07 17:16:33 2021
+    ## Welcome to JAGS 4.3.0 on Thu Apr 22 15:43:22 2021
     ## JAGS is free software and comes with ABSOLUTELY NO WARRANTY
     ## Loading module: basemod: ok
     ## Loading module: bugs: ok
@@ -712,13 +712,13 @@ summary(param)
     ## Warning: Dropping 'draws_df' class as required metadata was removed.
 
     ##            mean           sd     median       2.5%      97.5%      ess
-    ## Se1  0.95014744 3.017621e-03 0.95014500 0.94420677 0.95591110 4694.167
-    ## Se2  0.88411997 2.008693e-02 0.88475050 0.84440147 0.92111073 4368.033
-    ## Sp1  0.98564419 9.419575e-03 0.98750450 0.96330645 0.99822880 4559.159
-    ## Sp2  0.99990041 9.650293e-05 0.99992800 0.99964390 0.99999800 4491.865
-    ## pi1  0.53133508 5.221025e-02 0.53103800 0.42771022 0.63332845 4620.418
-    ## tau1 0.04618096 6.985077e-03 0.04588535 0.03364961 0.06083296 3928.396
-    ## tau2 0.96363254 6.514450e-03 0.96411650 0.94951558 0.97477038 3697.785
+    ## Se1  0.95023827 2.983554e-03 0.95024850 0.94424998 0.95593403 4795.032
+    ## Se2  0.88344590 2.042032e-02 0.88429700 0.84318445 0.92184713 4378.013
+    ## Sp1  0.98562225 9.597047e-03 0.98779200 0.96127187 0.99804777 4579.610
+    ## Sp2  0.99990280 9.538655e-05 0.99993100 0.99964498 0.99999700 4492.177
+    ## pi1  0.53169103 5.178583e-02 0.53145200 0.43140742 0.63477918 4359.784
+    ## tau1 0.04602788 7.175797e-03 0.04554355 0.03335735 0.06109982 4184.091
+    ## tau2 0.96383630 6.385744e-03 0.96425400 0.95028155 0.97518828 4158.226
 
 ### Predicted probabilities of infection
 
@@ -764,6 +764,17 @@ plot(pred, herd = c("FR001", "FR002"), type = "individual", legend = TRUE)
 ```
 
 ![](README_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
+
+A summary method is implemented for these predicted probabilities. It is
+possible to specify for which herds a summary is required.
+
+``` r
+summary(pred, herd = c("FR001", "FR003"))
+```
+
+    ##    herd  mean    sd median  2.5% 97.5%
+    ## 1 FR001 0.129 0.019  0.128 0.095 0.171
+    ## 2 FR003 0.062 0.010  0.061 0.045 0.082
 
 ### Monthly prevalences
 
@@ -894,7 +905,7 @@ ggplot(data = nAnim_lagged, aes(x = lag2, y = lag1, fill = AIC)) +
   ggtitle("Number of animals purchased")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-21-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-22-1.png)<!-- -->
 
 When the function is used to evaluate several candidate variables, all
 these variables can be incldued in a multivariate logistic model. For
@@ -1042,7 +1053,7 @@ the density below 0.2.
 plot_priors_rf(sfd)
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-31-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-32-1.png)<!-- -->
 
 ## Running the Bayesian model
 
@@ -1134,23 +1145,23 @@ sfm_stan_rf <- STOCfree_Stan(sfd,
     ## Chain 1 Iteration:   1 / 110 [  0%]  (Warmup) 
     ## Chain 1 Iteration:  11 / 110 [ 10%]  (Sampling) 
     ## Chain 1 Iteration: 110 / 110 [100%]  (Sampling) 
-    ## Chain 1 finished in 10.6 seconds.
+    ## Chain 1 finished in 11.1 seconds.
     ## Chain 2 WARNING: No variance estimation is 
     ## Chain 2          performed for num_warmup < 20 
     ## Chain 2 Iteration:   1 / 110 [  0%]  (Warmup) 
     ## Chain 2 Iteration:  11 / 110 [ 10%]  (Sampling) 
     ## Chain 2 Iteration: 110 / 110 [100%]  (Sampling) 
-    ## Chain 2 finished in 16.5 seconds.
+    ## Chain 2 finished in 17.2 seconds.
     ## Chain 3 WARNING: No variance estimation is 
     ## Chain 3          performed for num_warmup < 20 
     ## Chain 3 Iteration:   1 / 110 [  0%]  (Warmup) 
     ## Chain 3 Iteration:  11 / 110 [ 10%]  (Sampling) 
     ## Chain 3 Iteration: 110 / 110 [100%]  (Sampling) 
-    ## Chain 3 finished in 8.7 seconds.
+    ## Chain 3 finished in 8.9 seconds.
     ## 
     ## All 3 chains finished successfully.
-    ## Mean chain execution time: 11.9 seconds.
-    ## Total execution time: 37.1 seconds.
+    ## Mean chain execution time: 12.4 seconds.
+    ## Total execution time: 38.4 seconds.
 
     ## 
     ## Warning: 21 of 300 (7.0%) transitions ended with a divergence.
@@ -1178,7 +1189,7 @@ sfm_jags_rf <- STOCfree_JAGS(sfd,
     ## Calling 3 simulations using the parallel method...
     ## Following the progress of chain 1 (the program will wait for all chains
     ## to finish before continuing):
-    ## Welcome to JAGS 4.3.0 on Wed Apr 07 17:18:48 2021
+    ## Welcome to JAGS 4.3.0 on Thu Apr 22 15:45:48 2021
     ## JAGS is free software and comes with ABSOLUTELY NO WARRANTY
     ## Loading module: basemod: ok
     ## Loading module: bugs: ok

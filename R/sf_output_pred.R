@@ -126,7 +126,7 @@ print.STOCfree_pred <- function(x){
 
   }
 
-#' plot method for predicted probabilities of status positive
+#' plot method for herd-level predicted probabilities of being status positive
 #'
 #' @param x an object of class STOCfree_pred
 #' @param herd either one or several herd ids or 'all'. all' will display the probabilities for all herds
@@ -192,3 +192,73 @@ plot.STOCfree_pred <- function(x, herd = "all", type = "aggregated", legend = FA
     ggplot2::xlab("Predicted probability of infection")
 
   }
+
+
+
+#' summary method for herd-level predicted probabilities of being status positive
+#'
+#' @param x a STOCfree_pred object
+#' @param herd a vector containing the herds for which a summary statistics a required
+#' @param quantiles quantiles to be passed to the quantile() function
+#' @param digits number of digits used in the object returned
+#'
+#' @return
+#' @export
+summary.STOCfree_pred <- function(x, herd = "all", quantiles = c(.025, .975), digits = 3){
+
+  ## checking that quantiles are between 0 and 1
+  rng_qtls <- range(quantiles)
+  if(min(quantiles) < 0 | max(quantiles) > 1) stop("Quantiles should be between 0 and 1")
+
+
+  ## selection of herds when only a subset is used
+  if(length(herd) > 1 ||  herd != "all"){
+
+    ## checking that requested herds are in the STOCfree_pred data
+    herd_pos <- match(herd, x$herd)
+    n_miss_herds <- length(herd_pos[is.na(herd_pos)])
+    if(n_miss_herds > 0) stop(paste0("The following herds are missing from ", deparse(substitute(x)), ": ", herd[which(is.na(herd_pos))]))
+
+
+    x <- x[x$herd %in% herd, ]
+
+  } else { # if all herds, vector of unique herds
+
+    herd <- unique(x$herd)
+
+  }
+
+  ## apply summary function to each herd
+  means   <- tapply(x$pred, x$herd, mean)
+  means   <- means[match(herd, names(means))]
+
+  sds     <- tapply(x$pred, x$herd, sd)
+  sds     <- sds[match(herd, names(sds))]
+
+  medians <- tapply(x$pred, x$herd, median)
+  medians <- medians[match(herd, names(medians))]
+
+  qtls <- tapply(x$pred, x$herd, function(y) as.data.frame(quantile(y, quantiles)))
+  qtls <- qtls[match(herd, names(qtls))]
+  qtls <- do.call("rbind", qtls)
+  colnames(qtls) <- paste0(quantiles * 100, "%")
+
+  ## different summaries gathered in a single dataset
+  z <- data.frame(
+    herd = herd,
+    mean = as.double(means),
+    sd = as.double(sds),
+    median = as.double(medians)
+  )
+
+  ## adding quantiles
+  z <- as.data.frame(cbind(z, qtls))
+
+  z[, 2:length(z)] <- round(z[, 2:length(z)], digits)
+
+  rownames(z) <- 1:nrow(z)
+
+  return(z)
+
+}
+
