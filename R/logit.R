@@ -44,7 +44,7 @@ invlogit <- function(x){
 #' curve(dnorm_logit(x, 0, 1))
 dnorm_logit <- function(x, mean_logit = .5, sd_logit = 1){
 
-  z <- dnorm(x = logit(x), mean = mean_logit, sd = sd_logit)
+  z <- 1 / (sd_logit *sqrt(2 * pi)) * 1 / (x * (1 - x)) * exp(-(logit(x) - mean_logit)^2 / (2 * sd_logit^2))
 
   return(z)
 
