@@ -439,7 +439,7 @@ sf_add_risk_factor <- function(sfd,
 
   ## Risk factor data to incorporate in the final data
   risk_factor_data <- risk_factor_data[, c(risk_herd_col, risk_date_col, risk_factor_col)]
-  risk_factor_data <- merge(risk_factor_data,
+  risk_factor_data <- dplyr::left_join(risk_factor_data,
                             sfd$herd_id_corresp)
 
   ## Adding month_id to risk factor data
@@ -457,7 +457,7 @@ sf_add_risk_factor <- function(sfd,
 
   ## dates as months in the risk_factor_data made to correspond to the
   ## the dates in the STOCfree_data object
-  risk_factor_data <- merge(risk_factor_data, months_list)
+  risk_factor_data <- dplyr::left_join(risk_factor_data, months_list)
 
   ## the month_id column is renamed lagged_month
   ## this will be used to merge these data with the STOCfree data with a lag
@@ -484,9 +484,7 @@ sf_add_risk_factor <- function(sfd,
     rfd_i$lagged_month <- with(rfd_i, month_id - lagged_month)
 
     ## merging with risk factor data
-    risk_factor_data_i <- merge(rfd_i,
-                                risk_factor_data_i,
-                                all.x = TRUE)
+    risk_factor_data_i <- dplyr::full_join(rfd_i, risk_factor_data_i)
 
     ##########################
     ## Categorical risk factor
