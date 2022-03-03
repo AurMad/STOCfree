@@ -10,7 +10,7 @@ STOCfree_data(
   test_date_col = NULL,
   test_res_col = NULL,
   test_name_col = NULL,
-  status_dynamics_scale = "proba",
+  status_dynamics_scale = "logit",
   risk_factor_data = NULL,
   risk_herd_col = NULL,
   risk_date_col = NULL,
