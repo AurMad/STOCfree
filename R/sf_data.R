@@ -5,8 +5,6 @@
 #' @param test_date_col name of the column with date of test
 #' @param test_res_col name of the column with test results. Test results should be codes as 0 for negative results and 1 for positive results.
 #' @param test_name_col when several tests are used, name of the column containing the test names
-#' @param test_level level at which the tests are performed. Must be either herd of animal
-#' @param test_N_anim name of the column with the number of animals to use as the denominator in the animal level model.
 #' @param status_dynamics_scale scale on which priors for status dynamics are defined. The default is 'proba' and uses Beta priors. If 'logit' is used as an argument, the prior distributions will be normal distributions on the logit scale.
 #' @param time_interval function used for risk factor aggregation. By default sum() is used, the values are added.
 #' @param risk_factor_data a data.frame containing the risk factors
@@ -25,8 +23,6 @@ STOCfree_data <- function(test_data = data.frame(),
                           test_date_col = NULL,
                           test_res_col = NULL,
                           test_name_col = NULL,
-                          test_level = c("herd", "animal"),
-                          test_N_anim = NULL,
                           status_dynamics_scale = "proba",
                           risk_factor_data = NULL,
                           risk_herd_col = NULL,
@@ -180,9 +176,6 @@ STOCfree_data <- function(test_data = data.frame(),
                      by = c("herd_id", "month_id"),
                      all = TRUE)
 
-  ## If level of testing is animal, test results is number pos / number tested
-  if(test_level == "animal") test_data <- make_animal_test(test_data, test_res_col, test_N_anim)
-
   ## dataset to be merged with risk factor data
   ## numbers the status_id in the dataset
   rfd <- test_data[, c("herd_id", "month_id", "test_id")]
@@ -205,18 +198,7 @@ STOCfree_data <- function(test_data = data.frame(),
     stringsAsFactors = FALSE
   )
 
-  ## going back to the data where test results are available
-  if(test_level == "animal"){
-
-    test_data <- test_data[!is.na(test_data[, "n_pos"]) | (is.na(test_data[, "n_pos"]) & test_data$month_id == month_last_id),]
-
-  }
-
-  if(test_level == "herd"){
-
-    test_data <- test_data[!is.na(test_data[, test_res_col]) | (is.na(test_data[, test_res_col]) & test_data$month_id == month_last_id),]
-
-  }
+  test_data <- test_data[!is.na(test_data[, test_res_col]) | (is.na(test_data[, test_res_col]) & test_data$month_id == month_last_id),]
 
 ## ordering test_data by status_id and number of rows
   test_data <- test_data[order(test_data$status_id),]
@@ -225,28 +207,6 @@ STOCfree_data <- function(test_data = data.frame(),
 ## default value
 ## other values added below
  test_data$status_type <- rep(2)
-
-  ## Selecting the columns to keep from the test_data
-  if(test_level == "animal"){
-
-    cln <- c("status_id", "herd_id", "month_id", "status_type","test_id", "n_tested", "n_pos")
-
-    test_data <- test_data[, cln]
-
-    ## herd test data
-    herd_test_data <- by(test_data, list(test_data$herd_id), function(x){
-      data.frame(
-        herd_id = as.integer(unique(x$herd_id)),
-        ind_i = as.integer(min(x$status_id)),
-        ind_p = as.integer(max(x$status_id))
-      )
-    })
-    herd_test_data <- do.call("rbind", herd_test_data)
-
-
-  }
-
-  if(test_level == "herd"){
 
     test_data$test_res <- test_data[[test_res_col]]
     cln   <- c("status_id", "herd_id", "month_id", "status_type", "test_id", "test_res")
@@ -263,8 +223,6 @@ STOCfree_data <- function(test_data = data.frame(),
     })
     herd_test_data <- do.call("rbind", herd_test_data)
 
-  }
-
   ## status type - used in model
   ## 1: first test in a herd
   ## 2: first test on a month which is not first test in herd
@@ -276,8 +234,7 @@ STOCfree_data <- function(test_data = data.frame(),
   test_data$status_type[dplctd_month] <- rep(3)
   rm(dplctd_month)
   test_data$status_type[test_data$status_id %in% herd_test_data$ind_i] <- 1
-  if(test_level == "herd")   test_data$status_type[test_data$status_id %in% herd_test_data$ind_p & is.na(test_data$test_res)]  <- 4
-  if(test_level == "animal") test_data$status_type[test_data$status_id %in% herd_test_data$ind_p & is.na(test_data$n_pos)]  <- 4
+  test_data$status_type[test_data$status_id %in% herd_test_data$ind_p & is.na(test_data$test_res)]  <- 4
   test_data$status_type[test_data$status_id %in% herd_test_data$ind_p & (is.na(test_data$test_res) | is.na(test_data$n_pos))]  <- 4
   test_data$status_type[test_data$status_id %in% herd_test_data$ind_p & test_data$status_type == 2] <- 5
   test_data$status_type[test_data$status_id %in% herd_test_data$ind_p & test_data$status_type == 3] <- 6
@@ -308,7 +265,7 @@ STOCfree_data <- function(test_data = data.frame(),
     inf_dyn_priors = inf_dyn_priors
   )
 
-  attr(sfd, "level")  <- test_level
+  attr(sfd, "level")  <- "herd"
   attr(sfd, "status dynamics scale")  <- status_dynamics_scale
   attr(sfd, "number of herds")  <- n_herds
   attr(sfd, "number of tests")  <- n_tests
@@ -316,7 +273,7 @@ STOCfree_data <- function(test_data = data.frame(),
   attr(sfd, "month last test")  <- month_last
   attr(sfd, "number of risk factors")  <- n_risk_factors
 
-  class(sfd) <- c(paste0(test_level,
+  class(sfd) <- c(paste0("herd",
                          ifelse(status_dynamics_scale == "logit", "_dynLogit", ""),
                          ifelse(n_risk_factors == 0, "", "_rf")),
                   "STOCfree_data")
@@ -346,7 +303,7 @@ make_dyn_prior_table <- function(test_level, status_dynamics_scale){
 
   inf_dyn_priors <- NULL
 
-  if(test_level == "herd" & status_dynamics_scale == "proba"){
+  if(status_dynamics_scale == "proba"){
 
     inf_dyn_priors <- c(
       pi1_a = NA,
@@ -358,39 +315,11 @@ make_dyn_prior_table <- function(test_level, status_dynamics_scale){
     )
     }
 
-  if(test_level == "herd" & status_dynamics_scale == "logit"){
+  if(status_dynamics_scale == "logit"){
 
     inf_dyn_priors <- c(
       logit_pi1_mean = NA,
       logit_pi1_sd = NA,
-      logit_tau1_mean = NA,
-      logit_tau1_sd = NA,
-      logit_tau2_mean = NA,
-      logit_tau2_sd = NA
-    )
-  }
-
-  if(test_level == "animal" & status_dynamics_scale == "proba"){
-
-    inf_dyn_priors <- c(
-      pi1_a = NA,
-      pi1_b = NA,
-      pi_within_a = NA,
-      pi_within_b = NA,
-      tau1_a = NA,
-      tau1_b = NA,
-      tau2_a = NA,
-      tau2_b = NA
-    )
-  }
-
-  if(test_level == "animal" & status_dynamics_scale == "logit"){
-
-    inf_dyn_priors <- c(
-      logit_pi1_mean = NA,
-      logit_pi1_sd = NA,
-      logit_pi_within_mean = NA,
-      logit_pi_within_sd = NA,
       logit_tau1_mean = NA,
       logit_tau1_sd = NA,
       logit_tau2_mean = NA,

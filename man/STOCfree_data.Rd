@@ -10,8 +10,6 @@ STOCfree_data(
   test_date_col = NULL,
   test_res_col = NULL,
   test_name_col = NULL,
-  test_level = c("herd", "animal"),
-  test_N_anim = NULL,
   status_dynamics_scale = "proba",
   risk_factor_data = NULL,
   risk_herd_col = NULL,
@@ -34,10 +32,6 @@ STOCfree_data(
 \item{test_res_col}{name of the column with test results. Test results should be codes as 0 for negative results and 1 for positive results.}
 
 \item{test_name_col}{when several tests are used, name of the column containing the test names}
-
-\item{test_level}{level at which the tests are performed. Must be either herd of animal}
-
-\item{test_N_anim}{name of the column with the number of animals to use as the denominator in the animal level model.}
 
 \item{status_dynamics_scale}{scale on which priors for status dynamics are defined. The default is 'proba' and uses Beta priors. If 'logit' is used as an argument, the prior distributions will be normal distributions on the logit scale.}
 
