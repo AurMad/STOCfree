@@ -36,11 +36,11 @@ write_Stan_model.herd <- function(data){
 "data{
 
   int<lower=1> n_herds;
-  int<lower=1> herds_t1[n_herds];
-  int<lower=1> herds_t2[n_herds];
-  int<lower=1> herds_T[n_herds];
+  array[n_herds] int<lower=1> herds_t1;
+  array[n_herds] int<lower=1> herds_t2;
+  array[n_herds] int<lower=1> herds_T;
   int<lower=1> N;
-  int<lower=0, upper=3> test_res[N];
+  array[N] int<lower=0, upper=3> test_res;
   real<lower = 0> Se_beta_a;
   real<lower = 0> Se_beta_b;
   real<lower = 0> Sp_beta_a;
@@ -70,7 +70,7 @@ transformed parameters{
   {
 
     // accumulator used at each time step
-    real accumulator[2];
+    array[2] real accumulator;
 
     // looping over all herds
 
@@ -144,7 +144,7 @@ model{
 generated quantities{
 
   // variable in which predictions are stored
-  real pred[n_herds];
+  array[n_herds] real pred;
 
   // loop in which the probabilities of infection are predicted
   {
@@ -162,17 +162,17 @@ generated quantities{
 "data{
 
   int<lower=1> n_herds;
-  int<lower=1> herds_t1[n_herds];
-  int<lower=1> herds_t2[n_herds];
-  int<lower=1> herds_T[n_herds];
+  array[n_herds] int<lower=1> herds_t1;
+  array[n_herds] int<lower=1> herds_t2;
+  array[n_herds] int<lower=1> herds_T;
   int<lower=1> N;
-  int<lower=0, upper=3> test_res[N];
+  array[N] int<lower=0, upper=3> test_res;
   int<lower = 1> n_tests;
-  int<lower = 0> test_id[N];
-  real<lower = 0> Se_beta_a[n_tests];
-  real<lower = 0> Se_beta_b[n_tests];
-  real<lower = 0> Sp_beta_a[n_tests];
-  real<lower = 0> Sp_beta_b[n_tests];
+  array[N] int<lower = 0> test_id;
+  array[n_tests] real<lower = 0> Se_beta_a;
+  array[n_tests] real<lower = 0> Se_beta_b;
+  array[n_tests] real<lower = 0> Sp_beta_a;
+  array[n_tests] real<lower = 0> Sp_beta_b;
   real<lower = 0> pi1_beta_a;
   real<lower = 0> pi1_beta_b;
   real<lower = 0> tau1_beta_a;
@@ -183,8 +183,8 @@ generated quantities{
 }
 parameters{
 
-  real<lower = 0, upper = 1> Se[n_tests];
-  real<lower = 0, upper = 1> Sp[n_tests];
+  array[n_tests] real<lower = 0, upper = 1> Se;
+  array[n_tests] real<lower = 0, upper = 1> Sp;
   real<lower = 0, upper = 1> pi1;
   real<lower = 0, upper = 1> tau1;
   real<lower = 0, upper = 1> tau2;
@@ -198,7 +198,7 @@ transformed parameters{
   {
 
     // accumulator used at each time step
-    real accumulator[2];
+    array[2] real accumulator;
 
     // looping over all herds
 
@@ -276,7 +276,7 @@ model{
 generated quantities{
 
   // variable in which predictions are stored
-  real pred[n_herds];
+  array[n_herds] real pred;
 
   // loop in which the probabilities of infection are predicted
   {
@@ -305,11 +305,11 @@ write_Stan_model.herd_dynLogit <- function(data){
 "data{
 
   int<lower=1> n_herds;
-  int<lower=1> herds_t1[n_herds];
-  int<lower=1> herds_t2[n_herds];
-  int<lower=1> herds_T[n_herds];
+  array[n_herds] int<lower=1> herds_t1;
+  array[n_herds] int<lower=1> herds_t2;
+  array[n_herds] int<lower=1> herds_T;
   int<lower=1> N;
-  int<lower=0, upper=3> test_res[N];
+  array[N] int<lower=0, upper=3> test_res;
   real<lower = 0> Se_beta_a;
   real<lower = 0> Se_beta_b;
   real<lower = 0> Sp_beta_a;
@@ -339,7 +339,7 @@ transformed parameters{
   {
 
     // accumulator used at each time step
-    real accumulator[2];
+    array[2] real accumulator;
 
     // looping over all herds
 
@@ -413,7 +413,7 @@ model{
 generated quantities{
 
   // variable in which predictions are stored
-  real pred[n_herds];
+  array[n_herds] real pred;
 
   // loop in which the probabilities of infection are predicted
   {
@@ -432,17 +432,17 @@ generated quantities{
 data{
 
   int<lower=1> n_herds;
-  int<lower=1> herds_t1[n_herds];
-  int<lower=1> herds_t2[n_herds];
-  int<lower=1> herds_T[n_herds];
+  array[n_herds] int<lower=1> herds_t1;
+  array[n_herds] int<lower=1> herds_t2;
+  array[n_herds] int<lower=1> herds_T;
   int<lower=1> N;
-  int<lower=0, upper=3> test_res[N];
+  array[N] int<lower=0, upper=3> test_res;
   int<lower = 1> n_tests;
-  int<lower = 0> test_id[N];
-  real<lower = 0> Se_beta_a[n_tests];
-  real<lower = 0> Se_beta_b[n_tests];
-  real<lower = 0> Sp_beta_a[n_tests];
-  real<lower = 0> Sp_beta_b[n_tests];
+  array[N] int<lower = 0> test_id;
+  array[n_tests] real<lower = 0> Se_beta_a;
+  array[n_tests] real<lower = 0> Se_beta_b;
+  array[n_tests] real<lower = 0> Sp_beta_a;
+  array[n_tests] real<lower = 0> Sp_beta_b;
   real logit_pi1_mean;
   real logit_pi1_sd;
   real logit_tau1_mean;
@@ -453,8 +453,8 @@ data{
 }
 parameters{
 
-  real<lower = 0, upper = 1> Se[n_tests];
-  real<lower = 0, upper = 1> Sp[n_tests];
+  array[n_tests] real<lower = 0, upper = 1> Se;
+  array[n_tests] real<lower = 0, upper = 1> Sp;
   real<lower = 0, upper = 1> pi1;
   real<lower = 0, upper = 1> tau1;
   real<lower = 0, upper = 1> tau2;
@@ -468,7 +468,7 @@ transformed parameters{
   {
 
     // accumulator used at each time step
-    real accumulator[2];
+    array[2] real accumulator;
 
     // looping over all herds
 
@@ -546,7 +546,7 @@ model{
 generated quantities{
 
   // variable in which predictions are stored
-  real pred[n_herds];
+  array[n_herds] real pred;
 
   // loop in which the probabilities of infection are predicted
   {
@@ -572,11 +572,11 @@ write_Stan_model.herd_rf <- function(data){
 "data{
 
   int<lower=1> n_herds;
-  int<lower=1> herds_t1[n_herds];
-  int<lower=1> herds_t2[n_herds];
-  int<lower=1> herds_T[n_herds];
+  array[n_herds] int<lower=1> herds_t1;
+  array[n_herds] int<lower=1> herds_t2;
+  array[n_herds] int<lower=1> herds_T;
   int<lower=1> N;
-  int<lower=0, upper=3> test_res[N];
+  array[N] int<lower=0, upper=3> test_res;
   real<lower = 0> Se_beta_a;
   real<lower = 0> Se_beta_b;
   real<lower = 0> Sp_beta_a;
@@ -586,8 +586,8 @@ write_Stan_model.herd_rf <- function(data){
   real<lower = 0> tau2_beta_a;
   real<lower = 0> tau2_beta_b;
   int<lower = 0> n_risk_factors;
-  real theta_norm_mean[n_risk_factors];
-  real theta_norm_sd[n_risk_factors];
+  array[n_risk_factors] real theta_norm_mean;
+  array[n_risk_factors] real theta_norm_sd;
   matrix[N, n_risk_factors] risk_factors;
 }
 parameters{
@@ -607,8 +607,8 @@ transformed parameters{
   {
 
     // accumulator used at each time step
-    real tau1[N];
-    real accumulator[2];
+    array[N] real tau1;
+    array[2] real accumulator;
 
     // logistic regression for tau1
   for(n in 1:N){
@@ -698,7 +698,7 @@ model{
 generated quantities{
 
   // variable in which predictions are stored
-  real pred[n_herds];
+  array[n_herds] real pred;
 
   {
     matrix[n_herds, 2] alpha;
@@ -716,31 +716,31 @@ generated quantities{
 "data{
 
   int<lower=1> n_herds;
-  int<lower=1> herds_t1[n_herds];
-  int<lower=1> herds_t2[n_herds];
-  int<lower=1> herds_T[n_herds];
+  array[n_herds] int<lower=1> herds_t1;
+  array[n_herds] int<lower=1> herds_t2;
+  array[n_herds] int<lower=1> herds_T;
   int<lower=1> N;
-  int<lower=0, upper=3> test_res[N];
+  array[N] int<lower=0, upper=3> test_res;
   int<lower = 1> n_tests;
-  int<lower = 0> test_id[N];
-  real<lower = 0> Se_beta_a[n_tests];
-  real<lower = 0> Se_beta_b[n_tests];
-  real<lower = 0> Sp_beta_a[n_tests];
-  real<lower = 0> Sp_beta_b[n_tests];
+  array[N] int<lower = 0> test_id;
+  array[n_tests] real<lower = 0> Se_beta_a;
+  array[n_tests] real<lower = 0> Se_beta_b;
+  array[n_tests] real<lower = 0> Sp_beta_a;
+  array[n_tests] real<lower = 0> Sp_beta_b;
   real<lower = 0> pi1_beta_a;
   real<lower = 0> pi1_beta_b;
   real<lower = 0> tau2_beta_a;
   real<lower = 0> tau2_beta_b;
   int<lower = 0> n_risk_factors;
-  real theta_norm_mean[n_risk_factors];
-  real theta_norm_sd[n_risk_factors];
+  array[n_risk_factors] real theta_norm_mean;
+  array[n_risk_factors] real theta_norm_sd;
   matrix[N, n_risk_factors] risk_factors;
 
 }
 parameters{
 
-  real<lower = 0, upper = 1> Se[n_tests];
-  real<lower = 0, upper = 1> Sp[n_tests];
+  array[n_tests] real<lower = 0, upper = 1> Se;
+  array[n_tests] real<lower = 0, upper = 1> Sp;
   real<lower = 0, upper = 1> pi1;
   real<lower = 0, upper = 1> tau2;
   vector[n_risk_factors] theta;
@@ -754,8 +754,8 @@ transformed parameters{
   {
 
     // accumulator used at each time step
-    real tau1[N];
-    real accumulator[2];
+    array[N] real tau1;
+    array[2] real accumulator;
 
     // logistic regression for tau1
   for(n in 1:N){
@@ -849,7 +849,7 @@ model{
 generated quantities{
 
   // variable in which predictions are stored
-  real pred[n_herds];
+  array[n_herds] real pred;
 
   {
     matrix[n_herds, 2] alpha;
@@ -875,11 +875,11 @@ write_Stan_model.herd_dynLogit_rf <- function(data){
 "data{
 
   int<lower=1> n_herds;
-  int<lower=1> herds_t1[n_herds];
-  int<lower=1> herds_t2[n_herds];
-  int<lower=1> herds_T[n_herds];
+  array[n_herds]y int<lower=1> herds_t1;
+  array[n_herds] int<lower=1> herds_t2;
+  array[n_herds] int<lower=1> herds_T;
   int<lower=1> N;
-  int<lower=0, upper=3> test_res[N];
+  array[N] int<lower=0, upper=3> test_res;
   real<lower = 0> Se_beta_a;
   real<lower = 0> Se_beta_b;
   real<lower = 0> Sp_beta_a;
@@ -889,8 +889,8 @@ write_Stan_model.herd_dynLogit_rf <- function(data){
   real logit_tau2_mean;
   real logit_tau2_sd;
   int<lower = 0> n_risk_factors;
-  real theta_norm_mean[n_risk_factors];
-  real theta_norm_sd[n_risk_factors];
+  array[n_risk_factors] real theta_norm_mean;
+  array[n_risk_factors] real theta_norm_sd;
   matrix[N, n_risk_factors] risk_factors;
 
 }
@@ -911,8 +911,8 @@ transformed parameters{
   {
 
     // accumulator used at each time step
-    real tau1[N];
-    real accumulator[2];
+    array[N] real tau1;
+    array[2] real accumulator;
 
     // logistic regression for tau1
   for(n in 1:N){
@@ -1002,7 +1002,7 @@ model{
 generated quantities{
 
   // variable in which predictions are stored
-  real pred[n_herds];
+  array[n_herds] real pred;
 
   {
     matrix[n_herds, 2] alpha;
@@ -1019,31 +1019,31 @@ generated quantities{
 "data{
 
   int<lower=1> n_herds;
-  int<lower=1> herds_t1[n_herds];
-  int<lower=1> herds_t2[n_herds];
-  int<lower=1> herds_T[n_herds];
+  array[n_herds] int<lower=1> herds_t1;
+  array[n_herds] int<lower=1> herds_t2;
+  array[n_herds] int<lower=1> herds_T;
   int<lower=1> N;
-  int<lower=0, upper=3> test_res[N];
+  array[N] int<lower=0, upper=3> test_res;
   int<lower = 1> n_tests;
-  int<lower = 0> test_id[N];
-  real<lower = 0> Se_beta_a[n_tests];
-  real<lower = 0> Se_beta_b[n_tests];
-  real<lower = 0> Sp_beta_a[n_tests];
-  real<lower = 0> Sp_beta_b[n_tests];
+  array[N] int<lower = 0> test_id;
+  array[n_tests] real<lower = 0> Se_beta_a;
+  array[n_tests] real<lower = 0> Se_beta_b;
+  array[n_tests] real<lower = 0> Sp_beta_a;
+  array[n_tests] real<lower = 0> Sp_beta_b;
   real logit_pi1_mean;
   real logit_pi1_sd;
   real logit_tau2_mean;
   real logit_tau2_sd;
   int<lower = 0> n_risk_factors;
-  real theta_norm_mean[n_risk_factors];
-  real theta_norm_sd[n_risk_factors];
+  array[n_risk_factors] real theta_norm_mean;
+  array[n_risk_factors] real theta_norm_sd;
   matrix[N, n_risk_factors] risk_factors;
 
 }
 parameters{
 
-  real<lower = 0, upper = 1> Se[n_tests];
-  real<lower = 0, upper = 1> Sp[n_tests];
+  array[n_tests] real<lower = 0, upper = 1> Se;
+  array[n_tests] real<lower = 0, upper = 1> Sp;
   real<lower = 0, upper = 1> pi1;
   real<lower = 0, upper = 1> tau2;
   vector[n_risk_factors] theta;
@@ -1057,8 +1057,8 @@ transformed parameters{
   {
 
     // accumulator used at each time step
-    real tau1[N];
-    real accumulator[2];
+    array[N] real tau1;
+    array[2] real accumulator;
 
     // logistic regression for tau1
   for(n in 1:N){
@@ -1152,7 +1152,7 @@ model{
 generated quantities{
 
   // variable in which predictions are stored
-  real pred[n_herds];
+  array[n_herds] real pred;
 
   {
     matrix[n_herds, 2] alpha;
