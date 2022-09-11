@@ -10,7 +10,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Overview 
+# Overview
 
 The aim of the `STOCfree` package is to predict herd level probabilities of freedom from infection from longitudinal data collected as part of surveillance programmes. A full description of the model principles is available as an [article](https://peercommunityjournal.org/articles/10.24072/pcjournal.80/). This article has been peer-reviewed as part of a publishing initiative called [Peer Community In Animal Science](https://animsci.peercommunityin.org/). The reviews can be accessed by clicking [this link](https://animsci.peercommunityin.org/articles/rec?id=11). Some aspects of the model were evaluated on simulated data by [Mercat et al. (2022)](https://doi.org/10.1016/j.prevetmed.2022.105582).
 
@@ -28,9 +28,9 @@ The next sections describe how to install the package, set up and run the model.
 
 Before installing the STOCfree package, you need to install either Stan or JAGS.
 
-- The Stan implementation relies on an interface called [CmdStan](https://mc-stan.org/users/interfaces/cmdstan) which communicates with R through the [CmdStanR](https://mc-stan.org/cmdstanr/) R package. The instructions to install both CmdStan and CmdStanR can be found on the following page: https://mc-stan.org/cmdstanr/articles/cmdstanr.html. Running the Stan model also requires installing the [posterior](https://github.com/stan-dev/posterior) R package.
+-   The Stan implementation relies on an interface called [CmdStan](https://mc-stan.org/users/interfaces/cmdstan) which communicates with R through the [CmdStanR](https://mc-stan.org/cmdstanr/) R package. The instructions to install both CmdStan and CmdStanR can be found on the following page: <https://mc-stan.org/cmdstanr/articles/cmdstanr.html>. Running the Stan model also requires installing the [posterior](https://github.com/stan-dev/posterior) R package.
 
-- JAGS can be installed from the following website: https://sourceforge.net/projects/mcmc-jags/files/. If R cannot find JAGS upon calling `STOCfree_JAGS()` try running the following in the console `Sys.setenv(JAGS_HOME=“PATH/JAGS installation”)`.
+-   JAGS can be installed from the following website: <https://sourceforge.net/projects/mcmc-jags/files/>. If R cannot find JAGS upon calling `STOCfree_JAGS()` try running the following in the console `Sys.setenv(JAGS_HOME=“PATH/JAGS installation”)`.
 
 The `STOCfree` package needs to be installed from Github. This requires installing the `remotes` (or `devtools`) package first. You will need R version 4.0 or later to install the package. You may be asked to install or update several packages during the installation.
 
@@ -68,13 +68,13 @@ library(ggplot2)
 
 Modelling will usually consist in the following steps:
 
-1. Set up the test data
-1. Define the prior distributions for test characteristics
-1. Define the prior distributions for the model parameters related to status
-1. Set up the risk factor data
-1. Define the prior distributions for the association between risk factors and probability of becoming infected (status positive)
-1. Run the STOC free model
-1. Analyse the model outputs
+1.  Set up the test data
+2.  Define the prior distributions for test characteristics
+3.  Define the prior distributions for the model parameters related to status
+4.  Set up the risk factor data
+5.  Define the prior distributions for the association between risk factors and probability of becoming infected (status positive)
+6.  Run the STOC free model
+7.  Analyse the model outputs
 
 # Test data
 
@@ -88,12 +88,12 @@ head(herdBTM)
 
 The columns of the dataset correspond to:
 
-- `Farm`: farm ID
-- `DateOfTest`: date when the test was performed
-- `ODR`: optical density ratio associated with ELISA test
-- `Test`: type of test used, either routine ELISA on bulk tank milk ("BTM_ODR") or confirmatory test ("confirm")
-- `TestResult`: test result. 0 for negative; 1 for positive
-- `LocalSeroPrev`: local seroprevalence, a risk factor of new infection
+-   `Farm`: farm ID
+-   `DateOfTest`: date when the test was performed
+-   `ODR`: optical density ratio associated with ELISA test
+-   `Test`: type of test used, either routine ELISA on bulk tank milk ("BTM_ODR") or confirmatory test ("confirm")
+-   `TestResult`: test result. 0 for negative; 1 for positive
+-   `LocalSeroPrev`: local seroprevalence, a risk factor of new infection
 
 ## `STOCfree_data` objects
 
@@ -105,7 +105,6 @@ sfd <- STOCfree_data(test_data = herdBTM,
                      test_date_col = "DateOfTest",
                      test_res_col = "TestResult",
                      test_name_col = "Test",
-                     test_level = "herd",
                      status_dynamics_scale = "proba")
 ```
 
@@ -113,14 +112,12 @@ In this example, the function will gather the test data from the `herdBTM` datas
 
 One argument worth mentioning is the `status_dynamics_scale` argument. By default, infection dynamics parameters, i.e. probabilities of infection on the first time step, acquiring and eliminating the infection between time steps, are modelled on the probability scale using Beta distributions (`status_dynamics_scale = "proba"`). Changing to `status_dynamics_scale = "logit"`, these probabilities are modelled on the logit scale and normal prior distributions are used. In order to illustrate this point, we create a second STOCfree_data object with dynamics parameters on the logit scale.
 
-
 ```{r second STOCfree_data object with dynamics on logit scale}
-sfd1 <- STOCfree_data(test_data = herdBTM,
+sfd <- STOCfree_data(test_data = herdBTM,
                      test_herd_col = "Farm",
                      test_date_col = "DateOfTest",
                      test_res_col = "TestResult",
                      test_name_col = "Test",
-                     test_level = "herd",
                      status_dynamics_scale = "logit")
 ```
 
@@ -138,14 +135,14 @@ str(sfd)
 
 The list components are:
 
-- `var_names`: correspondence between column names in the original datasets and relevant data used in the models
-- `herd_id_corresp`: for the analysis herds are numbered from 1 to the number of herds. This table contains the correspondence between these IDs and the original IDs
-- `test_data`: data with test results
-- `herd_test_data`: herd level indices in the sequence of all months for all herds used in the model. For each herd, the model needs the indices associated with the first, second, penultimate and last tests in the sequence. 
-- `test_perf_prior`: table with parameters for the prior distributions for test characteristics.
-- `risk_factors`: list and type of risk factors that will be included in the model
-- `risk_factor_data`: dataset containing risk factor values for all herds and all months in the analysis
-- `inf_dyn_priors`: table with priors for infection dynamics: probability of being status positive on the first month, probability of becoming status positive between consecutive months when applicable, probability of not eliminating the infection between consecutive months
+-   `var_names`: correspondence between column names in the original datasets and relevant data used in the models
+-   `herd_id_corresp`: for the analysis herds are numbered from 1 to the number of herds. This table contains the correspondence between these IDs and the original IDs
+-   `test_data`: data with test results
+-   `herd_test_data`: herd level indices in the sequence of all months for all herds used in the model. For each herd, the model needs the indices associated with the first, second, penultimate and last tests in the sequence.
+-   `test_perf_prior`: table with parameters for the prior distributions for test characteristics.
+-   `risk_factors`: list and type of risk factors that will be included in the model
+-   `risk_factor_data`: dataset containing risk factor values for all herds and all months in the analysis
+-   `inf_dyn_priors`: table with priors for infection dynamics: probability of being status positive on the first month, probability of becoming status positive between consecutive months when applicable, probability of not eliminating the infection between consecutive months
 
 # Priors for test characteristics
 
@@ -155,7 +152,7 @@ The model accounts for the fact that the sensitivity and specificity of the diff
 show_tests(sfd)
 ```
 
-Column names ending with `_a` and `_b` contain the alpha and beta values for Beta distributions. For example `Se_a = 20` and `Se_b = 2` define the prior distribution for sensitivity as Se ~ Beta(20, 2).
+Column names ending with `_a` and `_b` contain the alpha and beta values for Beta distributions. For example `Se_a = 20` and `Se_b = 2` define the prior distribution for sensitivity as Se \~ Beta(20, 2).
 
 As can be seen, no value has been defined yet. This can be done as follows:
 
@@ -187,8 +184,7 @@ The prior distributions can be plotted with the `plot_priors_tests()` function.
 plot_priors_tests(sfd)
 ```
 
-In order to help selecting appropriate parameter values for the Beta distributions, we have designed a Shiny app which is available from Github. See https://github.com/AurMad/betadistapp
-
+In order to help selecting appropriate parameter values for the Beta distributions, we have designed a Shiny app which is available from Github. See <https://github.com/AurMad/betadistapp>
 
 # Priors for the model parameters related to status dynamics
 
@@ -201,6 +197,7 @@ For `STOCfree_data` objects constructed with the argument `status_dynamics_scale
 ```{r parameters of prior distributions for status dynamics on the probability scale}
 show_priors_status_dyn(sfd)
 ```
+
 Parameter values are provided for these prior distributions as follows:
 
 ```{r setting parameters of prior distributions for status dynamics on the probability scale}
@@ -221,17 +218,18 @@ plot_priors_status_dyn(sfd)
 
 ## Logit scale
 
-To demonstrate how to set dynamics parameters on the logit scale, we use the `sfd1` object created above. As can be seen, the parameter values requested consist of means and standard deviations. In order to help selecting appropriate parameter values for the normal distributions on the logit scale, we have designed a Shiny app which is available from Github. See https://github.com/AurMad/logitnormdistapp 
+To demonstrate how to set dynamics parameters on the logit scale, we use the `sfd1` object created above. As can be seen, the parameter values requested consist of means and standard deviations. In order to help selecting appropriate parameter values for the normal distributions on the logit scale, we have designed a Shiny app which is available from Github. See <https://github.com/AurMad/logitnormdistapp>
 
 ```{r parameters of prior distributions for status dynamics on the logit scale}
-show_priors_status_dyn(sfd1)
+show_priors_status_dyn(sfd)
 ```
+
 Values are provided.
 
 ```{r setting parameters of prior distributions for status dynamics on the logit scale}
-sfd1 <- set_priors_status_dyn(sfd1, 
+sfd <- set_priors_status_dyn(sfd, 
                               logit_pi1_mean = 0, 
-                              logit_pi1_sd = 4, 
+                              logit_pi1_sd = 1.5, 
                               logit_tau1_mean = -3, 
                               logit_tau1_sd = 1, 
                               logit_tau2_mean = 3, 
@@ -241,7 +239,7 @@ sfd1 <- set_priors_status_dyn(sfd1,
 These distributions can be plotted.
 
 ```{r plots of parameters of prior distributions for status dynamics on the logit scale}
-plot_priors_status_dyn(sfd1)
+plot_priors_status_dyn(sfd)
 ```
 
 # Running the STOC free model in Stan
@@ -268,11 +266,12 @@ sfm_jags <- STOCfree_JAGS(sfd,
                       n_thin = 1,
                       out_path = "STOCfree_JAGS_1")
 ```
+
 # Model results
 
 ## Structure of the returned object
 
-The Stan model returns an object of classes `CmdStanMCMC`, `CmdStanFit` and `R6`. Therefore, all methods and functions working with objects of these classes will work with outputs created by `STOCfree_Stan()`. 
+The Stan model returns an object of classes `CmdStanMCMC`, `CmdStanFit` and `R6`. Therefore, all methods and functions working with objects of these classes will work with outputs created by `STOCfree_Stan()`.
 
 The JAGS model returns an object of class `runjags`. Therefore, all methods and functions working with runjags objects will work with outputs created by `STOCfree_JAGS()`.
 
@@ -301,27 +300,28 @@ These 2 functions create objects of class `STOCfree_param` for which print and p
 ```{r}
 print(param)
 ```
+
 Traceplots can be generated to check convergence visually.
 
 ```{r}
 plot(param, parameter = "Se1", type = "traceplot")
 ```
 
-Density plots can be generated. 
+Density plots can be generated.
 
 ```{r}
-plot(param, parameter = "Se1", type = "density")
+plot(param, parameter = "Sp1", type = "density")
 ```
+
 Summary values for each parameter can be obtained as follows:
 
 ```{r}
 summary(param)
 ```
 
-
 ### Predicted probabilities of infection
 
-MCMC samples for the herd level predicted probabilities of infection can also be extracted or loaded. 
+MCMC samples for the herd level predicted probabilities of infection can also be extracted or loaded.
 
 ```{r}
 pred  <- extract_STOCfree_pred(sfm_stan, sfd)
@@ -338,6 +338,7 @@ Calling print on these objects will display the list of herds.
 ```{r}
 print(pred)
 ```
+
 Calling plot on these predicted probabilities will plot the density of predicted probabilities for all herds across all iterations.
 
 ```{r}
@@ -356,8 +357,6 @@ A summary method is implemented for these predicted probabilities. It is possibl
 summary(pred, herd = c("FR001", "FR003"))
 ```
 
-
-
 ### Monthly prevalences
 
 This is only available for the JAGS model. The predicted monthly prevalences of infection can be extracted or loaded using:
@@ -366,13 +365,13 @@ This is only available for the JAGS model. The predicted monthly prevalences of 
 prev <- extract_STOCfree_month_prev(sfm_jags, sfd)
 ```
 
-or 
- 
+or
+
 ```{r reading of the monthly prevalences from the JAGS model, eval = FALSE}
 prev <- read_STOCfree_month_prev("STOCfree_JAGS_1")
 ```
 
-Calling plot on this object will create boxplots of estimated monthly infection prevalences. 
+Calling plot on this object will create boxplots of estimated monthly infection prevalences.
 
 ```{r plot of monthly prevalences}
 plot(prev)
@@ -386,7 +385,7 @@ The association between the probability of becoming status positive (tau1) and r
 
 ## Selection of risk factors to include in the Bayesian model
 
-Bayesian inference in JAGS can take a lot of time. This time increases with the size of the dataset modelled as well as with the number of MCMC iterations. One way to overcome this problem is to force covariates in the model based on what is known about the disease. In this case, ut is also possible to include informative prior distributions for the coefficients of the logistic regression between tau1 and risk factors.
+Bayesian inference in JAGS can take a lot of time. This time increases with the size of the dataset modelled as well as with the number of MCMC iterations. One way to overcome this problem is to force covariates in the model based on what is known about the disease. In this case, but is also possible to include informative prior distributions for the coefficients of the logistic regression between tau1 and risk factors.
 
 The STOCfree package contains a set of functions designed to help in the selection of risk factors from the data. For this purpose, it is considered that all herds with a negative test result are eligible for becoming test positive on the next test. The probability of becoming test positive (versus remaining test negative) is modelled with logistic regression. A further thing that is considered is the fact that risk factors occurring at one point in time may be associated with becoming test positive later.
 
@@ -415,7 +414,7 @@ The function returns a table with the AICs of all the models evaluated.
 str(nAnim_lagged)
 ```
 
-This can be plotted using the code below. From the Figure below it can be seen that between the worst (AIC > 350) and the best (AIC < 342) model, the difference in AIC is rather limited. There is a drop in AIC for intervals starting from 8 months before seroconversion.
+This can be plotted using the code below. From the Figure below it can be seen that between the worst (AIC \> 350) and the best (AIC \< 342) model, the difference in AIC is rather limited. There is a drop in AIC for intervals starting from 8 months before seroconversion.
 
 ```{r}
 ggplot(data = nAnim_lagged, aes(x = lag2, y = lag1, fill = AIC)) +
@@ -426,16 +425,16 @@ ggplot(data = nAnim_lagged, aes(x = lag2, y = lag1, fill = AIC)) +
   ggtitle("Number of animals purchased")
 ```
 
-When the function is used to evaluate several candidate variables, all these variables can be incldued in a multivariate logistic model. For this, we create a dataset with the different variables of interest.
+When the function is used to evaluate several candidate variables, all these variables can be included in a multivariate logistic model. For this, we create a dataset with the different variables of interest.
 
-- Model outcome
+-   Model outcome
 
 ```{r}
 nwinf <- make_nwinf_data(sfd,
                          time_of_inf = "mid")
 ```
 
-- Covariates
+-   Covariates
 
 Here, we include the number of animals purchased 8 months before the test of interest. This is done by calling the `add_risk_factor()`.
 
@@ -448,7 +447,7 @@ nwinf <- add_risk_factor(nwinf,
                          lag2 = 8)
 ```
 
-- Model
+-   Model
 
 The multivariate logistic model is estimated with R `glm()` function called by `logit_nwinf()` function from the `STOCfree` package:
 
@@ -456,7 +455,8 @@ The multivariate logistic model is estimated with R `glm()` function called by `
 modl <- logit_nwinf(nwinf,
                     risk_factors = "nAnim_8_8")
 ```
- The model results are:
+
+The model results are:
 
 ```{r}
 summary(modl)
@@ -518,7 +518,7 @@ plot_priors_rf(sfd)
 
 ## Running the Bayesian model
 
-This is done as explained above by calling the `STOCfree_Stan()` or `STOCfree_JAGS()` functions. In this case, estimates for the logistic regression parameters will appear as theta1 (model intercept) and theta2 (coefficient for the nAnim_8_8 variable).
+This is done as explained above by calling the `STOCfree_Stan()` or `STOCfree_JAGS()` functions. In this case, estimates for the logistic regression parameters will appear as theta1 (model intercept) and theta2 (coefficient for the nAnim_8\_8 variable).
 
 Below is a complete example.
 
@@ -608,6 +608,3 @@ param <- extract_STOCfree_param(sfm_stan_rf)
 
 summary(param)
 ```
-
-
-
