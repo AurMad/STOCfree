@@ -100,7 +100,7 @@ The columns of the dataset correspond to:
 All the later analyses rely on the construction of a `STOCfree_data` object. As an example, a `STOCfree_data` object is constructed from the `herdBTM` dataset. To create this object, we use the `STOCfree_data()` function. Type `?STOCfree_data` in the console to see the list of arguments that can be used.
 
 ```{r creation of STOCfree_data object}
-sfd <- STOCfree_data(test_data = herdBTM,
+sfd0 <- STOCfree_data(test_data = herdBTM,
                      test_herd_col = "Farm",
                      test_date_col = "DateOfTest",
                      test_res_col = "TestResult",
@@ -195,13 +195,13 @@ These parameters are the probability of being status positive on the first time 
 For `STOCfree_data` objects constructed with the argument `status_dynamics_scale = "proba"`, the prior distributions for status dynamics are provided as Beta distributions on the probability scale. The `show_priors_status_dyn()` shows the current parameter values for these Beta distributions and gives the syntax the use to change them.
 
 ```{r parameters of prior distributions for status dynamics on the probability scale}
-show_priors_status_dyn(sfd)
+show_priors_status_dyn(sfd0)
 ```
 
 Parameter values are provided for these prior distributions as follows:
 
 ```{r setting parameters of prior distributions for status dynamics on the probability scale}
-sfd <- set_priors_status_dyn(sfd,
+sfd0 <- set_priors_status_dyn(sfd0,
                    pi1_a = 1,
                    pi1_b = 1,
                    tau1_a = 1.5,
@@ -213,7 +213,7 @@ sfd <- set_priors_status_dyn(sfd,
 These distributions can be plotted.
 
 ```{r plots of parameters of prior distributions for status dynamics on the probability scale}
-plot_priors_status_dyn(sfd)
+plot_priors_status_dyn(sfd0)
 ```
 
 ## Logit scale
@@ -529,7 +529,6 @@ sfd <- STOCfree_data(test_data = herdBTM,
                      test_date_col = "DateOfTest",
                      test_res_col = "TestResult",
                      test_name_col = "Test",
-                     test_level = "herd",
                      status_dynamics_scale = "logit")
 
 ## Priors for test characteristics

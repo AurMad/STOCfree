@@ -2,20 +2,30 @@ STOCfree: prediction of probabilities of freedom from infection from
 longitudinal data
 ================
 
--   [Overview](#overview)
--   [Package installation and update](#package-installation-and-update)
--   [Attaching packages](#attaching-packages)
--   [Steps of the analysis](#steps-of-the-analysis)
--   [Test data](#test-data)
--   [Priors for test characteristics](#priors-for-test-characteristics)
--   [Priors for the model parameters related to status
-    dynamics](#priors-for-the-model-parameters-related-to-status-dynamics)
--   [Running the STOC free model in
-    Stan](#running-the-stoc-free-model-in-stan)
--   [Running the STOC free model in
-    JAGS](#running-the-stoc-free-model-in-jags)
--   [Model results](#model-results)
--   [Inclusion of risk factors](#inclusion-of-risk-factors)
+-   <a href="#overview" id="toc-overview">Overview</a>
+-   <a href="#package-installation-and-update"
+    id="toc-package-installation-and-update">Package installation and
+    update</a>
+-   <a href="#attaching-packages" id="toc-attaching-packages">Attaching
+    packages</a>
+-   <a href="#steps-of-the-analysis" id="toc-steps-of-the-analysis">Steps of
+    the analysis</a>
+-   <a href="#test-data" id="toc-test-data">Test data</a>
+-   <a href="#priors-for-test-characteristics"
+    id="toc-priors-for-test-characteristics">Priors for test
+    characteristics</a>
+-   <a href="#priors-for-the-model-parameters-related-to-status-dynamics"
+    id="toc-priors-for-the-model-parameters-related-to-status-dynamics">Priors
+    for the model parameters related to status dynamics</a>
+-   <a href="#running-the-stoc-free-model-in-stan"
+    id="toc-running-the-stoc-free-model-in-stan">Running the STOC free model
+    in Stan</a>
+-   <a href="#running-the-stoc-free-model-in-jags"
+    id="toc-running-the-stoc-free-model-in-jags">Running the STOC free model
+    in JAGS</a>
+-   <a href="#model-results" id="toc-model-results">Model results</a>
+-   <a href="#inclusion-of-risk-factors"
+    id="toc-inclusion-of-risk-factors">Inclusion of risk factors</a>
 
 # Overview
 
@@ -170,7 +180,7 @@ looks as follows:
 head(herdBTM)
 ```
 
-    ## # A tibble: 6 x 6
+    ## # A tibble: 6 × 6
     ##   Farm  DateOfTest   ODR Test    TestResult LocalSeroPrev
     ##   <chr> <date>     <dbl> <chr>        <dbl>         <dbl>
     ## 1 FR001 2014-02-04  57.6 BTM_ODR          1          0.12
@@ -200,12 +210,11 @@ function. Type `?STOCfree_data` in the console to see the list of
 arguments that can be used.
 
 ``` r
-sfd <- STOCfree_data(test_data = herdBTM,
+sfd0 <- STOCfree_data(test_data = herdBTM,
                      test_herd_col = "Farm",
                      test_date_col = "DateOfTest",
                      test_res_col = "TestResult",
                      test_name_col = "Test",
-                     test_level = "herd",
                      status_dynamics_scale = "proba")
 ```
 
@@ -225,12 +234,11 @@ illustrate this point, we create a second STOCfree_data object with
 dynamics parameters on the logit scale.
 
 ``` r
-sfd1 <- STOCfree_data(test_data = herdBTM,
+sfd <- STOCfree_data(test_data = herdBTM,
                      test_herd_col = "Farm",
                      test_date_col = "DateOfTest",
                      test_res_col = "TestResult",
                      test_name_col = "Test",
-                     test_level = "herd",
                      status_dynamics_scale = "logit")
 ```
 
@@ -241,7 +249,7 @@ The `STOCfree_data()` function returns an object of class
 class(sfd)
 ```
 
-    ## [1] "herd"          "STOCfree_data"
+    ## [1] "herd_dynLogit" "STOCfree_data"
 
 A `STOCfree_data` object is in fact a list of `data.frames`. Below we
 provide a brief explanation on the content of this list.
@@ -284,15 +292,15 @@ str(sfd)
     ##   ..$ month_id : int [1:3300] 1 2 3 4 5 6 7 8 9 10 ...
     ##   ..$ intercept: num [1:3300] 1 1 1 1 1 1 1 1 1 1 ...
     ##  $ inf_dyn_priors  : Named logi [1:6] NA NA NA NA NA NA
-    ##   ..- attr(*, "names")= chr [1:6] "pi1_a" "pi1_b" "tau1_a" "tau1_b" ...
+    ##   ..- attr(*, "names")= chr [1:6] "logit_pi1_mean" "logit_pi1_sd" "logit_tau1_mean" "logit_tau1_sd" ...
     ##  - attr(*, "level")= chr "herd"
-    ##  - attr(*, "status dynamics scale")= chr "proba"
+    ##  - attr(*, "status dynamics scale")= chr "logit"
     ##  - attr(*, "number of herds")= int 100
     ##  - attr(*, "number of tests")= int 2
     ##  - attr(*, "month first test")= chr "2014-02"
     ##  - attr(*, "month last test")= chr "2016-10"
     ##  - attr(*, "number of risk factors")= num 0
-    ##  - attr(*, "class")= chr [1:2] "herd" "STOCfree_data"
+    ##  - attr(*, "class")= chr [1:2] "herd_dynLogit" "STOCfree_data"
 
 The list components are:
 
@@ -400,19 +408,19 @@ The `show_priors_status_dyn()` shows the current parameter values for
 these Beta distributions and gives the syntax the use to change them.
 
 ``` r
-show_priors_status_dyn(sfd)
+show_priors_status_dyn(sfd0)
 ```
 
     ##  pi1_a  pi1_b tau1_a tau1_b tau2_a tau2_b 
     ##     NA     NA     NA     NA     NA     NA
 
     ## Set prior distributions for status dynamics using:
-    ## sfd <- set_priors_status_dyn(sfd, pi1_a = , pi1_b = , tau1_a = , tau1_b = , tau2_a = , tau2_b = )
+    ## sfd0 <- set_priors_status_dyn(sfd0, pi1_a = , pi1_b = , tau1_a = , tau1_b = , tau2_a = , tau2_b = )
 
 Parameter values are provided for these prior distributions as follows:
 
 ``` r
-sfd <- set_priors_status_dyn(sfd,
+sfd0 <- set_priors_status_dyn(sfd0,
                    pi1_a = 1,
                    pi1_b = 1,
                    tau1_a = 1.5,
@@ -424,7 +432,7 @@ sfd <- set_priors_status_dyn(sfd,
 These distributions can be plotted.
 
 ``` r
-plot_priors_status_dyn(sfd)
+plot_priors_status_dyn(sfd0)
 ```
 
 ![](README_files/figure-gfm/plots%20of%20parameters%20of%20prior%20distributions%20for%20status%20dynamics%20on%20the%20probability%20scale-1.png)<!-- -->
@@ -439,7 +447,7 @@ the logit scale, we have designed a Shiny app which is available from
 Github. See <https://github.com/AurMad/logitnormdistapp>
 
 ``` r
-show_priors_status_dyn(sfd1)
+show_priors_status_dyn(sfd)
 ```
 
     ##  logit_pi1_mean    logit_pi1_sd logit_tau1_mean   logit_tau1_sd logit_tau2_mean 
@@ -448,14 +456,14 @@ show_priors_status_dyn(sfd1)
     ##              NA
 
     ## Set prior distributions for status dynamics using:
-    ## sfd1 <- set_priors_status_dyn(sfd1, logit_pi1_mean = , logit_pi1_sd = , logit_tau1_mean = , logit_tau1_sd = , logit_tau2_mean = , logit_tau2_sd = )
+    ## sfd <- set_priors_status_dyn(sfd, logit_pi1_mean = , logit_pi1_sd = , logit_tau1_mean = , logit_tau1_sd = , logit_tau2_mean = , logit_tau2_sd = )
 
 Values are provided.
 
 ``` r
-sfd1 <- set_priors_status_dyn(sfd1, 
+sfd <- set_priors_status_dyn(sfd, 
                               logit_pi1_mean = 0, 
-                              logit_pi1_sd = 4, 
+                              logit_pi1_sd = 1.5, 
                               logit_tau1_mean = -3, 
                               logit_tau1_sd = 1, 
                               logit_tau2_mean = 3, 
@@ -465,7 +473,7 @@ sfd1 <- set_priors_status_dyn(sfd1,
 These distributions can be plotted.
 
 ``` r
-plot_priors_status_dyn(sfd1)
+plot_priors_status_dyn(sfd)
 ```
 
 ![](README_files/figure-gfm/plots%20of%20parameters%20of%20prior%20distributions%20for%20status%20dynamics%20on%20the%20logit%20scale-1.png)<!-- -->
@@ -512,7 +520,7 @@ sfm_stan <- STOCfree_Stan(sfd,
     ## Chain 1 Iteration: 1800 / 2000 [ 90%]  (Sampling) 
     ## Chain 1 Iteration: 1900 / 2000 [ 95%]  (Sampling) 
     ## Chain 1 Iteration: 2000 / 2000 [100%]  (Sampling) 
-    ## Chain 1 finished in 53.8 seconds.
+    ## Chain 1 finished in 46.6 seconds.
     ## Chain 2 Iteration:    1 / 2000 [  0%]  (Warmup) 
     ## Chain 2 Iteration:  100 / 2000 [  5%]  (Warmup) 
     ## Chain 2 Iteration:  200 / 2000 [ 10%]  (Warmup) 
@@ -535,7 +543,7 @@ sfm_stan <- STOCfree_Stan(sfd,
     ## Chain 2 Iteration: 1800 / 2000 [ 90%]  (Sampling) 
     ## Chain 2 Iteration: 1900 / 2000 [ 95%]  (Sampling) 
     ## Chain 2 Iteration: 2000 / 2000 [100%]  (Sampling) 
-    ## Chain 2 finished in 53.8 seconds.
+    ## Chain 2 finished in 48.7 seconds.
     ## Chain 3 Iteration:    1 / 2000 [  0%]  (Warmup) 
     ## Chain 3 Iteration:  100 / 2000 [  5%]  (Warmup) 
     ## Chain 3 Iteration:  200 / 2000 [ 10%]  (Warmup) 
@@ -558,11 +566,11 @@ sfm_stan <- STOCfree_Stan(sfd,
     ## Chain 3 Iteration: 1800 / 2000 [ 90%]  (Sampling) 
     ## Chain 3 Iteration: 1900 / 2000 [ 95%]  (Sampling) 
     ## Chain 3 Iteration: 2000 / 2000 [100%]  (Sampling) 
-    ## Chain 3 finished in 53.0 seconds.
+    ## Chain 3 finished in 46.6 seconds.
     ## 
     ## All 3 chains finished successfully.
-    ## Mean chain execution time: 53.5 seconds.
-    ## Total execution time: 161.4 seconds.
+    ## Mean chain execution time: 47.3 seconds.
+    ## Total execution time: 142.6 seconds.
 
 # Running the STOC free model in JAGS
 
@@ -589,7 +597,7 @@ sfm_jags <- STOCfree_JAGS(sfd,
     ## Calling 3 simulations using the parallel method...
     ## Following the progress of chain 1 (the program will wait for all chains
     ## to finish before continuing):
-    ## Welcome to JAGS 4.3.0 on Thu Feb 24 14:20:25 2022
+    ## Welcome to JAGS 4.3.1 on Mon Sep 12 11:16:13 2022
     ## JAGS is free software and comes with ABSOLUTELY NO WARRANTY
     ## Loading module: basemod: ok
     ## Loading module: bugs: ok
@@ -600,7 +608,7 @@ sfm_jags <- STOCfree_JAGS(sfd,
     ## Graph information:
     ##    Observed stochastic nodes: 824
     ##    Unobserved stochastic nodes: 3406
-    ##    Total graph size: 27810
+    ##    Total graph size: 27912
     ## . Reading parameter file inits1.txt
     ## . Initializing model
     ## . Adapting 1000
@@ -626,13 +634,9 @@ sfm_jags <- STOCfree_JAGS(sfd,
 
     ## Warning: `gather_()` was deprecated in tidyr 1.2.0.
     ## Please use `gather()` instead.
-    ## This warning is displayed once every 8 hours.
-    ## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was generated.
 
     ## Warning: `spread_()` was deprecated in tidyr 1.2.0.
     ## Please use `spread()` instead.
-    ## This warning is displayed once every 8 hours.
-    ## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was generated.
 
 # Model results
 
@@ -655,7 +659,7 @@ generated with Stan or JAGS.
 Two specific types of model outputs are of interest and can be
 extracted, either directly from the model output or loaded from the disk
 when `STOCfree_model()` was run using `save_output = TRUE`. These model
-outputs are the model parameters (Se, Sp, *τ*<sub>1</sub>, …) and
+outputs are the model parameters (Se, Sp, $\tau_1$, $\ldots$) and
 predicted probabilities of being status positive. Additionally, the JAGS
 model returns estimated monthly prevalences during the historical
 period.
@@ -701,11 +705,12 @@ plot(param, parameter = "Se1", type = "traceplot")
 Density plots can be generated.
 
 ``` r
-plot(param, parameter = "Se1", type = "density")
+plot(param, parameter = "Sp1", type = "density")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-10-1.png)<!-- --> Summary
-values for each parameter can be obtained as follows:
+![](README_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+
+Summary values for each parameter can be obtained as follows:
 
 ``` r
 summary(param)
@@ -719,14 +724,14 @@ summary(param)
 
     ## Warning: Dropping 'draws_df' class as required metadata was removed.
 
-    ##            mean           sd    median      2.5%      97.5%      ess
-    ## Se1  0.95015250 2.993786e-03 0.9501950 0.9441961 0.95569258 4235.247
-    ## Se2  0.88309581 2.055308e-02 0.8842730 0.8405991 0.92083118 4503.734
-    ## Sp1  0.98592326 9.300200e-03 0.9876735 0.9625768 0.99840545 4175.908
-    ## Sp2  0.99990233 9.652442e-05 0.9999310 0.9996449 0.99999700 4113.313
-    ## pi1  0.53188385 5.143754e-02 0.5322990 0.4279500 0.63449305 4711.426
-    ## tau1 0.04594332 7.053691e-03 0.0454901 0.0332344 0.06077612 4015.616
-    ## tau2 0.96390398 6.582744e-03 0.9640865 0.9496425 0.97572870 3911.573
+    ##            mean           sd     median      2.5%      97.5%      ess
+    ## Se1  0.95021170 2.944234e-03 0.95028050 0.9443617 0.95558250 4531.024
+    ## Se2  0.88369697 2.002153e-02 0.88420750 0.8427434 0.92128647 4754.958
+    ## Sp1  0.98564383 9.752482e-03 0.98770150 0.9609376 0.99824453 3694.541
+    ## Sp2  0.99990148 9.649939e-05 0.99992900 0.9996370 0.99999700 5730.500
+    ## pi1  0.52999931 5.037150e-02 0.52984800 0.4306047 0.62888923 4787.779
+    ## tau1 0.04605133 6.832599e-03 0.04581995 0.0339436 0.06070055 4186.314
+    ## tau2 0.96378436 6.547002e-03 0.96410600 0.9499575 0.97548610 3980.593
 
 ### Predicted probabilities of infection
 
@@ -780,9 +785,9 @@ possible to specify for which herds a summary is required.
 summary(pred, herd = c("FR001", "FR003"))
 ```
 
-    ##    herd  mean   sd median  2.5% 97.5%
-    ## 1 FR001 0.130 0.02  0.128 0.095 0.174
-    ## 2 FR003 0.062 0.01  0.061 0.045 0.082
+    ##    herd  mean    sd median  2.5% 97.5%
+    ## 1 FR001 0.129 0.019  0.128 0.097 0.172
+    ## 2 FR003 0.062 0.009  0.062 0.045 0.082
 
 ### Monthly prevalences
 
@@ -825,7 +830,7 @@ regression through test sensitivity and specificity.
 Bayesian inference in JAGS can take a lot of time. This time increases
 with the size of the dataset modelled as well as with the number of MCMC
 iterations. One way to overcome this problem is to force covariates in
-the model based on what is known about the disease. In this case, ut is
+the model based on what is known about the disease. In this case, but is
 also possible to include informative prior distributions for the
 coefficients of the logistic regression between tau1 and risk factors.
 
@@ -845,7 +850,7 @@ which is included in the package.
 intro
 ```
 
-    ## # A tibble: 1,324 x 3
+    ## # A tibble: 1,324 × 3
     ##    Farm  dateIntr   nAnim
     ##    <chr> <fct>      <int>
     ##  1 FR001 2010-01-22     1
@@ -858,7 +863,7 @@ intro
     ##  8 FR005 2016-04-20    17
     ##  9 FR008 2012-06-04     2
     ## 10 FR008 2010-04-30     1
-    ## # ... with 1,314 more rows
+    ## # … with 1,314 more rows
 
 This dataset contains the number of animals purchased as well as the
 dates of introduction for the 100 herds in the `herdBTM` data. Using
@@ -916,7 +921,7 @@ ggplot(data = nAnim_lagged, aes(x = lag2, y = lag1, fill = AIC)) +
 ![](README_files/figure-gfm/unnamed-chunk-21-1.png)<!-- -->
 
 When the function is used to evaluate several candidate variables, all
-these variables can be incldued in a multivariate logistic model. For
+these variables can be included in a multivariate logistic model. For
 this, we create a dataset with the different variables of interest.
 
 -   Model outcome
@@ -1011,8 +1016,8 @@ logistic regression.
 show_priors_status_dyn(sfd)
 ```
 
-    ##  pi1_a  pi1_b tau2_a tau2_b 
-    ##    1.0    1.0   10.0    1.5
+    ##  logit_pi1_mean    logit_pi1_sd logit_tau2_mean   logit_tau2_sd 
+    ##             0.0             1.5             3.0             1.0
 
 ## Priors for the logistic regression
 
@@ -1083,7 +1088,6 @@ sfd <- STOCfree_data(test_data = herdBTM,
                      test_date_col = "DateOfTest",
                      test_res_col = "TestResult",
                      test_name_col = "Test",
-                     test_level = "herd",
                      status_dynamics_scale = "logit")
 
 ## Priors for test characteristics
@@ -1162,31 +1166,26 @@ sfm_stan_rf <- STOCfree_Stan(sfd,
     ## Chain 1 Iteration:   1 / 110 [  0%]  (Warmup) 
     ## Chain 1 Iteration:  11 / 110 [ 10%]  (Sampling) 
     ## Chain 1 Iteration: 110 / 110 [100%]  (Sampling) 
-    ## Chain 1 finished in 12.3 seconds.
+    ## Chain 1 finished in 11.9 seconds.
     ## Chain 2 WARNING: No variance estimation is 
     ## Chain 2          performed for num_warmup < 20 
     ## Chain 2 Iteration:   1 / 110 [  0%]  (Warmup) 
     ## Chain 2 Iteration:  11 / 110 [ 10%]  (Sampling) 
     ## Chain 2 Iteration: 110 / 110 [100%]  (Sampling) 
-    ## Chain 2 finished in 7.9 seconds.
+    ## Chain 2 finished in 20.1 seconds.
     ## Chain 3 WARNING: No variance estimation is 
     ## Chain 3          performed for num_warmup < 20 
     ## Chain 3 Iteration:   1 / 110 [  0%]  (Warmup) 
     ## Chain 3 Iteration:  11 / 110 [ 10%]  (Sampling) 
     ## Chain 3 Iteration: 110 / 110 [100%]  (Sampling) 
-    ## Chain 3 finished in 24.0 seconds.
+    ## Chain 3 finished in 9.2 seconds.
     ## 
     ## All 3 chains finished successfully.
-    ## Mean chain execution time: 14.7 seconds.
-    ## Total execution time: 45.1 seconds.
+    ## Mean chain execution time: 13.7 seconds.
+    ## Total execution time: 41.6 seconds.
 
-    ## 
-    ## Warning: 15 of 300 (5.0%) transitions ended with a divergence.
-    ## This may indicate insufficient exploration of the posterior distribution.
-    ## Possible remedies include: 
-    ##   * Increasing adapt_delta closer to 1 (default is 0.8) 
-    ##   * Reparameterizing the model (e.g. using a non-centered parameterization)
-    ##   * Using informative or weakly informative prior distributions
+    ## Warning: 9 of 300 (3.0%) transitions ended with a divergence.
+    ## See https://mc-stan.org/misc/warnings for details.
 
 JAGS version
 
@@ -1206,7 +1205,7 @@ sfm_jags_rf <- STOCfree_JAGS(sfd,
     ## Calling 3 simulations using the parallel method...
     ## Following the progress of chain 1 (the program will wait for all chains
     ## to finish before continuing):
-    ## Welcome to JAGS 4.3.0 on Thu Feb 24 14:23:17 2022
+    ## Welcome to JAGS 4.3.1 on Mon Sep 12 11:18:53 2022
     ## JAGS is free software and comes with ABSOLUTELY NO WARRANTY
     ## Loading module: basemod: ok
     ## Loading module: bugs: ok
@@ -1257,12 +1256,12 @@ summary(param)
 
     ## Warning: Dropping 'draws_df' class as required metadata was removed.
 
-    ##              mean           sd     median       2.5%      97.5%       ess
-    ## Se1     0.9500207 0.0029348152  0.9500920  0.9444300  0.9552665 354.94912
-    ## Se2     0.8820903 0.0189702519  0.8828400  0.8445692  0.9145475 286.06529
-    ## Sp1     0.9875053 0.0100372341  0.9899285  0.9605987  0.9984498  67.97604
-    ## Sp2     0.9999063 0.0001008582  0.9999375  0.9996481  0.9999975  41.91674
-    ## pi1     0.5305281 0.0478968332  0.5273710  0.4413476  0.6210530 237.38751
-    ## tau2    0.9643170 0.0061517350  0.9648280  0.9524879  0.9757961 216.59506
-    ## theta1 -3.0288757 0.1682366886 -3.0281700 -3.3705532 -2.7101423 235.91542
-    ## theta2 -0.5018495 0.9924679796 -0.0897395 -3.8789527  0.1067788  31.57166
+    ##              mean           sd      median       2.5%       97.5%       ess
+    ## Se1     0.9499266 3.138467e-03  0.95014050  0.9437878  0.95555128 534.92502
+    ## Se2     0.8822056 2.033061e-02  0.88216400  0.8436933  0.91806948 234.79601
+    ## Sp1     0.9852370 9.566092e-03  0.98677450  0.9643835  0.99876630  35.12823
+    ## Sp2     0.9998894 9.548877e-05  0.99992050  0.9996453  0.99999500  48.62949
+    ## pi1     0.5348903 5.309744e-02  0.53516300  0.4268829  0.63639030 311.47774
+    ## tau2    0.9645711 6.932421e-03  0.96434450  0.9511997  0.97729753 246.65370
+    ## theta1 -3.0481417 1.714629e-01 -3.04740000 -3.3983385 -2.71569500 281.12591
+    ## theta2 -0.5137474 9.223785e-01 -0.09879875 -3.3216173  0.02813575  53.13678
