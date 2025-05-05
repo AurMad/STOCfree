@@ -875,7 +875,7 @@ write_Stan_model.herd_dynLogit_rf <- function(data){
 "data{
 
   int<lower=1> n_herds;
-  array[n_herds]y int<lower=1> herds_t1;
+  array[n_herds] int<lower=1> herds_t1;
   array[n_herds] int<lower=1> herds_t2;
   array[n_herds] int<lower=1> herds_T;
   int<lower=1> N;
